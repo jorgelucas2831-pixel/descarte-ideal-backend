@@ -215,9 +215,7 @@
      <div class="field"><label for="depositOperationDate">Data *</label><input id="depositOperationDate" type="date" required></div>
      <div class="field"><label for="depositParty">Fornecedor / comprador</label><select id="depositParty"><option value="">Não informado</option></select></div>
      <div class="field"><label for="depositMaterial">Material *</label><select id="depositMaterial" required><option value="">Carregando materiais...</option></select><button class="smallbtn" type="button" id="depositGoMaterials" style="margin-top:7px">+ Cadastrar material</button><small id="depositMaterialHelp" class="muted">Escolha o material comprado ou vendido.</small></div>
-     <div class="field"><label for="depositGross">Peso bruto (kg)</label><input id="depositGross" type="number" min="0" step="0.001" placeholder="Opcional"></div>
-     <div class="field"><label for="depositTare">Tara (kg)</label><input id="depositTare" type="number" min="0" step="0.001" value="0"></div>
-     <div class="field"><label for="depositQuantity">Quantidade líquida (kg) *</label><input id="depositQuantity" type="number" min="0.001" step="0.001" required></div>
+     <div class="field"><label for="depositQuantity">Peso comprado/vendido (kg) *</label><input id="depositQuantity" type="number" min="0.001" step="0.001" placeholder="Ex.: 150" required></div>
      <div class="field"><label for="depositUnitPrice">Preço por kg (R$) *</label><input id="depositUnitPrice" type="number" min="0" step="0.0001" required></div>
      <div class="field"><label for="depositLineTotal">Total da operação</label><input id="depositLineTotal" readonly value="R$ 0,00"></div>
      <div class="field full"><label for="depositOperationNotes">Observações / identificação da pesagem</label><textarea id="depositOperationNotes" placeholder="Ex.: placa do veículo, número do ticket, condição do material..."></textarea></div>
@@ -645,7 +643,7 @@ function populateDepositSelects(){
  const party=$('depositParty');if(party){const current=party.value;party.innerHTML='<option value="">Não informado</option>'+depositParties.filter(p=>p.active).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');if(current)party.value=current}
 }
 function resetDepositOperationForm(){
- const f=$('depositOperationForm');if(!f)return;f.reset();$('depositOperationDate').value=new Date().toISOString().slice(0,10);$('depositTare').value='0';$('depositLineTotal').value=money(0);populateDepositSelects();
+ const f=$('depositOperationForm');if(!f)return;f.reset();$('depositOperationDate').value=new Date().toISOString().slice(0,10);$('depositLineTotal').value=money(0);populateDepositSelects();
 }
 function updateDepositTotal(){
  const q=Number($('depositQuantity')?.value)||0,p=Number($('depositUnitPrice')?.value)||0;
@@ -653,14 +651,6 @@ function updateDepositTotal(){
 }
 $('depositQuantity')?.addEventListener('input',updateDepositTotal);
 $('depositUnitPrice')?.addEventListener('input',updateDepositTotal);
-$('depositGross')?.addEventListener('input',()=>{
- const gross=Number($('depositGross').value),tare=Number($('depositTare').value)||0;
- if($('depositGross').value!==''&&gross>=tare){$('depositQuantity').value=(gross-tare).toFixed(3);updateDepositTotal()}
-});
-$('depositTare')?.addEventListener('input',()=>{
- const gross=Number($('depositGross').value),tare=Number($('depositTare').value)||0;
- if($('depositGross').value!==''&&gross>=tare){$('depositQuantity').value=(gross-tare).toFixed(3);updateDepositTotal()}
-});
 $('depositOperationType')?.addEventListener('change',()=>{updateDepositTotal()});
 $('depositResetOperation')?.addEventListener('click',resetDepositOperationForm);
 $('depositOperationSearch')?.addEventListener('input',renderDepositOperations);
@@ -710,14 +700,12 @@ function renderDepositMovements(){
 $('depositOperationForm')?.addEventListener('submit',async e=>{
  e.preventDefault();if(demoMode||!supabaseClient){alert('Conecte ao Supabase para registrar operações do Depósito.');return}
  const type=$('depositOperationType').value,materialId=$('depositMaterial').value,partyId=$('depositParty').value||null,date=$('depositOperationDate').value;
- const gross=$('depositGross').value===''?null:Number($('depositGross').value),tare=$('depositTare').value===''?null:Number($('depositTare').value);
  const quantity=Number($('depositQuantity').value),unitPrice=Number($('depositUnitPrice').value);
  if(!materialId||!date||!Number.isFinite(quantity)||quantity<=0||!Number.isFinite(unitPrice)||unitPrice<0){alert('Confira material, data, quantidade e preço.');return}
- if(gross!==null&&(gross<0||tare===null||tare<0||gross<tare||Math.abs((gross-tare)-quantity)>0.001)){alert('Confira a pesagem: o peso líquido deve ser igual ao peso bruto menos a tara.');return}
  try{
   const {data:op,error:oe}=await supabaseClient.from('deposit_operations').insert({operation_type:type,party_id:partyId,operation_date:date,status:'draft',notes:$('depositOperationNotes').value.trim()||null}).select().single();
   if(oe)throw oe;
-  const item={operation_id:op.id,material_id:materialId,quantity,gross_weight:gross,tare_weight:tare,unit_price,notes:null};
+  const item={operation_id:op.id,material_id:materialId,quantity,gross_weight:null,tare_weight:null,unit_price,notes:null};
   const {error:ie}=await supabaseClient.from('deposit_operation_items').insert(item);
   if(ie){await supabaseClient.from('deposit_operations').delete().eq('id',op.id);throw ie}
   resetDepositOperationForm();await loadDepositData();renderDeposit();alert('Rascunho '+op.operation_number+' salvo. Confirme a operação na tabela para atualizar o estoque.');
