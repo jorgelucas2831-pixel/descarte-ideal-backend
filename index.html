@@ -32,7 +32,7 @@
   </div>
 </div></div>
 <div class="app" id="erpApp" hidden>
-<aside class="sidebar"><div class="brand"><div class="logo">DI</div><div><b>Descarte Ideal</b><span>ERP V11 • Gestão Integrada</span></div></div><div class="nav-title">Principal</div><nav class="nav"><button class="active" data-page="dashboard">▦ &nbsp; Dashboard</button><button data-page="clientes">◉ &nbsp; Clientes</button><button data-page="coletas">↗ &nbsp; Coletas</button><button data-page="residuos">♻ &nbsp; Resíduos</button></nav><div class="nav-title">Próximos módulos</div><nav class="nav"><button data-page="pesagem">⚖ &nbsp; Pesagem</button><button disabled>▤ &nbsp; Estoque</button><button data-page="financeiro">◫ &nbsp; Pagamentos</button><button data-page="faturamento">▤ &nbsp; Faturamento</button><button data-page="caixa">$ &nbsp; Caixa e saldo</button><button disabled>▱ &nbsp; Frota</button><button disabled>▣ &nbsp; Documentos</button><button disabled>◴ &nbsp; Relatórios</button></nav></aside>
+<aside class="sidebar"><div class="brand"><div class="logo">DI</div><div><b>Descarte Ideal</b><span>ERP V11 • Gestão Integrada</span></div></div><div class="nav-title">Principal</div><nav class="nav"><button class="active" data-page="dashboard">▦ &nbsp; Dashboard</button><button data-page="clientes">◉ &nbsp; Clientes</button><button data-page="coletas">↗ &nbsp; Coletas</button><button data-page="residuos">♻ &nbsp; Resíduos</button></nav><div class="nav-title">Próximos módulos</div><nav class="nav"><button data-page="pesagem">⚖ &nbsp; Pesagem</button><button data-page="deposito">▤ &nbsp; Depósito</button><button data-page="financeiro">◫ &nbsp; Pagamentos</button><button data-page="faturamento">▤ &nbsp; Faturamento</button><button data-page="caixa">$ &nbsp; Caixa e saldo</button><button disabled>▱ &nbsp; Frota</button><button disabled>▣ &nbsp; Documentos</button><button disabled>◴ &nbsp; Relatórios</button></nav></aside>
 <main class="main"><header class="top"><div><div class="eyebrow">ERP DESCARTE IDEAL</div><h1 class="title" id="pageTitle">Visão geral</h1></div><div class="user"><span id="loggedUser">Usuário conectado</span><button class="btn secondary" id="logoutBtn" type="button">Sair</button><div class="avatar">DI</div></div></header>
 <section id="dashboard" class="page active"><div class="notice"><b>Ambiente em evolução:</b> os dados operacionais e financeiros exibidos dependem dos registros existentes no sistema. Esta versão preserva a estrutura atual; a nova base financeira será ativada somente após a migração SQL e a validação dos dados.</div><div class="grid"><div class="card metric"><div class="label">Coletas cadastradas</div><div class="value" id="mColetas">0</div><div class="delta">Total no sistema local</div></div><div class="card metric"><div class="label">Clientes ativos</div><div class="value" id="mClientes">0</div><div class="delta">Cadastros ativos</div></div><div class="card metric"><div class="label">Coletas agendadas</div><div class="value" id="mAgendadas">0</div><div class="delta">Aguardando execução</div></div><div class="card metric"><div class="label">Quantidade estimada</div><div class="value" id="mPeso">0 kg</div><div class="delta">Somatório informado</div></div></div><div class="two section"><div class="card"><div class="section-head"><h2>Coletas recentes</h2><button class="btn secondary" onclick="go('coletas')">Ver coletas</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Cliente</th><th>Data</th><th>Resíduo</th><th>Status</th></tr></thead><tbody id="recentTable"></tbody></table></div></div><div class="card"><div class="section-head"><h2>Acesso rápido</h2></div><p class="muted" style="font-size:13px;line-height:1.6">Organize os cadastros e acompanhe o fluxo operacional da coleta de resíduos.</p><div class="form-actions"><button class="btn" onclick="go('clientes')">+ Cadastrar cliente</button><button class="btn secondary" onclick="go('coletas')">+ Registrar coleta</button></div></div></div></section>
 <section id="clientes" class="page"><div class="section-head"><h2>Clientes cadastrados</h2><button class="btn" onclick="showClientForm()">+ Novo cliente</button></div><div id="clientFormCard" class="card section" hidden><h2 id="clientFormTitle">Novo cliente</h2><form id="clientForm"><input type="hidden" id="clientId"><div class="formgrid section"><div class="field"><label for="clientName">Nome / Razão social *</label><input id="clientName" required></div><div class="field"><label for="clientDoc">CPF / CNPJ</label><input id="clientDoc" placeholder="Documento"></div><div class="field"><label for="clientContact">Contato</label><input id="clientContact" placeholder="Telefone ou e-mail"></div><div class="field"><label for="clientStatus">Situação</label><select id="clientStatus"><option>Ativo</option><option>Pendente</option><option>Inativo</option></select></div><div class="field full"><label for="clientAddress">Endereço</label><input id="clientAddress"></div></div><div class="form-actions"><button class="btn" type="submit">Salvar cliente</button><button class="btn secondary" type="button" onclick="hideClientForm()">Cancelar</button></div></form></div><div class="card section"><div class="section-head"><h2>Lista de clientes</h2><input class="search" id="clientSearch" placeholder="Buscar cliente..." aria-label="Buscar cliente"></div><div class="table-wrap"><table class="table"><thead><tr><th>Cliente</th><th>Documento</th><th>Contato</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="clientsTable"></tbody></table></div></div></section>
@@ -189,6 +189,81 @@
  </div>
 </div>
 
+<section id="deposito" class="page">
+ <div class="notice"><b>Controle do Depósito:</b> registre compras e vendas de materiais recicláveis, acompanhe o estoque e consulte o histórico. Uma operação só altera o estoque depois de ser confirmada por usuário autorizado. Os lançamentos financeiros das compras e vendas serão integrados ao módulo Pagamentos em uma etapa posterior.</div>
+ <div class="grid">
+  <div class="card metric"><div class="label">Materiais cadastrados</div><div class="value" id="depositMaterialCount">0</div><div class="delta">Materiais ativos</div></div>
+  <div class="card metric"><div class="label">Quantidade em estoque</div><div class="value" id="depositStockQty">0 kg</div><div class="delta">Saldo total dos materiais em kg</div></div>
+  <div class="card metric"><div class="label">Compras confirmadas</div><div class="value" id="depositPurchasesTotal">R$ 0,00</div><div class="delta">Valor registrado em compras</div></div>
+  <div class="card metric"><div class="label">Vendas confirmadas</div><div class="value" id="depositSalesTotal">R$ 0,00</div><div class="delta">Valor registrado em vendas</div></div>
+ </div>
+ <div class="subtabs section" role="tablist" aria-label="Áreas do Depósito">
+  <button type="button" class="subtab active" data-deposit-tab="operations">Compras e vendas</button>
+  <button type="button" class="subtab" data-deposit-tab="stock">Estoque</button>
+  <button type="button" class="subtab" data-deposit-tab="materials">Materiais</button>
+  <button type="button" class="subtab" data-deposit-tab="parties">Fornecedores e compradores</button>
+  <button type="button" class="subtab" data-deposit-tab="movements">Histórico de estoque</button>
+ </div>
+ <div id="depositOperationsPanel">
+  <div class="card section">
+   <div class="section-head"><h2 id="depositOperationTitle">Registrar operação</h2><span class="muted" style="font-size:12px">A operação será salva como rascunho</span></div>
+   <form id="depositOperationForm">
+    <div class="formgrid section">
+     <div class="field"><label for="depositOperationType">Tipo de operação *</label><select id="depositOperationType" required><option value="purchase">Compra — entrada no estoque</option><option value="sale">Venda — saída do estoque</option></select></div>
+     <div class="field"><label for="depositOperationDate">Data *</label><input id="depositOperationDate" type="date" required></div>
+     <div class="field"><label for="depositParty">Fornecedor / comprador</label><select id="depositParty"><option value="">Não informado</option></select></div>
+     <div class="field"><label for="depositMaterial">Material *</label><select id="depositMaterial" required><option value="">Selecione o material</option></select></div>
+     <div class="field"><label for="depositGross">Peso bruto (kg)</label><input id="depositGross" type="number" min="0" step="0.001" placeholder="Opcional"></div>
+     <div class="field"><label for="depositTare">Tara (kg)</label><input id="depositTare" type="number" min="0" step="0.001" value="0"></div>
+     <div class="field"><label for="depositQuantity">Quantidade líquida (kg) *</label><input id="depositQuantity" type="number" min="0.001" step="0.001" required></div>
+     <div class="field"><label for="depositUnitPrice">Preço por kg (R$) *</label><input id="depositUnitPrice" type="number" min="0" step="0.0001" required></div>
+     <div class="field"><label for="depositLineTotal">Total da operação</label><input id="depositLineTotal" readonly value="R$ 0,00"></div>
+     <div class="field full"><label for="depositOperationNotes">Observações / identificação da pesagem</label><textarea id="depositOperationNotes" placeholder="Ex.: placa do veículo, número do ticket, condição do material..."></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn" type="submit">Salvar rascunho</button><button class="btn secondary" type="button" id="depositResetOperation">Limpar formulário</button></div>
+   </form>
+  </div>
+  <div class="card section">
+   <div class="section-head"><h2>Operações registradas</h2><input id="depositOperationSearch" class="search" placeholder="Buscar número, pessoa ou material"></div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>Número</th><th>Data</th><th>Operação</th><th>Fornecedor / comprador</th><th>Material</th><th>Quantidade</th><th>Valor</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="depositOperationsTable"></tbody></table></div>
+  </div>
+ </div>
+ <div id="depositStockPanel" hidden>
+  <div class="card section"><div class="section-head"><h2>Estoque atual por material</h2><button class="btn secondary" type="button" onclick="exportDepositStock()">Exportar CSV</button></div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>Material</th><th>Categoria</th><th>Unidade</th><th>Quantidade disponível</th><th>Custo médio</th><th>Valor estimado</th><th>Alerta</th></tr></thead><tbody id="depositStockTable"></tbody></table></div>
+  </div>
+ </div>
+ <div id="depositMaterialsPanel" hidden>
+  <div class="card section"><h2 id="depositMaterialFormTitle">Cadastrar material</h2>
+   <form id="depositMaterialForm"><input type="hidden" id="depositMaterialId"><div class="formgrid section">
+    <div class="field"><label for="depositMaterialName">Nome do material *</label><input id="depositMaterialName" required placeholder="Ex.: Ferro, alumínio, cobre"></div>
+    <div class="field"><label for="depositMaterialCategory">Categoria</label><input id="depositMaterialCategory" placeholder="Ex.: Metais"></div>
+    <div class="field"><label for="depositMaterialUnit">Unidade *</label><select id="depositMaterialUnit"><option value="kg">Quilograma (kg)</option><option value="ton">Tonelada (ton)</option><option value="un">Unidade (un)</option></select></div>
+    <div class="field"><label for="depositMaterialMinimum">Estoque mínimo</label><input id="depositMaterialMinimum" type="number" min="0" step="0.001" value="0"></div>
+   </div><div class="form-actions"><button class="btn" type="submit">Salvar material</button><button class="btn secondary" type="button" onclick="resetDepositMaterialForm()">Limpar</button></div></form>
+  </div>
+  <div class="card section"><div class="section-head"><h2>Materiais cadastrados</h2><input id="depositMaterialSearch" class="search" placeholder="Buscar material"></div><div class="table-wrap"><table class="table"><thead><tr><th>Material</th><th>Categoria</th><th>Unidade</th><th>Estoque mínimo</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="depositMaterialsTable"></tbody></table></div></div>
+ </div>
+ <div id="depositPartiesPanel" hidden>
+  <div class="card section"><h2>Cadastrar fornecedor ou comprador</h2>
+   <form id="depositPartyForm"><input type="hidden" id="depositPartyId"><div class="formgrid section">
+    <div class="field"><label for="depositPartyName">Nome / Razão social *</label><input id="depositPartyName" required></div>
+    <div class="field"><label for="depositPartyType">Tipo *</label><select id="depositPartyType"><option value="both">Fornecedor e comprador</option><option value="supplier">Fornecedor</option><option value="buyer">Comprador</option></select></div>
+    <div class="field"><label for="depositPartyDocument">CPF / CNPJ</label><input id="depositPartyDocument"></div>
+    <div class="field"><label for="depositPartyPhone">Telefone</label><input id="depositPartyPhone" type="tel"></div>
+    <div class="field"><label for="depositPartyEmail">E-mail</label><input id="depositPartyEmail" type="email"></div>
+    <div class="field"><label for="depositPartyAddress">Endereço</label><input id="depositPartyAddress"></div>
+    <div class="field full"><label for="depositPartyNotes">Observações</label><textarea id="depositPartyNotes"></textarea></div>
+   </div><div class="form-actions"><button class="btn" type="submit">Salvar cadastro</button><button class="btn secondary" type="button" onclick="resetDepositPartyForm()">Limpar</button></div></form>
+  </div>
+  <div class="card section"><div class="section-head"><h2>Cadastros</h2><input id="depositPartySearch" class="search" placeholder="Buscar pessoa ou empresa"></div><div class="table-wrap"><table class="table"><thead><tr><th>Nome</th><th>Tipo</th><th>Documento</th><th>Telefone</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="depositPartiesTable"></tbody></table></div></div>
+ </div>
+ <div id="depositMovementsPanel" hidden>
+  <div class="card section"><div class="section-head"><h2>Histórico de entradas e saídas</h2></div><div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Operação</th><th>Material</th><th>Movimento</th><th>Quantidade</th><th>Custo registrado</th><th>Responsável</th></tr></thead><tbody id="depositMovementsTable"></tbody></table></div></div>
+ </div>
+ <div id="depositDataNotice" class="notice section" hidden></div>
+</section>
+
 <section id="caixa" class="page">
 <div class="notice"><b>Caixa da empresa:</b> o saldo abaixo é calculado com o saldo inicial informado e os lançamentos marcados como pagos/recebidos pela forma <b>Dinheiro</b>. Pix, transferência, boleto e cartão não entram no caixa físico. No modo conectado, os registros são sincronizados com o Supabase.</div>
 <div class="grid">
@@ -202,7 +277,7 @@
 </section>
 </main></div>
 <script>
-const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',financeiro:'Pagamentos',faturamento:'Faturamento',caixa:'Caixa e saldo'};
+const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Pagamentos',faturamento:'Faturamento',caixa:'Caixa e saldo'};
 let demoMode=false; let payments=loadPayments(); let invoices=loadInvoices(); let invoiceReceipts=loadInvoiceReceipts();
 let state={clients:[],collections:[]};let weighings=loadWeighings();let supabaseClient=null;let connectedUrl='';let connectedKey='';
 const $=id=>document.getElementById(id);
@@ -213,7 +288,7 @@ function createClient(){if(!window.supabase){setStatus('Não foi possível carre
 function normalizeUrl(v){return v.trim().replace(/\/$/,'')}
 async function connectProject(){const url=normalizeUrl($('supabaseUrl').value);const key=$('supabaseKey').value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){setStatus('Confira o Project URL. Ele deve ter o formato https://seu-projeto.supabase.co',true);return}if(!key.startsWith('sb_publishable_')&&!key.startsWith('eyJ')){setStatus('Use a Publishable key (sb_publishable_...) ou a chave anon antiga. Não use sb_secret nem service_role.',true);return}connectedUrl=url;connectedKey=key;if(!createClient())return;try{const {error}=await supabaseClient.auth.getSession();if(error)throw error;saveConfig();$('authFields').hidden=false;setStatus('Projeto configurado. Agora entre com sua conta ou crie uma conta nova.');const {data}=await supabaseClient.auth.getSession();if(data.session)await startApp(data.session)}catch(e){setStatus('Não foi possível inicializar a conexão: '+(e.message||e),true)}}
 async function authAction(mode){if(!supabaseClient){setStatus('Clique primeiro em “Conectar projeto”.',true);return}const email=$('authEmail').value.trim();const password=$('authPassword').value;if(!email||password.length<6){setStatus('Informe um e-mail válido e uma senha com pelo menos 6 caracteres.',true);return}setStatus(mode==='login'?'Entrando...':'Criando conta...');const result=mode==='login'?await supabaseClient.auth.signInWithPassword({email,password}):await supabaseClient.auth.signUp({email,password});if(result.error){setStatus(result.error.message,true);return}if(mode==='signup'&&!result.data.session){setStatus('Conta criada. Verifique seu e-mail para confirmar o cadastro e depois faça login.');return}if(result.data.session)await startApp(result.data.session);else setStatus('Cadastro enviado. Verifique seu e-mail e depois entre.');}
-async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await loadFromSupabase();await loadHRData();render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível ler as tabelas. Confira se o SQL foi executado e se as políticas RLS estão ativas. Detalhe: '+(e.message||e),true)}}
+async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await loadFromSupabase();await loadHRData();await loadDepositData();render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();renderDeposit()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível ler as tabelas. Confira se o SQL foi executado e se as políticas RLS estão ativas. Detalhe: '+(e.message||e),true)}}
 function startDemo(){demoMode=true;state={clients:[{id:'demo-c1',name:'Cliente Exemplo Ltda.',doc:'00.000.000/0001-00',contact:'(21) 90000-0000',status:'Ativo',address:'São João de Meriti - RJ'}],collections:[{id:'demo-co1',clientId:'demo-c1',date:new Date().toISOString().slice(0,16),waste:'Papel',qty:250,responsible:'Equipe A',status:'Agendada',address:'Centro',notes:''}]};weighings=loadWeighings();payments=loadPayments();$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent='Modo demonstração';render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();go('dashboard')}
 function loadPayments(){try{const x=JSON.parse(localStorage.getItem('di_payments')||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
 function persistPayments(){if(demoMode){localStorage.setItem('di_payments',JSON.stringify(payments));return}saveModuleRecords('payments',payments)}
@@ -305,7 +380,7 @@ async function deleteModuleRecord(type,id){if(demoMode||!supabaseClient)return;c
 function setSyncIndicator(message,isError=false){let el=$('syncStatus');if(!el){el=document.createElement('div');el.id='syncStatus';el.style.cssText='position:fixed;right:14px;bottom:14px;z-index:5000;padding:9px 12px;border-radius:8px;background:#064e3b;color:#fff;font-size:11px;max-width:min(420px,90vw);box-shadow:0 5px 20px #0002';document.body.appendChild(el)}el.textContent=message;el.style.background=isError?'#9f2d2d':'#102019';el.hidden=false;clearTimeout(el._hideTimer);el._hideTimer=setTimeout(()=>{el.hidden=true},5000)}
 function toLocalInput(v){if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return '';const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 async function refresh(){try{await loadFromSupabase();render();populateInvoiceLinks();renderInvoices()}catch(e){alert('Erro ao atualizar dados do Supabase: '+(e.message||e))}}
-function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page];if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR()}}
+function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page];if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR()}if(page==='deposito'){loadDepositData().then(renderDeposit)}}
 document.querySelectorAll('.nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function showClientForm(c=null){$('clientFormCard').hidden=false;$('clientFormTitle').textContent=c?'Editar cliente':'Novo cliente';$('clientId').value=c?.id||'';$('clientName').value=c?.name||'';$('clientDoc').value=c?.doc||'';$('clientContact').value=c?.contact||'';$('clientStatus').value=c?.status||'Ativo';$('clientAddress').value=c?.address||'';$('clientFormCard').scrollIntoView({behavior:'smooth',block:'start'})}function hideClientForm(){$('clientFormCard').hidden=true;$('clientForm').reset();$('clientId').value=''}
 $('clientForm').addEventListener('submit',async e=>{e.preventDefault();const cid=$('clientId').value;const item={name:$('clientName').value.trim(),document:$('clientDoc').value.trim()||null,contact:$('clientContact').value.trim()||null,status:$('clientStatus').value,address:$('clientAddress').value.trim()||null};if(!item.name)return;const q=cid?supabaseClient.from('clients').update(item).eq('id',cid):supabaseClient.from('clients').insert(item);const {error}=await q;if(error){alert('Não foi possível salvar o cliente: '+error.message);return}hideClientForm();await refresh()});
@@ -518,5 +593,161 @@ function showPaymentTab(tab){
  if(tab==='hr'){populateEmployeeSectorSelect();renderEmployees()}
 }
 document.querySelectorAll('[data-payment-tab]').forEach(b=>b.addEventListener('click',()=>showPaymentTab(b.dataset.paymentTab)));
+
+
+// =========================================================
+// MODULO DEPOSITO - COMPRAS, VENDAS E ESTOQUE NO SUPABASE
+// =========================================================
+let depositMaterials=[];
+let depositParties=[];
+let depositOperations=[];
+let depositStock=[];
+let depositMovements=[];
+let depositActiveTab='operations';
+
+async function loadDepositData(){
+ if(demoMode || !supabaseClient){depositMaterials=[];depositParties=[];depositOperations=[];depositStock=[];depositMovements=[];return}
+ try{
+  const results=await Promise.all([
+   supabaseClient.from('deposit_materials').select('*').order('name'),
+   supabaseClient.from('deposit_parties').select('*').order('name'),
+   supabaseClient.from('deposit_operations').select('*,deposit_parties(name),deposit_operation_items(id,material_id,quantity,unit_price,line_total,gross_weight,tare_weight,deposit_materials(name,unit))').order('operation_date',{ascending:false}),
+   supabaseClient.from('deposit_stock_overview').select('*').order('material_name'),
+   supabaseClient.from('deposit_stock_movements').select('*,deposit_materials(name,unit),deposit_operations(operation_number,operation_type,operation_date)').order('created_at',{ascending:false})
+  ]);
+  const labels=['materiais','fornecedores e compradores','operações','estoque','histórico de estoque'];
+  for(let i=0;i<results.length;i++){if(results[i].error)throw new Error('Falha ao carregar '+labels[i]+': '+results[i].error.message)}
+  depositMaterials=results[0].data||[];
+  depositParties=results[1].data||[];
+  depositOperations=results[2].data||[];
+  depositStock=results[3].data||[];
+  depositMovements=results[4].data||[];
+  const notice=$('depositDataNotice');if(notice){notice.hidden=true;notice.textContent=''}
+ }catch(err){
+  depositMaterials=[];depositParties=[];depositOperations=[];depositStock=[];depositMovements=[];
+  const notice=$('depositDataNotice');if(notice){notice.hidden=false;notice.textContent='Não foi possível carregar o Depósito. Confira se a migração SQL foi executada e se o usuário possui permissão no setor Depósito. Detalhe: '+(err.message||err)}
+  console.warn('Depósito não carregado:',err);
+ }
+}
+function depositTab(tab){
+ depositActiveTab=tab;
+ const panels={operations:'depositOperationsPanel',stock:'depositStockPanel',materials:'depositMaterialsPanel',parties:'depositPartiesPanel',movements:'depositMovementsPanel'};
+ Object.entries(panels).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==tab});
+ document.querySelectorAll('[data-deposit-tab]').forEach(b=>b.classList.toggle('active',b.dataset.depositTab===tab));
+ if(tab==='operations')renderDepositOperations();
+ if(tab==='stock')renderDepositStock();
+ if(tab==='materials')renderDepositMaterials();
+ if(tab==='parties')renderDepositParties();
+ if(tab==='movements')renderDepositMovements();
+}
+document.querySelectorAll('[data-deposit-tab]').forEach(b=>b.addEventListener('click',()=>depositTab(b.dataset.depositTab)));
+function populateDepositSelects(){
+ const material=$('depositMaterial');if(material){const current=material.value;material.innerHTML='<option value="">Selecione o material</option>'+depositMaterials.filter(m=>m.active).map(m=>`<option value="${esc(m.id)}">${esc(m.name)} (${esc(m.unit)})</option>`).join('');if(current)material.value=current}
+ const party=$('depositParty');if(party){const current=party.value;party.innerHTML='<option value="">Não informado</option>'+depositParties.filter(p=>p.active).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');if(current)party.value=current}
+}
+function resetDepositOperationForm(){
+ const f=$('depositOperationForm');if(!f)return;f.reset();$('depositOperationDate').value=new Date().toISOString().slice(0,10);$('depositTare').value='0';$('depositLineTotal').value=money(0);populateDepositSelects();
+}
+function updateDepositTotal(){
+ const q=Number($('depositQuantity')?.value)||0,p=Number($('depositUnitPrice')?.value)||0;
+ if($('depositLineTotal'))$('depositLineTotal').value=money(q*p);
+}
+$('depositQuantity')?.addEventListener('input',updateDepositTotal);
+$('depositUnitPrice')?.addEventListener('input',updateDepositTotal);
+$('depositGross')?.addEventListener('input',()=>{
+ const gross=Number($('depositGross').value),tare=Number($('depositTare').value)||0;
+ if($('depositGross').value!==''&&gross>=tare){$('depositQuantity').value=(gross-tare).toFixed(3);updateDepositTotal()}
+});
+$('depositTare')?.addEventListener('input',()=>{
+ const gross=Number($('depositGross').value),tare=Number($('depositTare').value)||0;
+ if($('depositGross').value!==''&&gross>=tare){$('depositQuantity').value=(gross-tare).toFixed(3);updateDepositTotal()}
+});
+$('depositOperationType')?.addEventListener('change',()=>{updateDepositTotal()});
+$('depositResetOperation')?.addEventListener('click',resetDepositOperationForm);
+$('depositOperationSearch')?.addEventListener('input',renderDepositOperations);
+$('depositMaterialSearch')?.addEventListener('input',renderDepositMaterials);
+$('depositPartySearch')?.addEventListener('input',renderDepositParties);
+function renderDeposit(){
+ if(!$('deposit'))return;
+ populateDepositSelects();
+ $('depositMaterialCount').textContent=depositMaterials.filter(m=>m.active).length;
+ const kgTotal=depositStock.filter(s=>s.unit==='kg').reduce((a,s)=>a+(Number(s.quantity_on_hand)||0),0);
+ $('depositStockQty').textContent=kg(kgTotal);
+ const confirmed=depositOperations.filter(o=>o.status==='confirmed');
+ const total=(o)=> (o.deposit_operation_items||[]).reduce((a,i)=>a+(Number(i.line_total)||0),0);
+ $('depositPurchasesTotal').textContent=money(confirmed.filter(o=>o.operation_type==='purchase').reduce((a,o)=>a+total(o),0));
+ $('depositSalesTotal').textContent=money(confirmed.filter(o=>o.operation_type==='sale').reduce((a,o)=>a+total(o),0));
+ renderDepositOperations();renderDepositStock();renderDepositMaterials();renderDepositParties();renderDepositMovements();
+ resetDepositOperationForm();
+}
+function renderDepositOperations(){
+ const el=$('depositOperationsTable');if(!el)return;
+ const q=($('depositOperationSearch')?.value||'').toLowerCase();
+ const rows=depositOperations.filter(o=>{
+  const items=o.deposit_operation_items||[];const materialNames=items.map(i=>i.deposit_materials?.name||'').join(' ');
+  return [o.operation_number,o.deposit_parties?.name,o.operation_type,materialNames,o.status].join(' ').toLowerCase().includes(q);
+ });
+ el.innerHTML=rows.length?rows.map(o=>{
+  const item=(o.deposit_operation_items||[])[0]||{};const type=o.operation_type==='purchase'?'Compra':'Venda';const status=o.status==='confirmed'?'Confirmada':o.status==='cancelled'?'Cancelada':'Rascunho';const cls=o.status==='confirmed'?'ok':o.status==='cancelled'?'cancelled':'pending';
+  return `<tr><td><b>${esc(o.operation_number)}</b></td><td>${fmtDate(o.operation_date)}</td><td>${type}</td><td>${esc(o.deposit_parties?.name||'Não informado')}</td><td>${esc(item.deposit_materials?.name||'—')}</td><td>${kg(item.quantity||0)}</td><td>${money(item.line_total||0)}</td><td><span class="status ${cls}">${status}</span></td><td>${o.status==='draft'?`<button class="smallbtn" onclick="confirmDepositOperation('${o.id}')">Confirmar</button>`:'—'}</td></tr>`;
+ }).join(''):'<tr><td colspan="9" class="empty">Nenhuma operação encontrada. Registre uma compra ou venda acima.</td></tr>';
+}
+function renderDepositStock(){
+ const el=$('depositStockTable');if(!el)return;
+ el.innerHTML=depositStock.length?depositStock.map(s=>`<tr><td><b>${esc(s.material_name)}</b></td><td>${esc(s.category||'—')}</td><td>${esc(s.unit)}</td><td>${Number(s.quantity_on_hand||0).toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3})}</td><td>${money(s.average_unit_cost)}</td><td>${money(s.estimated_stock_cost)}</td><td><span class="status ${s.low_stock?'pending':'ok'}">${s.low_stock?'Estoque baixo':'Normal'}</span></td></tr>`).join(''):'<tr><td colspan="7" class="empty">Nenhum material disponível para consulta. Verifique as permissões do Depósito.</td></tr>';
+}
+function renderDepositMaterials(){
+ const el=$('depositMaterialsTable');if(!el)return;const q=($('depositMaterialSearch')?.value||'').toLowerCase();const rows=depositMaterials.filter(m=>(m.name+' '+(m.category||'')).toLowerCase().includes(q));
+ el.innerHTML=rows.length?rows.map(m=>`<tr><td><b>${esc(m.name)}</b></td><td>${esc(m.category||'—')}</td><td>${esc(m.unit)}</td><td>${Number(m.minimum_stock||0).toLocaleString('pt-BR')}</td><td><span class="status ${m.active?'ok':'cancelled'}">${m.active?'Ativo':'Inativo'}</span></td><td><button class="smallbtn" onclick="editDepositMaterial('${m.id}')">Editar</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty">Nenhum material cadastrado.</td></tr>';
+}
+function renderDepositParties(){
+ const el=$('depositPartiesTable');if(!el)return;const q=($('depositPartySearch')?.value||'').toLowerCase();const rows=depositParties.filter(p=>(p.name+' '+(p.document||'')+' '+(p.phone||'')).toLowerCase().includes(q));const labels={supplier:'Fornecedor',buyer:'Comprador',both:'Fornecedor e comprador'};
+ el.innerHTML=rows.length?rows.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${labels[p.party_type]||'—'}</td><td>${esc(p.document||'—')}</td><td>${esc(p.phone||'—')}</td><td><span class="status ${p.active?'ok':'cancelled'}">${p.active?'Ativo':'Inativo'}</span></td><td><button class="smallbtn" onclick="editDepositParty('${p.id}')">Editar</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty">Nenhum fornecedor ou comprador cadastrado.</td></tr>';
+}
+function renderDepositMovements(){
+ const el=$('depositMovementsTable');if(!el)return;
+ el.innerHTML=depositMovements.length?depositMovements.map(m=>`<tr><td>${fmtDate(m.created_at)}</td><td>${esc(m.deposit_operations?.operation_number||'—')}</td><td>${esc(m.deposit_materials?.name||'—')}</td><td><span class="status ${m.movement_type==='entry'?'ok':'pending'}">${m.movement_type==='entry'?'Entrada':'Saída'}</span></td><td>${kg(m.quantity)}</td><td>${money(m.total_cost)}</td><td>${esc(m.created_by||'Sistema')}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">Nenhuma movimentação de estoque confirmada.</td></tr>';
+}
+$('depositOperationForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(demoMode||!supabaseClient){alert('Conecte ao Supabase para registrar operações do Depósito.');return}
+ const type=$('depositOperationType').value,materialId=$('depositMaterial').value,partyId=$('depositParty').value||null,date=$('depositOperationDate').value;
+ const gross=$('depositGross').value===''?null:Number($('depositGross').value),tare=$('depositTare').value===''?null:Number($('depositTare').value);
+ const quantity=Number($('depositQuantity').value),unitPrice=Number($('depositUnitPrice').value);
+ if(!materialId||!date||!Number.isFinite(quantity)||quantity<=0||!Number.isFinite(unitPrice)||unitPrice<0){alert('Confira material, data, quantidade e preço.');return}
+ if(gross!==null&&(gross<0||tare===null||tare<0||gross<tare||Math.abs((gross-tare)-quantity)>0.001)){alert('Confira a pesagem: o peso líquido deve ser igual ao peso bruto menos a tara.');return}
+ try{
+  const {data:op,error:oe}=await supabaseClient.from('deposit_operations').insert({operation_type:type,party_id:partyId,operation_date:date,status:'draft',notes:$('depositOperationNotes').value.trim()||null}).select().single();
+  if(oe)throw oe;
+  const item={operation_id:op.id,material_id:materialId,quantity,gross_weight:gross,tare_weight:tare,unit_price,notes:null};
+  const {error:ie}=await supabaseClient.from('deposit_operation_items').insert(item);
+  if(ie){await supabaseClient.from('deposit_operations').delete().eq('id',op.id);throw ie}
+  resetDepositOperationForm();await loadDepositData();renderDeposit();alert('Rascunho '+op.operation_number+' salvo. Confirme a operação na tabela para atualizar o estoque.');
+ }catch(err){alert('Não foi possível registrar a operação: '+(err.message||err))}
+});
+async function confirmDepositOperation(id){
+ const op=depositOperations.find(x=>x.id===id);if(!op||op.status!=='draft')return;
+ const verb=op.operation_type==='purchase'?'adicionar material ao estoque':'retirar material do estoque';
+ if(!confirm('Confirmar a operação '+op.operation_number+' e '+verb+'? Esta ação atualiza o estoque.'))return;
+ try{
+  const {error}=await supabaseClient.from('deposit_operations').update({status:'confirmed'}).eq('id',id);
+  if(error)throw error;
+  await loadDepositData();renderDeposit();alert('Operação confirmada e estoque atualizado.');
+ }catch(err){alert('Não foi possível confirmar. Verifique sua permissão de aprovação e o saldo disponível. Detalhe: '+(err.message||err))}
+}
+function resetDepositMaterialForm(){const f=$('depositMaterialForm');if(!f)return;f.reset();$('depositMaterialId').value='';$('depositMaterialMinimum').value='0';$('depositMaterialFormTitle').textContent='Cadastrar material'}
+function editDepositMaterial(id){const m=depositMaterials.find(x=>x.id===id);if(!m)return;$('depositMaterialId').value=m.id;$('depositMaterialName').value=m.name;$('depositMaterialCategory').value=m.category||'';$('depositMaterialUnit').value=m.unit;$('depositMaterialMinimum').value=m.minimum_stock||0;$('depositMaterialFormTitle').textContent='Editar material';$('depositMaterialForm').scrollIntoView({behavior:'smooth',block:'start'})}
+$('depositMaterialForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(demoMode||!supabaseClient){alert('Conecte ao Supabase para cadastrar materiais.');return}
+ const id=$('depositMaterialId').value;const item={name:$('depositMaterialName').value.trim(),category:$('depositMaterialCategory').value.trim()||null,unit:$('depositMaterialUnit').value,minimum_stock:Number($('depositMaterialMinimum').value)||0};
+ try{const q=id?supabaseClient.from('deposit_materials').update(item).eq('id',id):supabaseClient.from('deposit_materials').insert(item);const {error}=await q;if(error)throw error;resetDepositMaterialForm();await loadDepositData();renderDeposit();depositTab('materials');alert('Material salvo com sucesso.')}catch(err){alert('Não foi possível salvar o material: '+(err.message||err))}
+});
+function resetDepositPartyForm(){const f=$('depositPartyForm');if(!f)return;f.reset();$('depositPartyId').value=''}
+function editDepositParty(id){const p=depositParties.find(x=>x.id===id);if(!p)return;$('depositPartyId').value=p.id;$('depositPartyName').value=p.name;$('depositPartyType').value=p.party_type;$('depositPartyDocument').value=p.document||'';$('depositPartyPhone').value=p.phone||'';$('depositPartyEmail').value=p.email||'';$('depositPartyAddress').value=p.address||'';$('depositPartyNotes').value=p.notes||'';$('depositPartyForm').scrollIntoView({behavior:'smooth',block:'start'})}
+$('depositPartyForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(demoMode||!supabaseClient){alert('Conecte ao Supabase para cadastrar fornecedores e compradores.');return}
+ const id=$('depositPartyId').value;const item={name:$('depositPartyName').value.trim(),party_type:$('depositPartyType').value,document:$('depositPartyDocument').value.trim()||null,phone:$('depositPartyPhone').value.trim()||null,email:$('depositPartyEmail').value.trim()||null,address:$('depositPartyAddress').value.trim()||null,notes:$('depositPartyNotes').value.trim()||null};
+ try{const q=id?supabaseClient.from('deposit_parties').update(item).eq('id',id):supabaseClient.from('deposit_parties').insert(item);const {error}=await q;if(error)throw error;resetDepositPartyForm();await loadDepositData();renderDeposit();depositTab('parties');alert('Cadastro salvo com sucesso.')}catch(err){alert('Não foi possível salvar o cadastro: '+(err.message||err))}
+});
+function exportDepositStock(){if(!depositStock.length){alert('Não há estoque para exportar.');return}const rows=[['Material','Categoria','Unidade','Quantidade','Custo médio','Valor estimado'],...depositStock.map(s=>[s.material_name,s.category,s.unit,s.quantity_on_hand,s.average_unit_cost,s.estimated_stock_cost])];downloadCSV('descarte_ideal_deposito_estoque.csv',rows)}
 
 </script></body></html>
