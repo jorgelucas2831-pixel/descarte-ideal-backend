@@ -27,12 +27,12 @@
   <div id="authFields" hidden>
     <div class="field"><label for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" placeholder="voce@empresa.com"></div>
     <div class="field"><label for="authPassword">Senha (mínimo 6 caracteres)</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" placeholder="Sua senha"></div>
-    <div class="gate-actions"><button class="btn" id="loginBtn" type="button">Entrar</button><button class="btn secondary" id="signupBtn" type="button">Criar conta</button></div>
+    <div class="gate-actions"><button class="btn" id="loginBtn" type="button">Entrar</button><button class="btn secondary" id="signupBtn" type="button" hidden>Criar conta</button></div>
     <p>Se a confirmação de e-mail estiver ativada no Supabase, confirme o e-mail antes de entrar.</p>
   </div>
 </div></div>
 <div class="app" id="erpApp" hidden>
-<aside class="sidebar"><div class="brand"><div class="logo">DI</div><div><b>Descarte Ideal</b><span>ERP V11 • Gestão Integrada</span></div></div><div class="nav-title">Principal</div><nav class="nav"><button class="active" data-page="dashboard">▦ &nbsp; Dashboard</button><button data-page="clientes">◉ &nbsp; Clientes</button><button data-page="coletas">↗ &nbsp; Coletas</button><button data-page="residuos">♻ &nbsp; Resíduos</button></nav><div class="nav-title">Próximos módulos</div><nav class="nav"><button data-page="pesagem">⚖ &nbsp; Pesagem</button><button data-page="deposito">▤ &nbsp; Depósito</button><button data-page="financeiro">◫ &nbsp; Pagamentos</button><button data-page="faturamento">▤ &nbsp; Faturamento</button><button data-page="caixa">$ &nbsp; Caixa e saldo</button><button disabled>▱ &nbsp; Frota</button><button disabled>▣ &nbsp; Documentos</button><button disabled>◴ &nbsp; Relatórios</button></nav></aside>
+<aside class="sidebar"><div class="brand"><div class="logo">DI</div><div><b>Descarte Ideal</b><span>ERP V11 • Gestão Integrada</span></div></div><div class="nav-title">Principal</div><nav class="nav"><button class="active" data-page="dashboard">▦ &nbsp; Dashboard</button><button data-page="clientes">◉ &nbsp; Clientes</button><button data-page="coletas">↗ &nbsp; Coletas</button><button data-page="residuos">♻ &nbsp; Resíduos</button></nav><div class="nav-title">Próximos módulos</div><nav class="nav"><button data-page="pesagem">⚖ &nbsp; Pesagem</button><button data-page="deposito">▤ &nbsp; Depósito</button><button data-page="financeiro">◫ &nbsp; Pagamentos</button><button data-page="faturamento">▤ &nbsp; Faturamento</button><button data-page="caixa">$ &nbsp; Caixa e saldo</button><button data-page="deposit-users" id="depositUsersNav" hidden>♙ &nbsp; Equipe do Depósito</button><button disabled>▱ &nbsp; Frota</button><button disabled>▣ &nbsp; Documentos</button><button disabled>◴ &nbsp; Relatórios</button></nav></aside>
 <main class="main"><header class="top"><div><div class="eyebrow">ERP DESCARTE IDEAL</div><h1 class="title" id="pageTitle">Visão geral</h1></div><div class="user"><span id="loggedUser">Usuário conectado</span><button class="btn secondary" id="logoutBtn" type="button">Sair</button><div class="avatar">DI</div></div></header>
 <section id="dashboard" class="page active"><div class="notice"><b>Ambiente em evolução:</b> os dados operacionais e financeiros exibidos dependem dos registros existentes no sistema. Esta versão preserva a estrutura atual; a nova base financeira será ativada somente após a migração SQL e a validação dos dados.</div><div class="grid"><div class="card metric"><div class="label">Coletas cadastradas</div><div class="value" id="mColetas">0</div><div class="delta">Total no sistema local</div></div><div class="card metric"><div class="label">Clientes ativos</div><div class="value" id="mClientes">0</div><div class="delta">Cadastros ativos</div></div><div class="card metric"><div class="label">Coletas agendadas</div><div class="value" id="mAgendadas">0</div><div class="delta">Aguardando execução</div></div><div class="card metric"><div class="label">Quantidade estimada</div><div class="value" id="mPeso">0 kg</div><div class="delta">Somatório informado</div></div></div><div class="two section"><div class="card"><div class="section-head"><h2>Coletas recentes</h2><button class="btn secondary" onclick="go('coletas')">Ver coletas</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Cliente</th><th>Data</th><th>Resíduo</th><th>Status</th></tr></thead><tbody id="recentTable"></tbody></table></div></div><div class="card"><div class="section-head"><h2>Acesso rápido</h2></div><p class="muted" style="font-size:13px;line-height:1.6">Organize os cadastros e acompanhe o fluxo operacional da coleta de resíduos.</p><div class="form-actions"><button class="btn" onclick="go('clientes')">+ Cadastrar cliente</button><button class="btn secondary" onclick="go('coletas')">+ Registrar coleta</button></div></div></div></section>
 <section id="clientes" class="page"><div class="section-head"><h2>Clientes cadastrados</h2><button class="btn" onclick="showClientForm()">+ Novo cliente</button></div><div id="clientFormCard" class="card section" hidden><h2 id="clientFormTitle">Novo cliente</h2><form id="clientForm"><input type="hidden" id="clientId"><div class="formgrid section"><div class="field"><label for="clientName">Nome / Razão social *</label><input id="clientName" required></div><div class="field"><label for="clientDoc">CPF / CNPJ</label><input id="clientDoc" placeholder="Documento"></div><div class="field"><label for="clientContact">Contato</label><input id="clientContact" placeholder="Telefone ou e-mail"></div><div class="field"><label for="clientStatus">Situação</label><select id="clientStatus"><option>Ativo</option><option>Pendente</option><option>Inativo</option></select></div><div class="field full"><label for="clientAddress">Endereço</label><input id="clientAddress"></div></div><div class="form-actions"><button class="btn" type="submit">Salvar cliente</button><button class="btn secondary" type="button" onclick="hideClientForm()">Cancelar</button></div></form></div><div class="card section"><div class="section-head"><h2>Lista de clientes</h2><input class="search" id="clientSearch" placeholder="Buscar cliente..." aria-label="Buscar cliente"></div><div class="table-wrap"><table class="table"><thead><tr><th>Cliente</th><th>Documento</th><th>Contato</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="clientsTable"></tbody></table></div></div></section>
@@ -191,6 +191,26 @@
 
 </section>
 
+<section id="deposit-users" class="page">
+ <div class="notice"><b>Equipe do Depósito:</b> cadastre os acessos individuais. Você define a senha inicial; ela é enviada diretamente ao Supabase Auth e não fica gravada no banco em texto aberto. Cada conta terá acesso somente ao módulo Depósito.</div>
+ <div class="card section">
+  <div class="section-head"><h2>Cadastrar funcionário do Depósito</h2><span class="muted" style="font-size:12px">Apenas administradores</span></div>
+  <form id="depositUserForm">
+   <div class="formgrid section">
+    <div class="field"><label for="depositUserName">Nome completo *</label><input id="depositUserName" autocomplete="name" required maxlength="120" placeholder="Nome do funcionário"></div>
+    <div class="field"><label for="depositUserEmail">E-mail de acesso *</label><input id="depositUserEmail" type="email" autocomplete="email" required maxlength="254" placeholder="funcionario@empresa.com"></div>
+    <div class="field"><label for="depositUserPassword">Senha inicial *</label><input id="depositUserPassword" type="password" autocomplete="new-password" minlength="8" required placeholder="Mínimo de 8 caracteres"></div>
+    <div class="field"><label for="depositUserPasswordConfirm">Confirmar senha *</label><input id="depositUserPasswordConfirm" type="password" autocomplete="new-password" minlength="8" required placeholder="Repita a senha"></div>
+   </div>
+   <div class="form-actions"><button class="btn" id="depositUserSubmit" type="submit">Criar acesso</button><button class="btn secondary" type="reset">Limpar</button></div>
+  </form>
+ </div>
+ <div class="card section">
+  <div class="section-head"><h2>Funcionários com acesso ao Depósito</h2><button class="btn secondary" type="button" id="refreshDepositUsers">Atualizar lista</button></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Funcionário</th><th>E-mail</th><th>Perfil</th><th>Situação</th><th>Cadastro</th><th>Ação</th></tr></thead><tbody id="depositUsersTable"><tr><td colspan="6" class="empty">Carregando usuários...</td></tr></tbody></table></div>
+ </div>
+</section>
+
 <section id="deposito" class="page">
  <div class="notice"><b>Controle do Depósito:</b> registre compras e vendas de materiais recicláveis, acompanhe o estoque e consulte o histórico. Uma operação só altera o estoque depois de ser confirmada por usuário autorizado. Os lançamentos financeiros das compras e vendas serão integrados ao módulo Pagamentos em uma etapa posterior.</div>
  <div class="grid">
@@ -277,7 +297,8 @@
 </section>
 </main></div>
 <script>
-const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Pagamentos',faturamento:'Faturamento',caixa:'Caixa e saldo'};
+const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Pagamentos',faturamento:'Faturamento',caixa:'Caixa e saldo','deposit-users':'Equipe do Depósito'};
+let currentProfile=null;let depositOnlyUser=false;let currentSession=null;
 let demoMode=false; let payments=loadPayments(); let invoices=loadInvoices(); let invoiceReceipts=loadInvoiceReceipts();
 let state={clients:[],collections:[]};let weighings=loadWeighings();let supabaseClient=null;let connectedUrl='';let connectedKey='';
 const $=id=>document.getElementById(id);
@@ -288,7 +309,22 @@ function createClient(){if(!window.supabase){setStatus('Não foi possível carre
 function normalizeUrl(v){return v.trim().replace(/\/$/,'')}
 async function connectProject(){const url=normalizeUrl($('supabaseUrl').value);const key=$('supabaseKey').value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){setStatus('Confira o Project URL. Ele deve ter o formato https://seu-projeto.supabase.co',true);return}if(!key.startsWith('sb_publishable_')&&!key.startsWith('eyJ')){setStatus('Use a Publishable key (sb_publishable_...) ou a chave anon antiga. Não use sb_secret nem service_role.',true);return}connectedUrl=url;connectedKey=key;if(!createClient())return;try{const {error}=await supabaseClient.auth.getSession();if(error)throw error;saveConfig();$('authFields').hidden=false;setStatus('Projeto configurado. Agora entre com sua conta ou crie uma conta nova.');const {data}=await supabaseClient.auth.getSession();if(data.session)await startApp(data.session)}catch(e){setStatus('Não foi possível inicializar a conexão: '+(e.message||e),true)}}
 async function authAction(mode){if(!supabaseClient){setStatus('Clique primeiro em “Conectar projeto”.',true);return}const email=$('authEmail').value.trim();const password=$('authPassword').value;if(!email||password.length<6){setStatus('Informe um e-mail válido e uma senha com pelo menos 6 caracteres.',true);return}setStatus(mode==='login'?'Entrando...':'Criando conta...');const result=mode==='login'?await supabaseClient.auth.signInWithPassword({email,password}):await supabaseClient.auth.signUp({email,password});if(result.error){setStatus(result.error.message,true);return}if(mode==='signup'&&!result.data.session){setStatus('Conta criada. Verifique seu e-mail para confirmar o cadastro e depois faça login.');return}if(result.data.session)await startApp(result.data.session);else setStatus('Cadastro enviado. Verifique seu e-mail e depois entre.');}
-async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await loadFromSupabase();await loadHRData();await loadDepositData();render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();renderDeposit()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível ler as tabelas. Confira se o SQL foi executado e se as políticas RLS estão ativas. Detalhe: '+(e.message||e),true)}}
+async function applyAccountAccess(session){
+ currentSession=session;const {data:profile,error}=await supabaseClient.from('profiles').select('id,full_name,role').eq('id',session.user.id).maybeSingle();
+ if(error)throw error;currentProfile=profile||{id:session.user.id,full_name:session.user.email||'',role:'operador'};
+ const isAdmin=currentProfile.role==='administrador';depositOnlyUser=false;
+ const adminNav=$('depositUsersNav');if(adminNav)adminNav.hidden=!isAdmin;
+ if(!isAdmin){
+  const {data:allowed,error:permissionError}=await supabaseClient.rpc('has_sector_permission',{p_sector_code:'deposito',p_permission:'can_view'});
+  if(permissionError)throw permissionError;
+  if(!allowed)throw new Error('Esta conta não possui acesso ao Depósito. Solicite ao administrador que confira as permissões.');
+  depositOnlyUser=true;
+ }
+ document.querySelectorAll('.nav button[data-page]').forEach(b=>{b.hidden=depositOnlyUser&&b.dataset.page!=='deposito'});
+ const navTitles=document.querySelectorAll('.sidebar .nav-title');navTitles.forEach(x=>x.hidden=depositOnlyUser);
+ if(depositOnlyUser){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('deposito').classList.add('active');$('pageTitle').textContent='Depósito'}
+}
+async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await applyAccountAccess(session);if(depositOnlyUser){await loadDepositData();renderDeposit();go('deposito');return}await loadFromSupabase();await loadHRData();await loadDepositData();render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();renderDeposit();await loadDepositStaffAccounts()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível carregar os dados ou permissões. Confira as migrações SQL e a configuração da função. Detalhe: '+(e.message||e),true)}}
 function startDemo(){demoMode=true;state={clients:[{id:'demo-c1',name:'Cliente Exemplo Ltda.',doc:'00.000.000/0001-00',contact:'(21) 90000-0000',status:'Ativo',address:'São João de Meriti - RJ'}],collections:[{id:'demo-co1',clientId:'demo-c1',date:new Date().toISOString().slice(0,16),waste:'Papel',qty:250,responsible:'Equipe A',status:'Agendada',address:'Centro',notes:''}]};weighings=loadWeighings();payments=loadPayments();$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent='Modo demonstração';render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();go('dashboard')}
 function loadPayments(){try{const x=JSON.parse(localStorage.getItem('di_payments')||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
 function persistPayments(){if(demoMode){localStorage.setItem('di_payments',JSON.stringify(payments));return}saveModuleRecords('payments',payments)}
@@ -380,7 +416,7 @@ async function deleteModuleRecord(type,id){if(demoMode||!supabaseClient)return;c
 function setSyncIndicator(message,isError=false){let el=$('syncStatus');if(!el){el=document.createElement('div');el.id='syncStatus';el.style.cssText='position:fixed;right:14px;bottom:14px;z-index:5000;padding:9px 12px;border-radius:8px;background:#064e3b;color:#fff;font-size:11px;max-width:min(420px,90vw);box-shadow:0 5px 20px #0002';document.body.appendChild(el)}el.textContent=message;el.style.background=isError?'#9f2d2d':'#102019';el.hidden=false;clearTimeout(el._hideTimer);el._hideTimer=setTimeout(()=>{el.hidden=true},5000)}
 function toLocalInput(v){if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return '';const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 async function refresh(){try{await loadFromSupabase();render();populateInvoiceLinks();renderInvoices()}catch(e){alert('Erro ao atualizar dados do Supabase: '+(e.message||e))}}
-function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page];if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR()}if(page==='deposito'){loadDepositData().then(renderDeposit)}}
+function go(page){if(depositOnlyUser&&page!=='deposito'){page='deposito'}if(page==='deposit-users'&&currentProfile?.role!=='administrador'){page='deposito'}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page)?.classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page]||'Descarte Ideal';if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR()}if(page==='deposito'){loadDepositData().then(renderDeposit)}if(page==='deposit-users'){loadDepositStaffAccounts()}}
 document.querySelectorAll('.nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function showClientForm(c=null){$('clientFormCard').hidden=false;$('clientFormTitle').textContent=c?'Editar cliente':'Novo cliente';$('clientId').value=c?.id||'';$('clientName').value=c?.name||'';$('clientDoc').value=c?.doc||'';$('clientContact').value=c?.contact||'';$('clientStatus').value=c?.status||'Ativo';$('clientAddress').value=c?.address||'';$('clientFormCard').scrollIntoView({behavior:'smooth',block:'start'})}function hideClientForm(){$('clientFormCard').hidden=true;$('clientForm').reset();$('clientId').value=''}
 $('clientForm').addEventListener('submit',async e=>{e.preventDefault();const cid=$('clientId').value;const item={name:$('clientName').value.trim(),document:$('clientDoc').value.trim()||null,contact:$('clientContact').value.trim()||null,status:$('clientStatus').value,address:$('clientAddress').value.trim()||null};if(!item.name)return;const q=cid?supabaseClient.from('clients').update(item).eq('id',cid):supabaseClient.from('clients').insert(item);const {error}=await q;if(error){alert('Não foi possível salvar o cliente: '+error.message);return}hideClientForm();await refresh()});
@@ -409,7 +445,7 @@ $('clientSearch').addEventListener('input',render);$('collectionSearch').addEven
 $('weighingSearch').addEventListener('input',renderWeighings);
 $('weighingGross').addEventListener('input',calculateNet);$('weighingTare').addEventListener('input',calculateNet);
 $('weighingForm').addEventListener('submit',saveWeighing);
-$('demoBtn').addEventListener('click',startDemo);$('connectBtn').addEventListener('click',connectProject);$('forgetConfigBtn').addEventListener('click',()=>{localStorage.removeItem('di_supabase_url');localStorage.removeItem('di_supabase_key');connectedUrl='';connectedKey='';supabaseClient=null;$('supabaseUrl').value='';$('supabaseKey').value='';$('authFields').hidden=true;setStatus('Configuração removida deste navegador.')});$('loginBtn').addEventListener('click',()=>authAction('login'));$('signupBtn').addEventListener('click',()=>authAction('signup'));$('logoutBtn').addEventListener('click',async()=>{if(!demoMode&&supabaseClient)await supabaseClient.auth.signOut();demoMode=false;state={clients:[],collections:[]};$('erpApp').hidden=true;$('connectionGate').hidden=false;setStatus('Você saiu do sistema.')});
+$('demoBtn').addEventListener('click',startDemo);$('connectBtn').addEventListener('click',connectProject);$('forgetConfigBtn').addEventListener('click',()=>{localStorage.removeItem('di_supabase_url');localStorage.removeItem('di_supabase_key');connectedUrl='';connectedKey='';supabaseClient=null;$('supabaseUrl').value='';$('supabaseKey').value='';$('authFields').hidden=true;setStatus('Configuração removida deste navegador.')});$('loginBtn').addEventListener('click',()=>authAction('login'));$('signupBtn').addEventListener('click',()=>authAction('signup'));$('logoutBtn').addEventListener('click',async()=>{if(!demoMode&&supabaseClient)await supabaseClient.auth.signOut();demoMode=false;currentProfile=null;currentSession=null;depositOnlyUser=false;state={clients:[],collections:[]};$('erpApp').hidden=true;$('connectionGate').hidden=false;setStatus('Você saiu do sistema.')});
 (function init(){const url=localStorage.getItem('di_supabase_url')||'';const key=localStorage.getItem('di_supabase_key')||'';$('supabaseUrl').value=url;$('supabaseKey').value=key;if(url&&key){connectedUrl=url;connectedKey=key;if(createClient()){ $('authFields').hidden=false;supabaseClient.auth.getSession().then(async({data,error})=>{if(error){setStatus(error.message,true);return}if(data.session)await startApp(data.session);else setStatus('Projeto configurado. Entre com seu e-mail e senha.')})}}})();
 
 // =========================================================
@@ -594,6 +630,36 @@ function showPaymentTab(tab){
 }
 document.querySelectorAll('[data-payment-tab]').forEach(b=>b.addEventListener('click',()=>showPaymentTab(b.dataset.paymentTab)));
 
+
+// =========================================================
+// CONTAS DE ACESSO DA EQUIPE DO DEPOSITO (ADMINISTRADOR)
+// =========================================================
+let depositStaffAccounts=[];
+async function loadDepositStaffAccounts(){
+ const body=$('depositUsersTable');if(!body||!supabaseClient||currentProfile?.role!=='administrador')return;
+ body.innerHTML='<tr><td colspan="6" class="empty">Carregando...</td></tr>';
+ const {data,error}=await supabaseClient.from('deposit_staff_accounts').select('id,user_id,full_name,email,active,created_at').order('created_at',{ascending:false});
+ if(error){body.innerHTML='<tr><td colspan="6" class="empty">Não foi possível carregar: '+esc(error.message)+'</td></tr>';return}
+ depositStaffAccounts=data||[];
+ body.innerHTML=depositStaffAccounts.length?depositStaffAccounts.map(u=>`<tr><td><b>${esc(u.full_name)}</b></td><td>${esc(u.email)}</td><td>Operador do Depósito</td><td><span class="status ${u.active?'ok':'cancelled'}">${u.active?'Ativo':'Bloqueado'}</span></td><td>${fmtDate(u.created_at)}</td><td><button class="smallbtn" onclick="setDepositStaffStatus('${u.user_id}',${!u.active})">${u.active?'Bloquear':'Reativar'}</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty">Nenhum funcionário cadastrado.</td></tr>';
+}
+$('depositUserForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(!supabaseClient||currentProfile?.role!=='administrador'){alert('Somente o administrador pode cadastrar acessos.');return}
+ const name=$('depositUserName').value.trim(),email=$('depositUserEmail').value.trim().toLowerCase(),password=$('depositUserPassword').value,confirmation=$('depositUserPasswordConfirm').value;
+ if(password.length<8){alert('A senha precisa ter pelo menos 8 caracteres.');return}if(password!==confirmation){alert('As senhas não coincidem.');return}
+ const button=$('depositUserSubmit');button.disabled=true;button.textContent='Criando acesso...';
+ try{
+  const {data,error}=await supabaseClient.functions.invoke('admin-create-deposit-user',{body:{name,email,password}});
+  if(error)throw error;if(data?.error)throw new Error(data.error);
+  $('depositUserForm').reset();await loadDepositStaffAccounts();alert('Acesso criado. O funcionário já pode entrar com o e-mail e a senha definidos por você.');
+ }catch(err){alert('Não foi possível criar o acesso: '+(err.message||err))}
+ finally{button.disabled=false;button.textContent='Criar acesso'}
+});
+async function setDepositStaffStatus(userId,active){
+ const action=active?'reativar':'bloquear';if(!confirm('Deseja '+action+' o acesso deste funcionário?'))return;
+ try{const {data,error}=await supabaseClient.functions.invoke('admin-create-deposit-user',{body:{action:'set_active',user_id:userId,active}});if(error)throw error;if(data?.error)throw new Error(data.error);await loadDepositStaffAccounts();alert('Acesso '+(active?'reativado':'bloqueado')+' com sucesso.')}catch(err){alert('Não foi possível alterar o acesso: '+(err.message||err))}
+}
+$('refreshDepositUsers')?.addEventListener('click',loadDepositStaffAccounts);
 
 // =========================================================
 // MODULO DEPOSITO - COMPRAS, VENDAS E ESTOQUE NO SUPABASE
