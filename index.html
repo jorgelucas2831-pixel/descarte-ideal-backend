@@ -10,7 +10,11 @@
 
 #connectionGate{position:fixed;inset:0;z-index:9999;background:#f4f7f5;display:grid;place-items:center;padding:18px;overflow:auto}#connectionGate[hidden]{display:none}.gate-card{width:min(560px,100%);background:white;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 16px 48px #10201918}.gate-card h1{font-size:23px;margin:0 0 8px}.gate-card p{font-size:13px;color:var(--muted);line-height:1.55}.gate-card .field{margin:12px 0}.gate-status{font-size:12px;line-height:1.5;margin-top:12px;padding:10px;border-radius:8px;background:#f1f5f2;color:#35463b;white-space:pre-wrap}.gate-status.error{background:#fff0f0;color:#a22}.gate-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.gate-actions button{flex:1}
 
-.invoice-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.invoice-status{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:800;white-space:nowrap}.invoice-status.paid{background:#e4f5ea;color:#18743b}.invoice-status.partial{background:#e6f0ff;color:#2b64a9}.invoice-status.late{background:#fce8e8;color:#a92d2d}.invoice-status.open{background:#fff1d9;color:#9a6514}.invoice-mini{font-size:12px;color:var(--muted);line-height:1.5}.invoice-actions{display:flex;gap:6px;flex-wrap:wrap}.report-filter{display:flex;gap:10px;align-items:center;flex-wrap:wrap}@media(max-width:900px){.invoice-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.invoice-summary{grid-template-columns:1fr 1fr}}
+.invoice-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.invoice-status{display:inline-block;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:800;white-space:nowrap}.invoice-status.paid{background:#e4f5ea;color:#18743b}.invoice-status.partial{background:#e6f0ff;color:#2b64a9}.invoice-status.late{background:#fce8e8;color:#a92d2d}.invoice-status.open{background:#fff1d9;color:#9a6514}.invoice-mini{font-size:12px;color:var(--muted);line-height:1.5}.invoice-actions{display:flex;gap:6px;flex-wrap:wrap}.report-filter{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.subtabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.subtab{border:1px solid var(--line);background:#fff;color:var(--muted);padding:10px 14px;border-radius:9px;font-weight:700;font-size:12px;cursor:pointer}
+.subtab.active{background:#e4f5ea;border-color:#b7dfc5;color:#12633f}
+@media(max-width:900px){.invoice-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.invoice-summary{grid-template-columns:1fr 1fr}}
 </style><meta name="application-version" content="11.0.0-preparacao"><meta name="description" content="Descarte Ideal ERP V11 em preparação, com identidade verde-esmeralda e estrutura financeira ampliada."></head>
 <body>
 <div id="connectionGate"><div class="gate-card">
@@ -90,6 +94,12 @@
 
 <section id="financeiro" class="page">
 <div class="notice"><b>Central financeira:</b> organize contas a pagar e a receber, despesas operacionais e recebimentos de clientes. Contas manuais e faturas aparecem juntas nesta tela. Faturas são geridas em Faturamento; registre seus recebimentos por lá para manter o histórico e evitar duplicidade. Os dados financeiros locais ainda não são sincronizados com o Supabase.</div>
+<div class="subtabs" role="tablist" aria-label="Áreas de pagamentos">
+ <button type="button" class="subtab active" data-payment-tab="general">Pagamentos gerais</button>
+ <button type="button" class="subtab" data-payment-tab="employees">Pagamentos de funcionários</button>
+ <button type="button" class="subtab" data-payment-tab="hr">Cadastro de funcionários</button>
+</div>
+<div id="generalPaymentsPanel">
 <div class="grid">
 <div class="card metric"><div class="label">Total a pagar</div><div class="value" id="payOut">R$ 0,00</div><div class="delta">Saldo pendente de despesas</div></div>
 <div class="card metric"><div class="label">Total a receber</div><div class="value" id="payIn">R$ 0,00</div><div class="delta">Saldo pendente de entradas</div></div>
@@ -112,7 +122,73 @@
 <div class="field full"><label for="paymentNotes">Observações / comprovante</label><textarea id="paymentNotes" placeholder="Número do documento, comprovante, centro de custo ou detalhes adicionais"></textarea></div>
 </div><div class="form-actions"><button class="btn" type="submit">Salvar lançamento</button><button class="btn secondary" type="button" onclick="resetPaymentForm()">Limpar formulário</button><button class="btn secondary" type="button" onclick="exportPayments()">Exportar CSV</button></div></form></div>
 <div class="card section"><div class="section-head"><h2>Contas e movimentações</h2><div class="report-filter"><input id="paymentSearch" class="search" placeholder="Buscar nome, categoria ou descrição"><select id="paymentKindFilter" class="search" aria-label="Filtrar tipo"><option value="todos">Todos os movimentos</option><option value="pagar">Contas a pagar</option><option value="receber">Contas a receber</option></select><select id="paymentStatusFilter" class="search" aria-label="Filtrar situação"><option value="todos">Todas as situações</option><option value="Pendente">Pendente</option><option value="Parcial">Parcial</option><option value="Pago/Recebido">Pago/Recebido</option><option value="Cancelado">Cancelado</option><option value="Vencido">Vencido</option></select></div></div>
-<div class="table-wrap"><table class="table"><thead><tr><th>Tipo</th><th>Responsável</th><th>Categoria / descrição</th><th>Valor total</th><th>Pago/recebido</th><th>Saldo</th><th>Vencimento</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="paymentsTable"></tbody></table></div></div></section>
+<div class="table-wrap"><table class="table"><thead><tr><th>Tipo</th><th>Responsável</th><th>Categoria / descrição</th><th>Valor total</th><th>Pago/recebido</th><th>Saldo</th><th>Vencimento</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="paymentsTable"></tbody></table></div></div>
+</div>
+<div id="employeePaymentsPanel" hidden>
+ <div class="notice"><b>Pagamentos de funcionários:</b> registre salários, adiantamentos, comissões, benefícios e outros valores. O valor líquido é calculado pelo sistema. A baixa registrada aqui ainda não cria automaticamente uma movimentação no caixa ou nos bancos.</div>
+ <div class="grid">
+  <div class="card metric"><div class="label">Funcionários cadastrados</div><div class="value" id="hrEmployeeCount">0</div><div class="delta">Registros disponíveis ao seu acesso</div></div>
+  <div class="card metric"><div class="label">Total líquido registrado</div><div class="value" id="hrPayrollTotal">R$ 0,00</div><div class="delta">Soma dos pagamentos exibidos</div></div>
+  <div class="card metric"><div class="label">Pagamentos pendentes</div><div class="value" id="hrPendingCount">0</div><div class="delta">Aguardando quitação</div></div>
+  <div class="card metric"><div class="label">Pagamentos quitados</div><div class="value" id="hrPaidCount">0</div><div class="delta">Registros totalmente pagos</div></div>
+ </div>
+ <div class="card section">
+  <div class="section-head"><h2 id="employeePaymentFormTitle">Novo pagamento de funcionário</h2></div>
+  <form id="employeePaymentForm">
+   <input type="hidden" id="employeePaymentId">
+   <div class="formgrid section">
+    <div class="field"><label for="employeePaymentEmployee">Funcionário *</label><select id="employeePaymentEmployee" required><option value="">Selecione</option></select></div>
+    <div class="field"><label for="employeePaymentType">Tipo de pagamento *</label><select id="employeePaymentType" required><option value="salario">Salário</option><option value="adiantamento">Adiantamento</option><option value="comissao">Comissão</option><option value="beneficio">Benefício</option><option value="hora_extra">Hora extra</option><option value="bonus">Bônus</option><option value="rescisao">Rescisão</option><option value="outro">Outro</option></select></div>
+    <div class="field"><label for="employeePaymentCompetence">Competência *</label><input id="employeePaymentCompetence" type="date" required></div>
+    <div class="field"><label for="employeePaymentDue">Vencimento</label><input id="employeePaymentDue" type="date"></div>
+    <div class="field"><label for="employeePaymentGross">Valor bruto (R$) *</label><input id="employeePaymentGross" type="number" min="0" step="0.01" required></div>
+    <div class="field"><label for="employeePaymentDeductions">Descontos (R$)</label><input id="employeePaymentDeductions" type="number" min="0" step="0.01" value="0"></div>
+    <div class="field"><label for="employeePaymentNet">Valor líquido (R$)</label><input id="employeePaymentNet" readonly value="R$ 0,00"></div>
+    <div class="field"><label for="employeePaymentPaid">Valor pago (R$)</label><input id="employeePaymentPaid" type="number" min="0" step="0.01" value="0"></div>
+    <div class="field"><label for="employeePaymentStatus">Situação</label><select id="employeePaymentStatus"><option value="pendente">Pendente</option><option value="parcial">Parcial</option><option value="pago">Pago</option><option value="cancelado">Cancelado</option></select></div>
+    <div class="field"><label for="employeePaymentMethod">Forma de pagamento</label><select id="employeePaymentMethod"><option value="">Não informado</option><option value="pix">Pix</option><option value="dinheiro">Dinheiro</option><option value="transferencia">Transferência</option><option value="cartao">Cartão</option><option value="outro">Outro</option></select></div>
+    <div class="field"><label for="employeePaymentDate">Data do pagamento</label><input id="employeePaymentDate" type="date"></div>
+    <div class="field full"><label for="employeePaymentNotes">Observações</label><textarea id="employeePaymentNotes"></textarea></div>
+   </div>
+   <div class="form-actions"><button class="btn" type="submit">Salvar pagamento</button><button class="btn secondary" type="button" onclick="resetEmployeePaymentForm()">Limpar</button></div>
+  </form>
+ </div>
+ <div class="card section">
+  <div class="section-head"><h2>Histórico de pagamentos</h2><input id="employeePaymentSearch" class="search" placeholder="Buscar funcionário ou pagamento"></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Funcionário</th><th>Tipo</th><th>Competência</th><th>Bruto</th><th>Descontos</th><th>Líquido</th><th>Pago</th><th>Vencimento</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="employeePaymentsTable"></tbody></table></div>
+ </div>
+</div>
+<div id="hrEmployeesPanel" hidden>
+ <div class="notice"><b>Cadastro de funcionários:</b> mantenha os dados pessoais, função, setor, vínculo, salário-base e situação profissional em um prontuário único. O acesso a essas informações é controlado pelas permissões de RH no Supabase.</div>
+ <div class="card section">
+  <div class="section-head"><h2 id="employeeFormTitle">Cadastrar funcionário</h2><span class="muted" style="font-size:12px">Campos com * são obrigatórios</span></div>
+  <form id="employeeForm">
+   <input type="hidden" id="employeeId">
+   <div class="formgrid section">
+    <div class="field"><label for="employeeName">Nome completo *</label><input id="employeeName" required></div>
+    <div class="field"><label for="employeeCpf">CPF</label><input id="employeeCpf" inputmode="numeric" placeholder="000.000.000-00"></div>
+    <div class="field"><label for="employeeRg">RG</label><input id="employeeRg"></div>
+    <div class="field"><label for="employeeBirth">Data de nascimento</label><input id="employeeBirth" type="date"></div>
+    <div class="field"><label for="employeeEmail">E-mail</label><input id="employeeEmail" type="email"></div>
+    <div class="field"><label for="employeePhone">Telefone</label><input id="employeePhone" type="tel"></div>
+    <div class="field full"><label for="employeeAddress">Endereço</label><input id="employeeAddress"></div>
+    <div class="field"><label for="employeeJob">Cargo / função</label><input id="employeeJob" placeholder="Ex.: Motorista"></div>
+    <div class="field"><label for="employeeSector">Setor principal</label><select id="employeeSector"><option value="">Selecione o setor</option></select></div>
+    <div class="field"><label for="employeeType">Tipo de vínculo</label><select id="employeeType"><option value="">Não informado</option><option value="CLT">CLT</option><option value="PJ">PJ</option><option value="Temporário">Temporário</option><option value="Estágio">Estágio</option><option value="Autônomo">Autônomo</option><option value="Outro">Outro</option></select></div>
+    <div class="field"><label for="employeeAdmission">Data de admissão</label><input id="employeeAdmission" type="date"></div>
+    <div class="field"><label for="employeeSalary">Salário-base (R$)</label><input id="employeeSalary" type="number" min="0" step="0.01" value="0"></div>
+    <div class="field"><label for="employeeStatus">Situação</label><select id="employeeStatus"><option value="ativo">Ativo</option><option value="afastado">Afastado</option><option value="desligado">Desligado</option></select></div>
+    <div class="field full"><label for="employeeNotes">Observações</label><textarea id="employeeNotes"></textarea></div>
+   </div>
+   <div class="form-actions"><button class="btn" type="submit">Salvar funcionário</button><button class="btn secondary" type="button" onclick="resetEmployeeForm()">Limpar formulário</button></div>
+  </form>
+ </div>
+ <div class="card section">
+  <div class="section-head"><h2>Funcionários cadastrados</h2><input id="employeeSearch" class="search" placeholder="Buscar por nome, CPF, cargo ou setor"></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Funcionário</th><th>CPF</th><th>Cargo</th><th>Setor</th><th>Vínculo</th><th>Salário-base</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="employeesTable"></tbody></table></div>
+ </div>
+</div>
+
 <section id="caixa" class="page">
 <div class="notice"><b>Caixa da empresa:</b> o saldo abaixo é calculado com o saldo inicial informado e os lançamentos marcados como pagos/recebidos pela forma <b>Dinheiro</b>. Pix, transferência, boleto e cartão não entram no caixa físico. No modo conectado, os registros são sincronizados com o Supabase.</div>
 <div class="grid">
@@ -137,8 +213,8 @@ function createClient(){if(!window.supabase){setStatus('Não foi possível carre
 function normalizeUrl(v){return v.trim().replace(/\/$/,'')}
 async function connectProject(){const url=normalizeUrl($('supabaseUrl').value);const key=$('supabaseKey').value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){setStatus('Confira o Project URL. Ele deve ter o formato https://seu-projeto.supabase.co',true);return}if(!key.startsWith('sb_publishable_')&&!key.startsWith('eyJ')){setStatus('Use a Publishable key (sb_publishable_...) ou a chave anon antiga. Não use sb_secret nem service_role.',true);return}connectedUrl=url;connectedKey=key;if(!createClient())return;try{const {error}=await supabaseClient.auth.getSession();if(error)throw error;saveConfig();$('authFields').hidden=false;setStatus('Projeto configurado. Agora entre com sua conta ou crie uma conta nova.');const {data}=await supabaseClient.auth.getSession();if(data.session)await startApp(data.session)}catch(e){setStatus('Não foi possível inicializar a conexão: '+(e.message||e),true)}}
 async function authAction(mode){if(!supabaseClient){setStatus('Clique primeiro em “Conectar projeto”.',true);return}const email=$('authEmail').value.trim();const password=$('authPassword').value;if(!email||password.length<6){setStatus('Informe um e-mail válido e uma senha com pelo menos 6 caracteres.',true);return}setStatus(mode==='login'?'Entrando...':'Criando conta...');const result=mode==='login'?await supabaseClient.auth.signInWithPassword({email,password}):await supabaseClient.auth.signUp({email,password});if(result.error){setStatus(result.error.message,true);return}if(mode==='signup'&&!result.data.session){setStatus('Conta criada. Verifique seu e-mail para confirmar o cadastro e depois faça login.');return}if(result.data.session)await startApp(result.data.session);else setStatus('Cadastro enviado. Verifique seu e-mail e depois entre.');}
-async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await loadFromSupabase();render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível ler as tabelas. Confira se o SQL foi executado e se as políticas RLS estão ativas. Detalhe: '+(e.message||e),true)}}
-function startDemo(){demoMode=true;state={clients:[{id:'demo-c1',name:'Cliente Exemplo Ltda.',doc:'00.000.000/0001-00',contact:'(21) 90000-0000',status:'Ativo',address:'São João de Meriti - RJ'}],collections:[{id:'demo-co1',clientId:'demo-c1',date:new Date().toISOString().slice(0,16),waste:'Papel',qty:250,responsible:'Equipe A',status:'Agendada',address:'Centro',notes:''}]};weighings=loadWeighings();payments=loadPayments();$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent='Modo demonstração';render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();go('dashboard')}
+async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await loadFromSupabase();await loadHRData();render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível ler as tabelas. Confira se o SQL foi executado e se as políticas RLS estão ativas. Detalhe: '+(e.message||e),true)}}
+function startDemo(){demoMode=true;state={clients:[{id:'demo-c1',name:'Cliente Exemplo Ltda.',doc:'00.000.000/0001-00',contact:'(21) 90000-0000',status:'Ativo',address:'São João de Meriti - RJ'}],collections:[{id:'demo-co1',clientId:'demo-c1',date:new Date().toISOString().slice(0,16),waste:'Papel',qty:250,responsible:'Equipe A',status:'Agendada',address:'Centro',notes:''}]};weighings=loadWeighings();payments=loadPayments();$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent='Modo demonstração';render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();go('dashboard')}
 function loadPayments(){try{const x=JSON.parse(localStorage.getItem('di_payments')||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
 function persistPayments(){if(demoMode){localStorage.setItem('di_payments',JSON.stringify(payments));return}saveModuleRecords('payments',payments)}
 function loadCashOpening(){try{return JSON.parse(localStorage.getItem('di_cash_opening')||'{"amount":0,"date":""}')}catch(e){return {amount:0,date:''}}}
@@ -229,7 +305,7 @@ async function deleteModuleRecord(type,id){if(demoMode||!supabaseClient)return;c
 function setSyncIndicator(message,isError=false){let el=$('syncStatus');if(!el){el=document.createElement('div');el.id='syncStatus';el.style.cssText='position:fixed;right:14px;bottom:14px;z-index:5000;padding:9px 12px;border-radius:8px;background:#064e3b;color:#fff;font-size:11px;max-width:min(420px,90vw);box-shadow:0 5px 20px #0002';document.body.appendChild(el)}el.textContent=message;el.style.background=isError?'#9f2d2d':'#102019';el.hidden=false;clearTimeout(el._hideTimer);el._hideTimer=setTimeout(()=>{el.hidden=true},5000)}
 function toLocalInput(v){if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return '';const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 async function refresh(){try{await loadFromSupabase();render();populateInvoiceLinks();renderInvoices()}catch(e){alert('Erro ao atualizar dados do Supabase: '+(e.message||e))}}
-function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page];if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments()}}
+function go(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page];if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR()}}
 document.querySelectorAll('.nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function showClientForm(c=null){$('clientFormCard').hidden=false;$('clientFormTitle').textContent=c?'Editar cliente':'Novo cliente';$('clientId').value=c?.id||'';$('clientName').value=c?.name||'';$('clientDoc').value=c?.doc||'';$('clientContact').value=c?.contact||'';$('clientStatus').value=c?.status||'Ativo';$('clientAddress').value=c?.address||'';$('clientFormCard').scrollIntoView({behavior:'smooth',block:'start'})}function hideClientForm(){$('clientFormCard').hidden=true;$('clientForm').reset();$('clientId').value=''}
 $('clientForm').addEventListener('submit',async e=>{e.preventDefault();const cid=$('clientId').value;const item={name:$('clientName').value.trim(),document:$('clientDoc').value.trim()||null,contact:$('clientContact').value.trim()||null,status:$('clientStatus').value,address:$('clientAddress').value.trim()||null};if(!item.name)return;const q=cid?supabaseClient.from('clients').update(item).eq('id',cid):supabaseClient.from('clients').insert(item);const {error}=await q;if(error){alert('Não foi possível salvar o cliente: '+error.message);return}hideClientForm();await refresh()});
@@ -260,4 +336,187 @@ $('weighingGross').addEventListener('input',calculateNet);$('weighingTare').addE
 $('weighingForm').addEventListener('submit',saveWeighing);
 $('demoBtn').addEventListener('click',startDemo);$('connectBtn').addEventListener('click',connectProject);$('forgetConfigBtn').addEventListener('click',()=>{localStorage.removeItem('di_supabase_url');localStorage.removeItem('di_supabase_key');connectedUrl='';connectedKey='';supabaseClient=null;$('supabaseUrl').value='';$('supabaseKey').value='';$('authFields').hidden=true;setStatus('Configuração removida deste navegador.')});$('loginBtn').addEventListener('click',()=>authAction('login'));$('signupBtn').addEventListener('click',()=>authAction('signup'));$('logoutBtn').addEventListener('click',async()=>{if(!demoMode&&supabaseClient)await supabaseClient.auth.signOut();demoMode=false;state={clients:[],collections:[]};$('erpApp').hidden=true;$('connectionGate').hidden=false;setStatus('Você saiu do sistema.')});
 (function init(){const url=localStorage.getItem('di_supabase_url')||'';const key=localStorage.getItem('di_supabase_key')||'';$('supabaseUrl').value=url;$('supabaseKey').value=key;if(url&&key){connectedUrl=url;connectedKey=key;if(createClient()){ $('authFields').hidden=false;supabaseClient.auth.getSession().then(async({data,error})=>{if(error){setStatus(error.message,true);return}if(data.session)await startApp(data.session);else setStatus('Projeto configurado. Entre com seu e-mail e senha.')})}}})();
+
+// =========================================================
+// RH E PAGAMENTOS DE FUNCIONARIOS - INTEGRACAO SUPABASE
+// =========================================================
+let hrEmployees = [];
+let hrEmployeePayments = [];
+let hrSectors = [];
+
+async function loadHRData(){
+ if(demoMode || !supabaseClient){hrEmployees=[];hrEmployeePayments=[];hrSectors=[];return}
+ try{
+  const [er,pr,sr,ar] = await Promise.all([
+   supabaseClient.from('company_employees').select('*').order('full_name'),
+   supabaseClient.from('employee_payments').select('*').order('competence',{ascending:false}),
+   supabaseClient.from('company_sectors').select('id,name,code').eq('active',true).order('name'),
+   supabaseClient.from('employee_sector_assignments').select('employee_id,sector_id,is_primary,company_sectors(name,code)')
+  ]);
+  if(er.error) throw er.error;
+  if(pr.error) throw pr.error;
+  if(sr.error) throw sr.error;
+  if(ar.error) throw ar.error;
+  hrEmployees = er.data || [];
+  hrEmployeePayments = pr.data || [];
+  hrSectors = sr.data || [];
+  hrEmployees.forEach(emp=>{
+   const a=(ar.data||[]).filter(x=>x.employee_id===emp.id).sort((x,y)=>Number(y.is_primary)-Number(x.is_primary));
+   emp._sectorName=a.map(x=>x.company_sectors?.name).filter(Boolean).join(', ');
+   emp._primarySectorId=a.find(x=>x.is_primary)?.sector_id || a[0]?.sector_id || '';
+  });
+ }catch(err){
+  console.warn('RH não carregado:',err);
+  hrEmployees=[];hrEmployeePayments=[];hrSectors=[];
+  const msg=$('hrDataNotice');
+  if(msg) msg.textContent='Não foi possível carregar os dados de RH. Verifique se as tabelas e permissões foram configuradas no Supabase. Detalhe: '+(err.message||err);
+ }
+}
+
+function populateEmployeeSectorSelect(selected=''){
+ const el=$('employeeSector'); if(!el)return;
+ el.innerHTML='<option value="">Selecione o setor</option>'+hrSectors.map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
+ if(selected)el.value=selected;
+}
+function populateEmployeePaymentSelect(selected=''){
+ const el=$('employeePaymentEmployee');if(!el)return;
+ el.innerHTML='<option value="">Selecione o funcionário</option>'+hrEmployees.filter(e=>e.employment_status!=='desligado').map(e=>`<option value="${esc(e.id)}">${esc(e.full_name)}</option>`).join('');
+ if(selected)el.value=selected;
+}
+function resetEmployeeForm(){
+ $('employeeForm').reset();$('employeeId').value='';$('employeeSalary').value='0';$('employeeStatus').value='ativo';$('employeeFormTitle').textContent='Cadastrar funcionário';populateEmployeeSectorSelect();
+}
+function editEmployee(id){
+ const e=hrEmployees.find(x=>x.id===id);if(!e)return;
+ $('employeeId').value=e.id;$('employeeName').value=e.full_name||'';$('employeeCpf').value=e.cpf||'';
+ $('employeeRg').value=e.rg||'';$('employeeBirth').value=e.birth_date||'';$('employeeEmail').value=e.email||'';
+ $('employeePhone').value=e.phone||'';$('employeeAddress').value=e.address||'';$('employeeJob').value=e.job_title||'';
+ populateEmployeeSectorSelect(e._primarySectorId);$('employeeType').value=e.employment_type||'';
+ $('employeeAdmission').value=e.admission_date||'';$('employeeSalary').value=e.base_salary||0;
+ $('employeeStatus').value=e.employment_status||'ativo';$('employeeNotes').value=e.notes||'';
+ $('employeeFormTitle').textContent='Editar funcionário';$('employeeForm').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderEmployees(){
+ if(!$('employeesTable'))return;
+ $('hrEmployeeCount').textContent=hrEmployees.length;
+ const q=($('employeeSearch')?.value||'').toLowerCase();
+ const rows=hrEmployees.filter(e=>[e.full_name,e.cpf,e.job_title,e._sectorName,e.email].join(' ').toLowerCase().includes(q));
+ $('employeesTable').innerHTML=rows.length?rows.map(e=>`<tr><td><b>${esc(e.full_name)}</b><br><span class="muted">${esc(e.email||e.phone||'')}</span></td><td>${esc(e.cpf||'—')}</td><td>${esc(e.job_title||'—')}</td><td>${esc(e._sectorName||'—')}</td><td>${esc(e.employment_type||'—')}</td><td>${money(e.base_salary)}</td><td><span class="status ${e.employment_status==='ativo'?'ok':e.employment_status==='afastado'?'pending':'cancelled'}">${esc(e.employment_status||'—')}</span></td><td><button class="smallbtn" onclick="editEmployee('${e.id}')">Editar</button></td></tr>`).join(''):'<tr><td colspan="8" class="empty">Nenhum funcionário encontrado ou seu usuário não possui acesso ao RH.</td></tr>';
+}
+$('employeeSearch')?.addEventListener('input',renderEmployees);
+$('employeeForm')?.addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ if(demoMode||!supabaseClient){alert('Conecte ao Supabase para cadastrar funcionários.');return}
+ const id=$('employeeId').value;
+ const item={
+  full_name:$('employeeName').value.trim(),cpf:$('employeeCpf').value.trim()||null,
+  rg:$('employeeRg').value.trim()||null,birth_date:$('employeeBirth').value||null,
+  email:$('employeeEmail').value.trim()||null,phone:$('employeePhone').value.trim()||null,
+  address:$('employeeAddress').value.trim()||null,job_title:$('employeeJob').value.trim()||null,
+  employment_type:$('employeeType').value||null,admission_date:$('employeeAdmission').value||null,
+  base_salary:Number($('employeeSalary').value)||0,employment_status:$('employeeStatus').value,
+  notes:$('employeeNotes').value.trim()||null
+ };
+ try{
+  let saved;
+  if(id){
+   const old=hrEmployees.find(x=>x.id===id);
+   const {data,error}=await supabaseClient.from('company_employees').update(item).eq('id',id).select().single();
+   if(error)throw error;saved=data;
+   if(old && Number(old.base_salary)!==Number(item.base_salary)){
+    const {error:se}=await supabaseClient.from('employee_salary_history').insert({employee_id:id,previous_salary:Number(old.base_salary)||0,new_salary:item.base_salary,effective_date:new Date().toISOString().slice(0,10),reason:'Alteração pelo cadastro de funcionário'});
+    if(se)console.warn('Histórico salarial não registrado:',se.message);
+   }
+  }else{
+   const {data,error}=await supabaseClient.from('company_employees').insert(item).select().single();
+   if(error)throw error;saved=data;
+  }
+  const sectorId=$('employeeSector').value;
+  if(sectorId){
+   if(id){const {error:ue}=await supabaseClient.from('employee_sector_assignments').update({is_primary:false}).eq('employee_id',saved.id).eq('is_primary',true);if(ue)throw ue}
+   const {error:ae}=await supabaseClient.from('employee_sector_assignments').upsert({employee_id:saved.id,sector_id:sectorId,is_primary:true},{onConflict:'employee_id,sector_id'});
+   if(ae)throw ae;
+  }
+  resetEmployeeForm();await loadHRData();renderHR();alert('Funcionário salvo com sucesso.');
+ }catch(err){alert('Não foi possível salvar o funcionário: '+(err.message||err));}
+});
+
+function resetEmployeePaymentForm(){
+ $('employeePaymentForm').reset();$('employeePaymentId').value='';$('employeePaymentGross').value='';$('employeePaymentDeductions').value='0';
+ $('employeePaymentPaid').value='0';$('employeePaymentStatus').value='pendente';$('employeePaymentFormTitle').textContent='Novo pagamento de funcionário';
+ const today=new Date().toISOString().slice(0,10);$('employeePaymentCompetence').value=today;$('employeePaymentDue').value=today;$('employeePaymentNet').value=money(0);
+ populateEmployeePaymentSelect();
+}
+function updateEmployeeNet(){
+ const gross=Number($('employeePaymentGross').value)||0;
+ const deductions=Number($('employeePaymentDeductions').value)||0;
+ $('employeePaymentNet').value=money(Math.max(0,gross-deductions));
+}
+$('employeePaymentGross')?.addEventListener('input',updateEmployeeNet);
+$('employeePaymentDeductions')?.addEventListener('input',updateEmployeeNet);
+function editEmployeePayment(id){
+ const p=hrEmployeePayments.find(x=>x.id===id);if(!p)return;
+ $('employeePaymentId').value=p.id;populateEmployeePaymentSelect(p.employee_id);
+ $('employeePaymentType').value=p.payment_type;$('employeePaymentCompetence').value=p.competence||'';
+ $('employeePaymentDue').value=p.due_date||'';$('employeePaymentGross').value=p.gross_amount||0;
+ $('employeePaymentDeductions').value=p.deductions_amount||0;$('employeePaymentPaid').value=p.paid_amount||0;
+ $('employeePaymentStatus').value=p.payment_status;$('employeePaymentMethod').value=p.payment_method||'';
+ $('employeePaymentDate').value=p.payment_date||'';$('employeePaymentNotes').value=p.notes||'';
+ updateEmployeeNet();$('employeePaymentFormTitle').textContent='Editar pagamento';$('employeePaymentForm').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderHRPayments(){
+ if(!$('employeePaymentsTable'))return;
+ const q=($('employeePaymentSearch')?.value||'').toLowerCase();
+ const netTotal=hrEmployeePayments.filter(p=>p.payment_status!=='cancelado').reduce((a,p)=>a+(Number(p.net_amount)||0),0);
+ $('hrPayrollTotal').textContent=money(netTotal);
+ $('hrPendingCount').textContent=hrEmployeePayments.filter(p=>p.payment_status==='pendente'||p.payment_status==='parcial').length;
+ $('hrPaidCount').textContent=hrEmployeePayments.filter(p=>p.payment_status==='pago').length;
+ const rows=hrEmployeePayments.filter(p=>{
+  const emp=hrEmployees.find(e=>e.id===p.employee_id);
+  return [emp?.full_name,p.payment_type,p.payment_status,p.notes].join(' ').toLowerCase().includes(q);
+ });
+ const typeNames={salario:'Salário',adiantamento:'Adiantamento',comissao:'Comissão',beneficio:'Benefício',hora_extra:'Hora extra',bonus:'Bônus',rescisao:'Rescisão',outro:'Outro'};
+ $('employeePaymentsTable').innerHTML=rows.length?rows.map(p=>{
+  const emp=hrEmployees.find(e=>e.id===p.employee_id);const status=p.payment_status;
+  const cls=status==='pago'?'ok':status==='parcial'?'progress':status==='cancelado'?'cancelled':'pending';
+  return `<tr><td>${esc(emp?.full_name||'Funcionário não encontrado')}</td><td>${typeNames[p.payment_type]||esc(p.payment_type)}</td><td>${fmtDate(p.competence)}</td><td>${money(p.gross_amount)}</td><td>${money(p.deductions_amount)}</td><td><b>${money(p.net_amount)}</b></td><td>${money(p.paid_amount)}</td><td>${fmtDate(p.due_date)}</td><td><span class="status ${cls}">${esc(status)}</span></td><td><button class="smallbtn" onclick="editEmployeePayment('${p.id}')">Editar</button></td></tr>`;
+ }).join(''):'<tr><td colspan="10" class="empty">Nenhum pagamento encontrado.</td></tr>';
+}
+$('employeePaymentSearch')?.addEventListener('input',renderHRPayments);
+$('employeePaymentForm')?.addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ if(demoMode||!supabaseClient){alert('Conecte ao Supabase para registrar pagamentos.');return}
+ const id=$('employeePaymentId').value;
+ const gross=Number($('employeePaymentGross').value)||0;
+ const deductions=Number($('employeePaymentDeductions').value)||0;
+ const net=gross-deductions;
+ let paid=Number($('employeePaymentPaid').value)||0;
+ if(!Number.isFinite(gross)||gross<=0||deductions<0||net<0||paid<0||paid>net){alert('Confira os valores. O valor pago não pode superar o valor líquido.');return}
+ let status=$('employeePaymentStatus').value;
+ if(status!=='cancelado'){status=paid>=net?'pago':paid>0?'parcial':'pendente'}
+ const item={
+  employee_id:$('employeePaymentEmployee').value,payment_type:$('employeePaymentType').value,
+  competence:$('employeePaymentCompetence').value,due_date:$('employeePaymentDue').value||null,
+  gross_amount:gross,deductions_amount:deductions,paid_amount:paid,payment_status:status,
+  payment_method:$('employeePaymentMethod').value||null,payment_date:$('employeePaymentDate').value||null,
+  notes:$('employeePaymentNotes').value.trim()||null
+ };
+ if(!item.employee_id||!item.competence){alert('Selecione o funcionário e informe a competência.');return}
+ if(status==='pago'&&!item.payment_date)item.payment_date=new Date().toISOString().slice(0,10);
+ try{
+  const q=id?supabaseClient.from('employee_payments').update(item).eq('id',id):supabaseClient.from('employee_payments').insert(item);
+  const {error}=await q;if(error)throw error;
+  resetEmployeePaymentForm();await loadHRData();renderHR();alert('Pagamento registrado com sucesso.');
+ }catch(err){alert('Não foi possível salvar o pagamento: '+(err.message||err));}
+});
+function renderHR(){populateEmployeeSectorSelect();populateEmployeePaymentSelect();renderEmployees();renderHRPayments();updateEmployeeNet()}
+function showPaymentTab(tab){
+ const map={general:'generalPaymentsPanel',employees:'employeePaymentsPanel',hr:'hrEmployeesPanel'};
+ Object.entries(map).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==tab});
+ document.querySelectorAll('[data-payment-tab]').forEach(b=>b.classList.toggle('active',b.dataset.paymentTab===tab));
+ if(tab==='employees'){populateEmployeePaymentSelect();renderHRPayments()}
+ if(tab==='hr'){populateEmployeeSectorSelect();renderEmployees()}
+}
+document.querySelectorAll('[data-payment-tab]').forEach(b=>b.addEventListener('click',()=>showPaymentTab(b.dataset.paymentTab)));
+
 </script></body></html>
