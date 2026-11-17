@@ -214,7 +214,7 @@
      <div class="field"><label for="depositOperationType">Tipo de operação *</label><select id="depositOperationType" required><option value="purchase">Compra — entrada no estoque</option><option value="sale">Venda — saída do estoque</option></select></div>
      <div class="field"><label for="depositOperationDate">Data *</label><input id="depositOperationDate" type="date" required></div>
      <div class="field"><label for="depositParty">Fornecedor / comprador</label><select id="depositParty"><option value="">Não informado</option></select></div>
-     <div class="field"><label for="depositMaterial">Material *</label><select id="depositMaterial" required><option value="">Selecione o material</option></select></div>
+     <div class="field"><label for="depositMaterial">Material *</label><select id="depositMaterial" required><option value="">Carregando materiais...</option></select><button class="smallbtn" type="button" id="depositGoMaterials" style="margin-top:7px">+ Cadastrar material</button><small id="depositMaterialHelp" class="muted">Escolha o material comprado ou vendido.</small></div>
      <div class="field"><label for="depositGross">Peso bruto (kg)</label><input id="depositGross" type="number" min="0" step="0.001" placeholder="Opcional"></div>
      <div class="field"><label for="depositTare">Tara (kg)</label><input id="depositTare" type="number" min="0" step="0.001" value="0"></div>
      <div class="field"><label for="depositQuantity">Quantidade líquida (kg) *</label><input id="depositQuantity" type="number" min="0.001" step="0.001" required></div>
@@ -609,27 +609,23 @@ let depositActiveTab='operations';
 
 async function loadDepositData(){
  if(demoMode || !supabaseClient){depositMaterials=[];depositParties=[];depositOperations=[];depositStock=[];depositMovements=[];return}
- try{
-  const results=await Promise.all([
-   supabaseClient.from('deposit_materials').select('*').order('name'),
-   supabaseClient.from('deposit_parties').select('*').order('name'),
-   supabaseClient.from('deposit_operations').select('*,deposit_parties(name),deposit_operation_items(id,material_id,quantity,unit_price,line_total,gross_weight,tare_weight,deposit_materials(name,unit))').order('operation_date',{ascending:false}),
-   supabaseClient.from('deposit_stock_overview').select('*').order('material_name'),
-   supabaseClient.from('deposit_stock_movements').select('*,deposit_materials(name,unit),deposit_operations(operation_number,operation_type,operation_date)').order('created_at',{ascending:false})
-  ]);
-  const labels=['materiais','fornecedores e compradores','operações','estoque','histórico de estoque'];
-  for(let i=0;i<results.length;i++){if(results[i].error)throw new Error('Falha ao carregar '+labels[i]+': '+results[i].error.message)}
-  depositMaterials=results[0].data||[];
-  depositParties=results[1].data||[];
-  depositOperations=results[2].data||[];
-  depositStock=results[3].data||[];
-  depositMovements=results[4].data||[];
-  const notice=$('depositDataNotice');if(notice){notice.hidden=true;notice.textContent=''}
- }catch(err){
-  depositMaterials=[];depositParties=[];depositOperations=[];depositStock=[];depositMovements=[];
-  const notice=$('depositDataNotice');if(notice){notice.hidden=false;notice.textContent='Não foi possível carregar o Depósito. Confira se a migração SQL foi executada e se o usuário possui permissão no setor Depósito. Detalhe: '+(err.message||err)}
-  console.warn('Depósito não carregado:',err);
+ const problems=[];
+ // Carrega cada área separadamente: uma falha no histórico ou nos contatos
+ // não pode apagar a lista de materiais usada no formulário de compra/venda.
+ const jobs=[
+  ['materiais',()=>supabaseClient.from('deposit_materials').select('*').eq('active',true).order('name'),v=>depositMaterials=v],
+  ['fornecedores e compradores',()=>supabaseClient.from('deposit_parties').select('*').order('name'),v=>depositParties=v],
+  ['operações',()=>supabaseClient.from('deposit_operations').select('*,deposit_parties(name),deposit_operation_items(id,material_id,quantity,unit_price,line_total,gross_weight,tare_weight,deposit_materials(name,unit))').order('operation_date',{ascending:false}),v=>depositOperations=v],
+  ['estoque',()=>supabaseClient.from('deposit_stock_overview').select('*').order('material_name'),v=>depositStock=v],
+  ['histórico de estoque',()=>supabaseClient.from('deposit_stock_movements').select('*,deposit_materials(name,unit),deposit_operations(operation_number,operation_type,operation_date)').order('created_at',{ascending:false}),v=>depositMovements=v]
+ ];
+ for(const [label,run,assign] of jobs){
+  try{const {data,error}=await run();if(error)throw error;assign(data||[])}
+  catch(err){assign([]);problems.push(label+': '+(err.message||err))}
  }
+ const notice=$('depositDataNotice');
+ if(notice){notice.hidden=problems.length===0;notice.textContent=problems.length?'Atenção — algumas informações do Depósito não carregaram: '+problems.join(' | '):''}
+ if(problems.length)console.warn('Falhas ao carregar Depósito:',problems);
 }
 function depositTab(tab){
  depositActiveTab=tab;
@@ -643,8 +639,9 @@ function depositTab(tab){
  if(tab==='movements')renderDepositMovements();
 }
 document.querySelectorAll('[data-deposit-tab]').forEach(b=>b.addEventListener('click',()=>depositTab(b.dataset.depositTab)));
+$('depositGoMaterials')?.addEventListener('click',()=>{depositTab('materials');$('depositMaterialName')?.focus();});
 function populateDepositSelects(){
- const material=$('depositMaterial');if(material){const current=material.value;material.innerHTML='<option value="">Selecione o material</option>'+depositMaterials.filter(m=>m.active).map(m=>`<option value="${esc(m.id)}">${esc(m.name)} (${esc(m.unit)})</option>`).join('');if(current)material.value=current}
+ const material=$('depositMaterial');if(material){const current=material.value;const active=depositMaterials.filter(m=>m.active);material.innerHTML='<option value="">'+(active.length?'Selecione o material':'Nenhum material cadastrado — clique em + Cadastrar material')+'</option>'+active.map(m=>`<option value="${esc(m.id)}">${esc(m.name)} (${esc(m.unit)})</option>`).join('');if(current)material.value=current;const help=$('depositMaterialHelp');if(help)help.textContent=active.length?active.length+' material(is) disponível(is).':'Cadastre ao menos um material para iniciar a compra ou venda.'}
  const party=$('depositParty');if(party){const current=party.value;party.innerHTML='<option value="">Não informado</option>'+depositParties.filter(p=>p.active).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');if(current)party.value=current}
 }
 function resetDepositOperationForm(){
