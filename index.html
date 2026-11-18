@@ -93,7 +93,7 @@
 </section>
 
 <section id="financeiro" class="page">
-<div class="notice"><b>Central financeira:</b> organize contas a pagar e a receber, despesas operacionais e recebimentos de clientes. Contas manuais e faturas aparecem juntas nesta tela. Faturas são geridas em Faturamento; registre seus recebimentos por lá para manter o histórico e evitar duplicidade. Os dados financeiros locais ainda não são sincronizados com o Supabase.</div>
+<div class="notice"><b>Central financeira:</b> acompanhe contas manuais, faturas e lançamentos gerados automaticamente pelo Depósito. Ao confirmar uma compra ou venda, o sistema cria o título financeiro e suas parcelas. Os pagamentos parciais ou totais dos títulos integrados são registrados diretamente no banco.</div>
 <div class="subtabs" role="tablist" aria-label="Áreas de pagamentos">
  <button type="button" class="subtab active" data-payment-tab="general">Pagamentos gerais</button>
  <button type="button" class="subtab" data-payment-tab="employees">Pagamentos de funcionários</button>
@@ -123,6 +123,10 @@
 </div><div class="form-actions"><button class="btn" type="submit">Salvar lançamento</button><button class="btn secondary" type="button" onclick="resetPaymentForm()">Limpar formulário</button><button class="btn secondary" type="button" onclick="exportPayments()">Exportar CSV</button></div></form></div>
 <div class="card section"><div class="section-head"><h2>Contas e movimentações</h2><div class="report-filter"><input id="paymentSearch" class="search" placeholder="Buscar nome, categoria ou descrição"><select id="paymentKindFilter" class="search" aria-label="Filtrar tipo"><option value="todos">Todos os movimentos</option><option value="pagar">Contas a pagar</option><option value="receber">Contas a receber</option></select><select id="paymentStatusFilter" class="search" aria-label="Filtrar situação"><option value="todos">Todas as situações</option><option value="Pendente">Pendente</option><option value="Parcial">Parcial</option><option value="Pago/Recebido">Pago/Recebido</option><option value="Cancelado">Cancelado</option><option value="Vencido">Vencido</option></select></div></div>
 <div class="table-wrap"><table class="table"><thead><tr><th>Tipo</th><th>Responsável</th><th>Categoria / descrição</th><th>Valor total</th><th>Pago/recebido</th><th>Saldo</th><th>Vencimento</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="paymentsTable"></tbody></table></div></div>
+</div>
+<div class="card section" id="depositFinancialCard">
+ <div class="section-head"><div><h2>Operações integradas do Depósito</h2><p class="muted" style="font-size:12px;margin:5px 0 0">Compras geram contas a pagar; vendas geram contas a receber. Registre pagamentos parciais ou totais por parcela.</p></div><button class="btn secondary" type="button" id="refreshDepositFinance">Atualizar</button></div>
+ <div class="table-wrap"><table class="table"><thead><tr><th>Operação / título</th><th>Tipo</th><th>Parcela</th><th>Vencimento</th><th>Valor</th><th>Pago</th><th>Saldo</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="depositFinancialTable"><tr><td colspan="9" class="empty">Carregando lançamentos integrados...</td></tr></tbody></table></div>
 </div>
 <div id="employeePaymentsPanel" hidden>
  <div class="notice"><b>Pagamentos de funcionários:</b> registre salários, adiantamentos, comissões, benefícios e outros valores. O valor líquido é calculado pelo sistema. A baixa registrada aqui ainda não cria automaticamente uma movimentação no caixa ou nos bancos.</div>
@@ -212,7 +216,7 @@
 </section>
 
 <section id="deposito" class="page">
- <div class="notice"><b>Controle do Depósito:</b> registre compras e vendas de materiais recicláveis, acompanhe o estoque e consulte o histórico. Uma operação só altera o estoque depois de ser confirmada por usuário autorizado. Os lançamentos financeiros das compras e vendas serão integrados ao módulo Pagamentos em uma etapa posterior.</div>
+ <div class="notice"><b>Controle do Depósito:</b> registre compras e vendas, defina a condição de pagamento e confirme a operação. A confirmação atualiza o estoque e cria automaticamente o título financeiro, as parcelas ou a liquidação à vista no módulo Pagamentos.</div>
  <div class="grid">
   <div class="card metric"><div class="label">Materiais cadastrados</div><div class="value" id="depositMaterialCount">0</div><div class="delta">Materiais ativos</div></div>
   <div class="card metric"><div class="label">Quantidade em estoque</div><div class="value" id="depositStockQty">0 kg</div><div class="delta">Saldo total dos materiais em kg</div></div>
@@ -233,6 +237,10 @@
     <div class="formgrid section">
      <div class="field"><label for="depositOperationType">Tipo de operação *</label><select id="depositOperationType" required><option value="purchase">Compra — entrada no estoque</option><option value="sale">Venda — saída do estoque</option></select></div>
      <div class="field"><label for="depositOperationDate">Data *</label><input id="depositOperationDate" type="date" required></div>
+     <div class="field"><label for="depositPaymentCondition">Condição de pagamento *</label><select id="depositPaymentCondition" required><option value="">Selecione</option><option value="cash">À vista</option><option value="term">A prazo (parcela única)</option><option value="installment">Parcelado</option></select></div>
+     <div class="field" id="depositPaymentMethodWrap" hidden><label for="depositPaymentMethod">Forma de pagamento *</label><select id="depositPaymentMethod"><option value="pix">Pix</option><option value="dinheiro">Dinheiro</option><option value="transferencia">Transferência</option><option value="boleto">Boleto</option><option value="cartao">Cartão</option><option value="outro">Outro</option></select></div>
+     <div class="field" id="depositFirstDueWrap" hidden><label for="depositFirstDueDate">Primeiro vencimento *</label><input id="depositFirstDueDate" type="date"></div>
+     <div class="field" id="depositInstallmentsWrap" hidden><label for="depositInstallmentsCount">Quantidade de parcelas *</label><input id="depositInstallmentsCount" type="number" min="2" step="1" value="2"></div>
      <div class="field"><label for="depositParty">Fornecedor / comprador</label><select id="depositParty"><option value="">Não informado</option></select></div>
      <div class="field"><label for="depositMaterial">Material *</label><select id="depositMaterial" required><option value="">Carregando materiais...</option></select><button class="smallbtn" type="button" id="depositGoMaterials" style="margin-top:7px">+ Cadastrar material</button><small id="depositMaterialHelp" class="muted">Escolha o material comprado ou vendido.</small></div>
      <div class="field"><label for="depositQuantity">Peso comprado/vendido (kg) *</label><input id="depositQuantity" type="number" min="0.001" step="0.001" placeholder="Ex.: 150" required></div>
@@ -245,7 +253,7 @@
   </div>
   <div class="card section">
    <div class="section-head"><h2>Operações registradas</h2><input id="depositOperationSearch" class="search" placeholder="Buscar número, pessoa ou material"></div>
-   <div class="table-wrap"><table class="table"><thead><tr><th>Número</th><th>Data</th><th>Operação</th><th>Fornecedor / comprador</th><th>Material</th><th>Quantidade</th><th>Valor</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="depositOperationsTable"></tbody></table></div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>Número</th><th>Data</th><th>Operação</th><th>Fornecedor / comprador</th><th>Material</th><th>Quantidade</th><th>Valor</th><th>Pagamento</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="depositOperationsTable"></tbody></table></div>
   </div>
  </div>
  <div id="depositStockPanel" hidden>
@@ -324,7 +332,7 @@ async function applyAccountAccess(session){
  const navTitles=document.querySelectorAll('.sidebar .nav-title');navTitles.forEach(x=>x.hidden=depositOnlyUser);
  if(depositOnlyUser){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('deposito').classList.add('active');$('pageTitle').textContent='Depósito'}
 }
-async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await applyAccountAccess(session);if(depositOnlyUser){await loadDepositData();renderDeposit();go('deposito');return}await loadFromSupabase();await loadHRData();await loadDepositData();render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();renderDeposit();await loadDepositStaffAccounts()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível carregar os dados ou permissões. Confira as migrações SQL e a configuração da função. Detalhe: '+(e.message||e),true)}}
+async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await applyAccountAccess(session);if(depositOnlyUser){await loadDepositData();renderDeposit();go('deposito');return}await loadFromSupabase();await loadHRData();await loadDepositData();await loadDepositFinanceData();render();renderWeighings();renderPayments();renderDepositFinance();renderInvoices();renderInvoiceReceipts();renderHR();renderDeposit();await loadDepositStaffAccounts()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível carregar os dados ou permissões. Confira as migrações SQL e a configuração da função. Detalhe: '+(e.message||e),true)}}
 function startDemo(){demoMode=true;state={clients:[{id:'demo-c1',name:'Cliente Exemplo Ltda.',doc:'00.000.000/0001-00',contact:'(21) 90000-0000',status:'Ativo',address:'São João de Meriti - RJ'}],collections:[{id:'demo-co1',clientId:'demo-c1',date:new Date().toISOString().slice(0,16),waste:'Papel',qty:250,responsible:'Equipe A',status:'Agendada',address:'Centro',notes:''}]};weighings=loadWeighings();payments=loadPayments();$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent='Modo demonstração';render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();go('dashboard')}
 function loadPayments(){try{const x=JSON.parse(localStorage.getItem('di_payments')||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
 function persistPayments(){if(demoMode){localStorage.setItem('di_payments',JSON.stringify(payments));return}saveModuleRecords('payments',payments)}
@@ -416,7 +424,7 @@ async function deleteModuleRecord(type,id){if(demoMode||!supabaseClient)return;c
 function setSyncIndicator(message,isError=false){let el=$('syncStatus');if(!el){el=document.createElement('div');el.id='syncStatus';el.style.cssText='position:fixed;right:14px;bottom:14px;z-index:5000;padding:9px 12px;border-radius:8px;background:#064e3b;color:#fff;font-size:11px;max-width:min(420px,90vw);box-shadow:0 5px 20px #0002';document.body.appendChild(el)}el.textContent=message;el.style.background=isError?'#9f2d2d':'#102019';el.hidden=false;clearTimeout(el._hideTimer);el._hideTimer=setTimeout(()=>{el.hidden=true},5000)}
 function toLocalInput(v){if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return '';const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 async function refresh(){try{await loadFromSupabase();render();populateInvoiceLinks();renderInvoices()}catch(e){alert('Erro ao atualizar dados do Supabase: '+(e.message||e))}}
-function go(page){if(depositOnlyUser&&page!=='deposito'){page='deposito'}if(page==='deposit-users'&&currentProfile?.role!=='administrador'){page='deposito'}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page)?.classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page]||'Descarte Ideal';if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR()}if(page==='deposito'){loadDepositData().then(renderDeposit)}if(page==='deposit-users'){loadDepositStaffAccounts()}}
+function go(page){if(depositOnlyUser&&page!=='deposito'){page='deposito'}if(page==='deposit-users'&&currentProfile?.role!=='administrador'){page='deposito'}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page)?.classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page]||'Descarte Ideal';if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR();loadDepositFinanceData().then(renderDepositFinance)}if(page==='deposito'){loadDepositData().then(renderDeposit)}if(page==='deposit-users'){loadDepositStaffAccounts()}}
 document.querySelectorAll('.nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function showClientForm(c=null){$('clientFormCard').hidden=false;$('clientFormTitle').textContent=c?'Editar cliente':'Novo cliente';$('clientId').value=c?.id||'';$('clientName').value=c?.name||'';$('clientDoc').value=c?.doc||'';$('clientContact').value=c?.contact||'';$('clientStatus').value=c?.status||'Ativo';$('clientAddress').value=c?.address||'';$('clientFormCard').scrollIntoView({behavior:'smooth',block:'start'})}function hideClientForm(){$('clientFormCard').hidden=true;$('clientForm').reset();$('clientId').value=''}
 $('clientForm').addEventListener('submit',async e=>{e.preventDefault();const cid=$('clientId').value;const item={name:$('clientName').value.trim(),document:$('clientDoc').value.trim()||null,contact:$('clientContact').value.trim()||null,status:$('clientStatus').value,address:$('clientAddress').value.trim()||null};if(!item.name)return;const q=cid?supabaseClient.from('clients').update(item).eq('id',cid):supabaseClient.from('clients').insert(item);const {error}=await q;if(error){alert('Não foi possível salvar o cliente: '+error.message);return}hideClientForm();await refresh()});
@@ -669,8 +677,70 @@ let depositParties=[];
 let depositOperations=[];
 let depositStock=[];
 let depositMovements=[];
+let depositFinancialTitles=[];
+let depositFinancialInstallments=[];
+let depositFinancialParties=[];
 let depositActiveTab='operations';
 
+async function loadDepositFinanceData(){
+ if(demoMode||!supabaseClient){depositFinancialTitles=[];depositFinancialInstallments=[];depositFinancialParties=[];return}
+ const {data:titles,error:titleError}=await supabaseClient.from('financial_titles').select('*').eq('origin_module','deposit').order('issue_date',{ascending:false});
+ if(titleError)throw titleError;
+ depositFinancialTitles=titles||[];
+ const ids=depositFinancialTitles.map(t=>t.id);
+ if(!ids.length){depositFinancialInstallments=[];depositFinancialParties=[];return}
+ const {data:installments,error:installmentError}=await supabaseClient.from('financial_title_installments').select('*').in('title_id',ids).order('due_date');
+ if(installmentError)throw installmentError;
+ depositFinancialInstallments=installments||[];
+ const partyIds=[...new Set(depositFinancialTitles.map(t=>t.party_id).filter(Boolean))];
+ if(partyIds.length){
+  const {data:parties,error:partyError}=await supabaseClient.from('financial_parties').select('id,name,party_type').in('id',partyIds);
+  if(partyError)throw partyError;
+  depositFinancialParties=parties||[];
+ }else depositFinancialParties=[];
+}
+function renderDepositFinance(){
+ const el=$('depositFinancialTable');if(!el)return;
+ if(!depositFinancialTitles.length){el.innerHTML='<tr><td colspan="9" class="empty">Nenhum lançamento integrado do Depósito. Confirme uma compra ou venda para gerar automaticamente.</td></tr>';return}
+ const parties=new Map(depositFinancialParties.map(p=>[p.id,p.name]));
+ const titles=new Map(depositFinancialTitles.map(t=>[t.id,t]));
+ const rows=depositFinancialInstallments.map(inst=>{
+  const title=titles.get(inst.title_id);if(!title)return '';
+  const balance=Math.max(0,Number(inst.amount||0)-Number(inst.paid_amount||0));
+  const kind=title.title_type==='payable'?'A pagar':'A receber';
+  const party=title.party_id?(parties.get(title.party_id)||'Cadastro vinculado'):'Não informado';
+  const statusLabel={open:'Aberta',partial:'Parcial',paid:'Quitada',overdue:'Vencida',cancelled:'Cancelada'}[inst.status]||inst.status;
+  const canPay=balance>0.009&&inst.status!=='cancelled'&&title.status!=='cancelled';
+  return `<tr><td><b>${esc(title.description)}</b><br><span class="muted">${esc(party)}</span></td><td>${kind}</td><td>${inst.installment_number}</td><td>${fmtDate(inst.due_date)}</td><td>${money(inst.amount)}</td><td>${money(inst.paid_amount)}</td><td><b>${money(balance)}</b></td><td><span class="status ${inst.status==='paid'?'ok':inst.status==='partial'?'progress':inst.status==='cancelled'?'cancelled':'pending'}">${statusLabel}</span></td><td>${canPay?`<button class="smallbtn" onclick="registerDepositFinancialPayment('${inst.id}',${balance.toFixed(2)})">Registrar baixa</button>`:'—'}</td></tr>`;
+ }).join('');
+ el.innerHTML=rows||'<tr><td colspan="9" class="empty">Nenhuma parcela encontrada para os títulos integrados.</td></tr>';
+}
+async function registerDepositFinancialPayment(installmentId,balance){
+ const raw=prompt('Informe o valor a pagar/receber. Saldo disponível: '+money(balance),balance.toFixed(2).replace('.',','));
+ if(raw===null)return;
+ const normalizedAmount=raw.trim().includes(',')?raw.trim().replace(/\./g,'').replace(',','.'):raw.trim();
+ const amount=Number(normalizedAmount);
+ if(!Number.isFinite(amount)||amount<=0||amount>balance+0.001){alert('Informe um valor válido, maior que zero e não superior ao saldo.');return}
+ const method=prompt('Forma de pagamento: pix, dinheiro, transferencia, boleto, cartao ou outro','pix');
+ if(method===null)return;
+ const allowed=['pix','dinheiro','transferencia','boleto','cartao','outro'];
+ const normalized=method.trim().toLowerCase();
+ if(!allowed.includes(normalized)){alert('Forma de pagamento inválida.');return}
+ try{
+  const {error}=await supabaseClient.rpc('register_financial_payment',{
+   p_installment_id:installmentId,
+   p_amount:amount,
+   p_payment_method:normalized,
+   p_transaction_date:new Date().toISOString().slice(0,10),
+   p_financial_account_id:null,
+   p_reference:'Baixa pelo módulo Pagamentos - Depósito',
+   p_notes:null
+  });
+  if(error)throw error;
+  await loadDepositFinanceData();renderDepositFinance();alert('Baixa registrada com sucesso.');
+ }catch(err){alert('Não foi possível registrar a baixa: '+(err.message||err))}
+}
+$('refreshDepositFinance')?.addEventListener('click',async()=>{try{await loadDepositFinanceData();renderDepositFinance()}catch(err){alert('Não foi possível atualizar os lançamentos: '+(err.message||err))}});
 async function loadDepositData(){
  if(demoMode || !supabaseClient){depositMaterials=[];depositParties=[];depositOperations=[];depositStock=[];depositMovements=[];return}
  const problems=[];
@@ -708,8 +778,18 @@ function populateDepositSelects(){
  const material=$('depositMaterial');if(material){const current=material.value;const active=depositMaterials.filter(m=>m.active);material.innerHTML='<option value="">'+(active.length?'Selecione o material':'Nenhum material cadastrado — clique em + Cadastrar material')+'</option>'+active.map(m=>`<option value="${esc(m.id)}">${esc(m.name)} (${esc(m.unit)})</option>`).join('');if(current)material.value=current;const help=$('depositMaterialHelp');if(help)help.textContent=active.length?active.length+' material(is) disponível(is).':'Cadastre ao menos um material para iniciar a compra ou venda.'}
  const party=$('depositParty');if(party){const current=party.value;party.innerHTML='<option value="">Não informado</option>'+depositParties.filter(p=>p.active).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');if(current)party.value=current}
 }
+function syncDepositPaymentFields(){
+ const condition=$('depositPaymentCondition')?.value||'';
+ const cash=condition==='cash',deferred=condition==='term'||condition==='installment',split=condition==='installment';
+ $('depositPaymentMethodWrap').hidden=!cash;
+ $('depositFirstDueWrap').hidden=!deferred;
+ $('depositInstallmentsWrap').hidden=!split;
+ $('depositPaymentMethod').required=cash;
+ $('depositFirstDueDate').required=deferred;
+ $('depositInstallmentsCount').required=split;
+}
 function resetDepositOperationForm(){
- const f=$('depositOperationForm');if(!f)return;f.reset();$('depositOperationDate').value=new Date().toISOString().slice(0,10);$('depositLineTotal').value=money(0);populateDepositSelects();
+ const f=$('depositOperationForm');if(!f)return;f.reset();$('depositOperationDate').value=new Date().toISOString().slice(0,10);$('depositFirstDueDate').value=new Date().toISOString().slice(0,10);$('depositInstallmentsCount').value=2;$('depositLineTotal').value=money(0);populateDepositSelects();syncDepositPaymentFields();
 }
 function updateDepositTotal(){
  const q=Number($('depositQuantity')?.value)||0,p=Number($('depositUnitPrice')?.value)||0;
@@ -718,6 +798,8 @@ function updateDepositTotal(){
 $('depositQuantity')?.addEventListener('input',updateDepositTotal);
 $('depositUnitPrice')?.addEventListener('input',updateDepositTotal);
 $('depositOperationType')?.addEventListener('change',()=>{updateDepositTotal()});
+$('depositPaymentCondition')?.addEventListener('change',syncDepositPaymentFields);
+syncDepositPaymentFields();
 $('depositResetOperation')?.addEventListener('click',resetDepositOperationForm);
 $('depositOperationSearch')?.addEventListener('input',renderDepositOperations);
 $('depositMaterialSearch')?.addEventListener('input',renderDepositMaterials);
@@ -743,9 +825,9 @@ function renderDepositOperations(){
   return [o.operation_number,o.deposit_parties?.name,o.operation_type,materialNames,o.status].join(' ').toLowerCase().includes(q);
  });
  el.innerHTML=rows.length?rows.map(o=>{
-  const item=(o.deposit_operation_items||[])[0]||{};const type=o.operation_type==='purchase'?'Compra':'Venda';const status=o.status==='confirmed'?'Confirmada':o.status==='cancelled'?'Cancelada':'Rascunho';const cls=o.status==='confirmed'?'ok':o.status==='cancelled'?'cancelled':'pending';
-  return `<tr><td><b>${esc(o.operation_number)}</b></td><td>${fmtDate(o.operation_date)}</td><td>${type}</td><td>${esc(o.deposit_parties?.name||'Não informado')}</td><td>${esc(item.deposit_materials?.name||'—')}</td><td>${kg(item.quantity||0)}</td><td>${money(item.line_total||0)}</td><td><span class="status ${cls}">${status}</span></td><td>${o.status==='draft'?`<button class="smallbtn" onclick="confirmDepositOperation('${o.id}')">Confirmar</button>`:'—'}</td></tr>`;
- }).join(''):'<tr><td colspan="9" class="empty">Nenhuma operação encontrada. Registre uma compra ou venda acima.</td></tr>';
+  const item=(o.deposit_operation_items||[])[0]||{};const type=o.operation_type==='purchase'?'Compra':'Venda';const status=o.status==='confirmed'?'Confirmada':o.status==='cancelled'?'Cancelada':'Rascunho';const cls=o.status==='confirmed'?'ok':o.status==='cancelled'?'cancelled':'pending';const conditionLabel={cash:'À vista',term:'A prazo',installment:'Parcelado'}[o.payment_condition]||'Não definido';
+  return `<tr><td><b>${esc(o.operation_number)}</b></td><td>${fmtDate(o.operation_date)}</td><td>${type}</td><td>${esc(o.deposit_parties?.name||'Não informado')}</td><td>${esc(item.deposit_materials?.name||'—')}</td><td>${kg(item.quantity||0)}</td><td>${money(item.line_total||0)}</td><td>${conditionLabel}</td><td><span class="status ${cls}">${status}</span></td><td>${o.status==='draft'?`<button class="smallbtn" onclick="confirmDepositOperation('${o.id}')">Confirmar</button>`:'—'}</td></tr>`;
+ }).join(''):'<tr><td colspan="10" class="empty">Nenhuma operação encontrada. Registre uma compra ou venda acima.</td></tr>';
 }
 function renderDepositStock(){
  const el=$('depositStockTable');if(!el)return;
@@ -766,26 +848,39 @@ function renderDepositMovements(){
 $('depositOperationForm')?.addEventListener('submit',async e=>{
  e.preventDefault();if(demoMode||!supabaseClient){alert('Conecte ao Supabase para registrar operações do Depósito.');return}
  const type=$('depositOperationType').value,materialId=$('depositMaterial').value,partyId=$('depositParty').value||null,date=$('depositOperationDate').value;
+ const condition=$('depositPaymentCondition').value;
+ const firstDueDate=$('depositFirstDueDate').value||null;
+ const installments=condition==='cash'?1:condition==='term'?1:Number($('depositInstallmentsCount').value);
+ const paymentMethod=condition==='cash'?$('depositPaymentMethod').value:null;
  const quantity=Number($('depositQuantity').value),unitPrice=Number($('depositUnitPrice').value);
- if(!materialId||!date||!Number.isFinite(quantity)||quantity<=0||!Number.isFinite(unitPrice)||unitPrice<0){alert('Confira material, data, quantidade e preço.');return}
+ if(!materialId||!date||!condition||!Number.isFinite(quantity)||quantity<=0||!Number.isFinite(unitPrice)||unitPrice<0){alert('Confira material, data, condição de pagamento, quantidade e preço.');return}
+ if(condition!=='cash'&&!firstDueDate){alert('Informe o primeiro vencimento.');return}
+ if(condition==='installment'&&(!Number.isInteger(installments)||installments<2)){alert('Informe pelo menos duas parcelas.');return}
  try{
-  const {data:op,error:oe}=await supabaseClient.from('deposit_operations').insert({operation_type:type,party_id:partyId,operation_date:date,status:'draft',notes:$('depositOperationNotes').value.trim()||null}).select().single();
+  const {data:op,error:oe}=await supabaseClient.from('deposit_operations').insert({
+   operation_type:type,party_id:partyId,operation_date:date,status:'draft',notes:$('depositOperationNotes').value.trim()||null,
+   payment_condition:condition,first_due_date:firstDueDate,installments_count:installments,payment_method:paymentMethod
+  }).select().single();
   if(oe)throw oe;
   const item={operation_id:op.id,material_id:materialId,quantity,gross_weight:null,tare_weight:null,unit_price,notes:null};
   const {error:ie}=await supabaseClient.from('deposit_operation_items').insert(item);
   if(ie){await supabaseClient.from('deposit_operations').delete().eq('id',op.id);throw ie}
-  resetDepositOperationForm();await loadDepositData();renderDeposit();alert('Rascunho '+op.operation_number+' salvo. Confirme a operação na tabela para atualizar o estoque.');
+  resetDepositOperationForm();await loadDepositData();renderDeposit();
+  alert('Rascunho '+op.operation_number+' salvo com condição de pagamento definida. Ao confirmar, o estoque e o Financeiro serão atualizados automaticamente.');
  }catch(err){alert('Não foi possível registrar a operação: '+(err.message||err))}
 });
 async function confirmDepositOperation(id){
  const op=depositOperations.find(x=>x.id===id);if(!op||op.status!=='draft')return;
  const verb=op.operation_type==='purchase'?'adicionar material ao estoque':'retirar material do estoque';
- if(!confirm('Confirmar a operação '+op.operation_number+' e '+verb+'? Esta ação atualiza o estoque.'))return;
+ const finance=op.payment_condition==='cash'?' e registrar a liquidação imediata no Financeiro': ' e gerar o título financeiro e suas parcelas';
+ if(!confirm('Confirmar a operação '+op.operation_number+', '+verb+finance+'? Esta ação atualiza o estoque e o Financeiro de forma automática.'))return;
  try{
   const {error}=await supabaseClient.from('deposit_operations').update({status:'confirmed'}).eq('id',id);
   if(error)throw error;
-  await loadDepositData();renderDeposit();alert('Operação confirmada e estoque atualizado.');
- }catch(err){alert('Não foi possível confirmar. Verifique sua permissão de aprovação e o saldo disponível. Detalhe: '+(err.message||err))}
+  await Promise.all([loadDepositData(),loadDepositFinanceData()]);
+  renderDeposit();renderDepositFinance();
+  alert('Operação confirmada. Estoque e Financeiro atualizados automaticamente.');
+ }catch(err){alert('Não foi possível confirmar. Confira as permissões, a condição de pagamento e o saldo disponível. Detalhe: '+(err.message||err))}
 }
 function resetDepositMaterialForm(){const f=$('depositMaterialForm');if(!f)return;f.reset();$('depositMaterialId').value='';$('depositMaterialMinimum').value='0';$('depositMaterialFormTitle').textContent='Cadastrar material'}
 function editDepositMaterial(id){const m=depositMaterials.find(x=>x.id===id);if(!m)return;$('depositMaterialId').value=m.id;$('depositMaterialName').value=m.name;$('depositMaterialCategory').value=m.category||'';$('depositMaterialUnit').value=m.unit;$('depositMaterialMinimum').value=m.minimum_stock||0;$('depositMaterialFormTitle').textContent='Editar material';$('depositMaterialForm').scrollIntoView({behavior:'smooth',block:'start'})}
