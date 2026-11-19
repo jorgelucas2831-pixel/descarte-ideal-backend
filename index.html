@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Descarte Ideal — ERP V12 Estrutura Organizacional</title>
+<title>Descarte Ideal — Gestão Ambiental</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -41,6 +41,73 @@
 .permission-sector-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.permission-sector-option{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px}.permission-sector-option input{width:auto}.permission-table-check{text-align:center;white-space:nowrap}.permission-table-check input{width:17px;height:17px;accent-color:var(--green)}#managedPermissionRows td{vertical-align:middle}#managedPermissionRows td:first-child{font-weight:650}.user-action-group{display:flex;gap:6px;flex-wrap:wrap}.user-action-group button{white-space:nowrap}
 .org-chart{display:grid;gap:14px}.org-chart-dept{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fbfdfb}.org-chart-dept h3{margin:0 0 10px;font-size:14px;color:var(--green2)}.org-chart-role{display:inline-flex;flex-direction:column;gap:3px;background:#eef7f1;border:1px solid #d6eadc;border-radius:9px;padding:9px 12px;margin:4px;font-size:12px}.org-chart-role b{font-size:12px}.org-chart-role span{color:var(--muted);font-size:11px}.org-actions{display:flex;gap:6px;flex-wrap:wrap}.org-actions button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 8px;cursor:pointer;font-size:11px}@media(max-width:650px){.org-chart{gap:9px}}
  .hr-tab{min-width:0}
+
+/* V22 — Natureza e Equilíbrio: identidade visual */
+:root{
+ --green:#247a43;--green2:#155d34;--bg:#f2f7ed;--card:#ffffff;
+ --text:#203329;--muted:#6b7c6e;--line:#dce8d8;
+ --red:#c83e3e;--amber:#9a6514;--blue:#2b64a9
+}
+body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);color:var(--text)}
+.sidebar{background:linear-gradient(180deg,#f5f8ef 0%,#e8f1df 100%);color:#244b31;border-right:1px solid #d8e5d1;box-shadow:5px 0 24px #254d2610}
+.brand{padding:8px 9px 24px}
+.brand b{color:#214b2e}
+.brand span{color:#718773}
+.logo{border-radius:14px;background:#fff;border:1px solid #dbe8d5;box-shadow:0 4px 14px #174d2512}
+.nav-title{color:#829781}
+.nav button{color:#4d6651}
+.nav button:hover,.nav button.active{background:#d9ebd1;color:#1c6236}
+.nav button.active{box-shadow:inset 3px 0 #3d9a52;font-weight:750}
+.main{padding:30px 34px}
+.eyebrow{color:#43824d}
+.card{border-color:#e0e9dc;border-radius:17px;box-shadow:0 5px 18px #355c3010}
+.metric .value{color:#234a2d}
+.btn{background:linear-gradient(135deg,#2e8a49,#1c6a38);box-shadow:0 3px 9px #226a351c}
+.btn:hover{background:#155d34}
+.btn.secondary{background:#e9f2e4;color:#28613a;box-shadow:none}
+.table th{color:#718371}
+.subtab.active{background:#e5f1df;border-color:#c8dfbf;color:#28643a}
+.org-chart-dept{background:#f8fbf5;border-color:#e0eadb}
+.org-chart-dept h3{color:#28643a}
+.org-chart-role{background:#edf5e8;border-color:#dcebd5}
+#connectionGate{
+ background:
+ radial-gradient(ellipse at 7% 12%,#d9ebcb 0,transparent 32%),
+ radial-gradient(ellipse at 95% 90%,#d8e9cd 0,transparent 30%),
+ linear-gradient(135deg,#f3f8ed,#eaf3e4 48%,#f8faf4);
+}
+#connectionGate:before,#connectionGate:after{
+ content:"";position:fixed;pointer-events:none;opacity:.22;z-index:-1;
+ width:300px;height:300px;border-radius:72% 0 72% 0;
+ background:linear-gradient(135deg,#75a85f,#c8dfb5);
+ transform:rotate(-28deg);filter:blur(1px)
+}
+#connectionGate:before{left:-125px;bottom:-110px}
+#connectionGate:after{right:-130px;top:-125px;transform:rotate(145deg)}
+.gate-card{
+ width:min(500px,100%);border:1px solid #dce8d5;border-radius:24px;
+ padding:34px 38px;box-shadow:0 24px 70px #284b281c;
+ background:rgba(255,255,255,.94);backdrop-filter:blur(10px)
+}
+.gate-card .brand{justify-content:center;padding:0 0 20px;gap:13px}
+.gate-card .logo{width:70px;height:70px;min-width:70px;border-radius:19px}
+.gate-card h1{text-align:center;font-size:26px;letter-spacing:-.5px;color:#214b2e}
+.gate-card>p{text-align:center;max-width:360px;margin:0 auto 20px}
+.gate-card .field label{color:#536d55}
+.gate-card .field input{border-radius:12px;padding:13px 14px;border-color:#dce8d7;background:#fbfdf9}
+.gate-card .field input:focus{outline:3px solid #dcefd5;border-color:#70a66d}
+.gate-card .gate-actions .btn{min-height:46px;border-radius:12px}
+.gate-status{background:#f1f6ed;border:1px solid #e0ead9;color:#526a51}
+#connectionSettings summary{color:#718371!important}
+.top{margin-bottom:30px}
+.title{letter-spacing:-.6px;color:#234a2d}
+.avatar{background:#e4f0dc;color:#28643a}
+@media(max-width:700px){
+ .main{padding:20px 15px}
+ .gate-card{padding:27px 22px}
+ .gate-card .logo{width:62px;height:62px;min-width:62px}
+}
+
 </style><meta name="application-version" content="11.0.0-preparacao"><meta name="description" content="Descarte Ideal ERP V11 em preparação, com identidade verde-esmeralda e estrutura financeira ampliada."></head>
 <body>
 <div id="connectionGate"><div class="gate-card">
