@@ -139,7 +139,7 @@
  <div class="table-wrap"><table class="table"><thead><tr><th>Operação / título</th><th>Tipo</th><th>Parcela</th><th>Vencimento</th><th>Valor</th><th>Pago</th><th>Saldo</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="depositFinancialTable"><tr><td colspan="9" class="empty">Carregando lançamentos integrados...</td></tr></tbody></table></div>
 </div>
 <div id="employeePaymentsPanel" hidden>
- <div class="notice"><b>Pagamentos de funcionários:</b> registre salários, adiantamentos, comissões, benefícios e outros valores. O valor líquido é calculado pelo sistema. A baixa registrada aqui ainda não cria automaticamente uma movimentação no caixa ou nos bancos.</div>
+ <div class="notice"><b>Integração RH + Financeiro:</b> cada pagamento salvo aqui também gera ou atualiza automaticamente uma conta a pagar em Contas e pagamentos. O vínculo é identificado pelo próprio registro de RH, evitando duplicidade. Pagamentos em dinheiro totalmente quitados também compõem o caixa.</div>
  <div class="grid">
   <div class="card metric"><div class="label">Funcionários cadastrados</div><div class="value" id="hrEmployeeCount">0</div><div class="delta">Registros disponíveis ao seu acesso</div></div>
   <div class="card metric"><div class="label">Total líquido registrado</div><div class="value" id="hrPayrollTotal">R$ 0,00</div><div class="delta">Soma dos pagamentos exibidos</div></div>
@@ -147,7 +147,7 @@
   <div class="card metric"><div class="label">Pagamentos quitados</div><div class="value" id="hrPaidCount">0</div><div class="delta">Registros totalmente pagos</div></div>
  </div>
  <div class="card section">
-  <div class="section-head"><h2 id="employeePaymentFormTitle">Novo pagamento de funcionário</h2></div><div class="notice">Os pagamentos são gravados no histórico de RH. A integração automática com contas a pagar/caixa será ativada após vincular este registro ao modelo financeiro existente, evitando gerar lançamentos duplicados.</div>
+  <div class="section-head"><h2 id="employeePaymentFormTitle">Novo pagamento de funcionário</h2></div><div class="notice">Ao salvar, o sistema sincroniza este registro com Contas e pagamentos. Alterações no pagamento atualizam o mesmo lançamento financeiro, sem criar outro.</div>
   <form id="employeePaymentForm">
    <input type="hidden" id="employeePaymentId">
    <div class="formgrid section">
@@ -789,16 +789,51 @@ $('employeePaymentForm')?.addEventListener('submit',async ev=>{
   competence:$('employeePaymentCompetence').value,due_date:$('employeePaymentDue').value||null,
   gross_amount:gross,deductions_amount:deductions,net_amount:net,paid_amount:paid,payment_status:status,
   payment_method:$('employeePaymentMethod').value||null,payment_date:$('employeePaymentDate').value||null,
+  reference:id?(hrEmployeePayments.find(p=>p.id===id)?.reference||('RH|'+id)):null,
   notes:$('employeePaymentNotes').value.trim()||null
  };
  if(!item.employee_id||!item.competence){alert('Selecione o funcionário e informe a competência.');return}
  if(status==='pago'&&!item.payment_date)item.payment_date=new Date().toISOString().slice(0,10);
  try{
-  const q=id?supabaseClient.from('employee_payments').update(item).eq('id',id):supabaseClient.from('employee_payments').insert(item);
-  const {error}=await q;if(error)throw error;
-  resetEmployeePaymentForm();await loadHRData();renderHR();alert('Pagamento registrado com sucesso.');
- }catch(err){alert('Não foi possível salvar o pagamento: '+(err.message||err));}
+  let paymentId=id;
+  if(id){
+   const {error}=await supabaseClient.from('employee_payments').update(item).eq('id',id);
+   if(error)throw error;
+  }else{
+   const {data,error}=await supabaseClient.from('employee_payments').insert(item).select('id').single();
+   if(error)throw error;
+   paymentId=data.id;
+  }
+  const employee=hrEmployees.find(e=>e.id===item.employee_id);
+  if(!employee)throw new Error('Não foi possível localizar o funcionário para integrar o pagamento ao Financeiro.');
+  await syncEmployeePaymentToFinance(paymentId,item,employee);
+  resetEmployeePaymentForm();await loadHRData();renderHR();renderPayments();renderCash();
+  alert('Pagamento registrado e sincronizado com Contas e pagamentos.');
+ }catch(err){alert('O pagamento de RH foi salvo, mas a integração financeira pode não ter sido concluída. Detalhe: '+(err.message||err));}
 });
+
+async function syncEmployeePaymentToFinance(paymentId,item,employee){
+ const financeId='rh_'+paymentId;
+ const typeNames={salario:'Salário',adiantamento:'Adiantamento',comissao:'Comissão',beneficio:'Benefício',hora_extra:'Hora extra',bonus:'Bônus',rescisao:'Rescisão',outro:'Outro'};
+ const paid=Number(item.paid_amount)||0, net=Number(item.net_amount)||0;
+ const fullyPaid=item.payment_status==='pago'||(net>0&&paid>=net-0.009);
+ const financeItem={
+  id:financeId,kind:'pagar',person:employee.full_name,
+  category:'Salários e diárias',
+  desc:(typeNames[item.payment_type]||'Pagamento')+' — competência '+fmtDate(item.competence),
+  amount:net,paidAmount:paid,due:item.due_date||item.competence,
+  status:item.payment_status==='cancelado'?'Cancelado':fullyPaid?'Pago/Recebido':paid>0?'Parcial':'Pendente',
+  method:item.payment_method==='pix'?'Pix':item.payment_method==='dinheiro'?'Dinheiro':item.payment_method==='transferencia'?'Transferência':item.payment_method==='cartao'?'Cartão':item.payment_method||'',
+  account:'RH',paidDate:item.payment_date||'',notes:[item.notes||'', 'Origem: RH; ID: '+paymentId].filter(Boolean).join(' | '),
+  source:'hr',sourceEmployeePaymentId:paymentId,updatedAt:new Date().toISOString()
+ };
+ const {error}=await supabaseClient.from('app_records').upsert({
+  record_type:'payments',record_id:financeId,data:financeItem
+ },{onConflict:'record_type,record_id'});
+ if(error)throw error;
+ const index=payments.findIndex(p=>p.id===financeId);
+ if(index>=0)payments[index]=financeItem;else payments.unshift(financeItem);
+}
 function renderHR(){populateEmployeeSectorSelect();populateEmployeePaymentSelect();renderEmployees();renderHRPayments();updateEmployeeNet();updateHRDashboard()}
 function showPaymentTab(tab){
  const map={general:'generalPaymentsPanel',employees:'employeePaymentsPanel',hr:'hrEmployeesPanel'};
