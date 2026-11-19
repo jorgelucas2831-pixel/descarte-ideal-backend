@@ -147,7 +147,7 @@
   <div class="card metric"><div class="label">Pagamentos quitados</div><div class="value" id="hrPaidCount">0</div><div class="delta">Registros totalmente pagos</div></div>
  </div>
  <div class="card section">
-  <div class="section-head"><h2 id="employeePaymentFormTitle">Novo pagamento de funcionário</h2></div>
+  <div class="section-head"><h2 id="employeePaymentFormTitle">Novo pagamento de funcionário</h2></div><div class="notice">Os pagamentos são gravados no histórico de RH. A integração automática com contas a pagar/caixa será ativada após vincular este registro ao modelo financeiro existente, evitando gerar lançamentos duplicados.</div>
   <form id="employeePaymentForm">
    <input type="hidden" id="employeePaymentId">
    <div class="formgrid section">
@@ -190,6 +190,7 @@
     <div class="field"><label for="employeeSector">Setor principal</label><select id="employeeSector"><option value="">Selecione o setor</option></select></div>
     <div class="field"><label for="employeeType">Tipo de vínculo</label><select id="employeeType"><option value="">Não informado</option><option value="CLT">CLT</option><option value="PJ">PJ</option><option value="Temporário">Temporário</option><option value="Estágio">Estágio</option><option value="Autônomo">Autônomo</option><option value="Outro">Outro</option></select></div>
     <div class="field"><label for="employeeAdmission">Data de admissão</label><input id="employeeAdmission" type="date"></div>
+    <div class="field"><label for="employeeTermination">Data de desligamento</label><input id="employeeTermination" type="date"><small class="muted">Preencha quando a situação for Desligado.</small></div>
     <div class="field"><label for="employeeSalary">Salário-base (R$)</label><input id="employeeSalary" type="number" min="0" step="0.01" value="0"></div>
     <div class="field"><label for="employeeStatus">Situação</label><select id="employeeStatus"><option value="ativo">Ativo</option><option value="afastado">Afastado</option><option value="desligado">Desligado</option></select></div>
     <div class="field full"><label for="employeeNotes">Observações</label><textarea id="employeeNotes"></textarea></div>
@@ -206,7 +207,7 @@
 </section>
 
 <section id="rh" class="page">
- <div class="notice"><b>Gestão de Pessoas.</b> Área administrativa para cadastro funcional e pagamentos. Os registros de funcionários e pagamentos utilizam as tabelas de RH já previstas no Supabase. Temporários podem ser identificados pelo tipo de vínculo; a classificação jurídica deve ser validada antes do cadastro.
+ <div class="notice"><b>Gestão de Pessoas.</b> Cadastro funcional, lotação por departamento, histórico salarial e pagamentos conectados às tabelas existentes do Supabase. O controle de frequência, documentos, férias e escalas será ativado em etapas próprias; não aparece como funcionalidade concluída nesta versão.
  </div>
  <div class="grid">
   <div class="card metric"><div class="label">Pessoas cadastradas</div><div class="value" id="rhTotalPeople">0</div><div class="delta">Registros de RH disponíveis</div></div>
@@ -681,7 +682,7 @@ function editEmployee(id){
  $('employeeRg').value=e.rg||'';$('employeeBirth').value=e.birth_date||'';$('employeeEmail').value=e.email||'';
  $('employeePhone').value=e.phone||'';$('employeeAddress').value=e.address||'';$('employeeJob').value=e.job_title||'';
  populateEmployeeSectorSelect(e._primarySectorId);$('employeeType').value=e.employment_type||'';
- $('employeeAdmission').value=e.admission_date||'';$('employeeSalary').value=e.base_salary||0;
+ $('employeeAdmission').value=e.admission_date||'';$('employeeTermination').value=e.termination_date||'';$('employeeSalary').value=e.base_salary||0;
  $('employeeStatus').value=e.employment_status||'ativo';$('employeeNotes').value=e.notes||'';
  $('employeeFormTitle').textContent='Editar funcionário';$('employeeForm').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -703,7 +704,7 @@ $('employeeForm')?.addEventListener('submit',async ev=>{
   email:$('employeeEmail').value.trim()||null,phone:$('employeePhone').value.trim()||null,
   address:$('employeeAddress').value.trim()||null,job_title:$('employeeJob').value.trim()||null,
   employment_type:$('employeeType').value||null,admission_date:$('employeeAdmission').value||null,
-  base_salary:Number($('employeeSalary').value)||0,employment_status:$('employeeStatus').value,
+  termination_date:$('employeeTermination').value||null,base_salary:Number($('employeeSalary').value)||0,employment_status:$('employeeStatus').value,
   notes:$('employeeNotes').value.trim()||null
  };
  try{
@@ -786,7 +787,7 @@ $('employeePaymentForm')?.addEventListener('submit',async ev=>{
  const item={
   employee_id:$('employeePaymentEmployee').value,payment_type:$('employeePaymentType').value,
   competence:$('employeePaymentCompetence').value,due_date:$('employeePaymentDue').value||null,
-  gross_amount:gross,deductions_amount:deductions,paid_amount:paid,payment_status:status,
+  gross_amount:gross,deductions_amount:deductions,net_amount:net,paid_amount:paid,payment_status:status,
   payment_method:$('employeePaymentMethod').value||null,payment_date:$('employeePaymentDate').value||null,
   notes:$('employeePaymentNotes').value.trim()||null
  };
