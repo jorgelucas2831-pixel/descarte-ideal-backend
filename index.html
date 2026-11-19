@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Descarte Ideal — ERP V12 Estrutura Organizacional</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
 (function(){
  function showBootError(message){
   var box=document.getElementById('connectionStatus');
@@ -700,7 +701,9 @@ $('orgExport')?.addEventListener('click',()=>{const blob=new Blob([JSON.stringif
 // =========================================================
 let hrEmployees = [];
 let hrEmployeePayments = [];
-let hrSectors = [];\nlet hrAttendance = [];\nlet hrLeaves = [];
+let hrSectors = [];
+let hrAttendance = [];
+let hrLeaves = [];
 
 async function loadHRData(){
  if(demoMode || !supabaseClient){hrEmployees=[];hrEmployeePayments=[];hrSectors=[];hrAttendance=[];hrLeaves=[];return}
