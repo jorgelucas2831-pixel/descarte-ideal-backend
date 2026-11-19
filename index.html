@@ -39,7 +39,7 @@
 <div class="nav-title">Comercial e clientes</div><nav class="nav"><button data-page="clientes">◉ &nbsp; Clientes</button><button data-page="coletas">↗ &nbsp; Coletas</button></nav>
 <div class="nav-title">Operações</div><nav class="nav"><button data-page="residuos">♻ &nbsp; Resíduos</button><button data-page="pesagem">⚖ &nbsp; Pesagem</button><button data-page="deposito">▤ &nbsp; Depósito e estoque</button></nav>
 <div class="nav-title">Financeiro</div><nav class="nav"><button data-page="financeiro">◫ &nbsp; Contas e pagamentos</button><button data-page="faturamento">▤ &nbsp; Faturamento e recebimentos</button><button data-page="caixa">$ &nbsp; Caixa e fluxo de caixa</button></nav>
-<div class="nav-title">Administração</div><nav class="nav"><button data-page="users-permissions" id="usersPermissionsNav" hidden>♙ &nbsp; Usuários e permissões</button><button disabled>♙ &nbsp; Funcionários e RH</button></nav>
+<div class="nav-title">Administração</div><nav class="nav"><button data-page="users-permissions" id="usersPermissionsNav" hidden>♙ &nbsp; Usuários e permissões</button><button data-page="rh" id="hrNav" hidden>♙ &nbsp; Funcionários e RH</button></nav>
 <div class="nav-title">Gestão e controle</div><nav class="nav"><button disabled>▱ &nbsp; Frota e logística</button><button disabled>▣ &nbsp; Documentos</button><button disabled>◴ &nbsp; Relatórios gerenciais</button></nav></aside>
 <main class="main"><header class="top"><div><div class="eyebrow">ERP DESCARTE IDEAL</div><h1 class="title" id="pageTitle">Visão geral</h1></div><div class="user"><span id="loggedUser">Usuário conectado</span><button class="btn secondary" id="logoutBtn" type="button">Sair</button><div class="avatar">DI</div></div></header>
 <section id="dashboard" class="page active"><div class="notice"><b>Ambiente em evolução:</b> os dados operacionais e financeiros exibidos dependem dos registros existentes no sistema. Esta versão preserva a estrutura atual; a nova base financeira será ativada somente após a migração SQL e a validação dos dados.</div><div class="grid"><div class="card metric"><div class="label">Coletas cadastradas</div><div class="value" id="mColetas">0</div><div class="delta">Total no sistema local</div></div><div class="card metric"><div class="label">Clientes ativos</div><div class="value" id="mClientes">0</div><div class="delta">Cadastros ativos</div></div><div class="card metric"><div class="label">Coletas agendadas</div><div class="value" id="mAgendadas">0</div><div class="delta">Aguardando execução</div></div><div class="card metric"><div class="label">Quantidade estimada</div><div class="value" id="mPeso">0 kg</div><div class="delta">Somatório informado</div></div></div><div class="two section"><div class="card"><div class="section-head"><h2>Coletas recentes</h2><button class="btn secondary" onclick="go('coletas')">Ver coletas</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Cliente</th><th>Data</th><th>Resíduo</th><th>Status</th></tr></thead><tbody id="recentTable"></tbody></table></div></div><div class="card"><div class="section-head"><h2>Acesso rápido</h2></div><p class="muted" style="font-size:13px;line-height:1.6">Organize os cadastros e acompanhe o fluxo operacional da coleta de resíduos.</p><div class="form-actions"><button class="btn" onclick="go('clientes')">+ Cadastrar cliente</button><button class="btn secondary" onclick="go('coletas')">+ Registrar coleta</button></div></div></div></section>
@@ -203,6 +203,76 @@
 
 </section>
 
+<section id="rh" class="page">
+ <div class="notice"><b>Recursos Humanos — proposta de organização.</b> Esta é uma prévia visual da gestão de funcionários permanentes, temporários, eventuais e prestadores. Os novos registros de períodos de trabalho ainda não estão conectados ao Supabase; nenhum dado será gravado nesta prévia.</div>
+ <div class="grid">
+  <div class="card metric"><div class="label">Pessoas cadastradas</div><div class="value" id="rhPeopleCount">—</div><div class="delta">Funcionários e trabalhadores</div></div>
+  <div class="card metric"><div class="label">Períodos em andamento</div><div class="value">—</div><div class="delta">Contratações ativas</div></div>
+  <div class="card metric"><div class="label">Encerramentos próximos</div><div class="value">—</div><div class="delta">Próximos 7 dias</div></div>
+  <div class="card metric"><div class="label">Pendências de documentação</div><div class="value">—</div><div class="delta">A conferir pelo RH</div></div>
+ </div>
+ <div class="subtabs" role="tablist" aria-label="Áreas de Recursos Humanos">
+  <button type="button" class="subtab active" data-hr-tab="overview">Visão geral</button>
+  <button type="button" class="subtab" data-hr-tab="people">Pessoas</button>
+  <button type="button" class="subtab" data-hr-tab="periods">Temporários e eventuais</button>
+  <button type="button" class="subtab" data-hr-tab="availability">Banco de trabalhadores</button>
+  <button type="button" class="subtab" data-hr-tab="attendance">Frequência</button>
+  <button type="button" class="subtab" data-hr-tab="documents">Documentação</button>
+ </div>
+ <div id="hrOverviewPanel">
+  <div class="two section">
+   <div class="card"><div class="section-head"><h2>Organização dos vínculos</h2></div>
+    <div class="notice">A classificação deve refletir a modalidade real da contratação, e não apenas a quantidade de dias trabalhados. O RH deve validar o enquadramento jurídico antes de registrar o vínculo.</div>
+    <div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+     <div class="card"><b>Funcionários permanentes</b><p class="muted" style="font-size:12px">Vínculos contínuos e prontuário funcional.</p></div>
+     <div class="card"><b>Trabalho temporário</b><p class="muted" style="font-size:12px">Contratações formalizadas por prazo e necessidade específicos.</p></div>
+     <div class="card"><b>Serviços eventuais / autônomos</b><p class="muted" style="font-size:12px">Serviços pontuais conforme a modalidade aplicável.</p></div>
+     <div class="card"><b>Terceirizados</b><p class="muted" style="font-size:12px">Pessoas vinculadas a empresas prestadoras.</p></div>
+    </div>
+   </div>
+   <div class="card"><div class="section-head"><h2>Atalhos de RH</h2></div>
+    <div class="form-actions"><button class="btn" type="button" onclick="showHRTab('periods')">+ Registrar período de trabalho</button><button class="btn secondary" type="button" onclick="showHRTab('people')">Cadastrar pessoa</button><button class="btn secondary" type="button" onclick="showHRTab('availability')">Consultar disponibilidade</button></div>
+    <p class="muted" style="font-size:12px;line-height:1.5;margin-top:14px">A mesma pessoa poderá ter vários períodos de trabalho ao longo do tempo. Cada convocação terá datas, função, responsável, frequência e valores próprios.</p>
+   </div>
+  </div>
+  <div class="card section"><div class="section-head"><h2>Exemplo de uma demanda de 15 dias</h2><span class="status progress">Exemplo ilustrativo</span></div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>Trabalhador</th><th>Atividade</th><th>Início</th><th>Término previsto</th><th>Período</th><th>Situação</th></tr></thead><tbody><tr><td>Trabalhador exemplo</td><td>Auxiliar operacional</td><td>01/12/2026</td><td>15/12/2026</td><td>15 dias</td><td><span class="status pending">Planejado</span></td></tr></tbody></table></div>
+  </div>
+ </div>
+ <div id="hrPeoplePanel" hidden>
+  <div class="card section"><div class="section-head"><h2>Cadastro de pessoas</h2><span class="muted" style="font-size:12px">Cadastro-base reutilizável</span></div>
+   <div class="formgrid"><div class="field"><label>Nome completo</label><input placeholder="Nome da pessoa" disabled></div><div class="field"><label>Documento</label><input placeholder="CPF ou CNPJ" disabled></div><div class="field"><label>Telefone</label><input placeholder="Contato" disabled></div><div class="field"><label>Categoria de relacionamento</label><select disabled><option>Selecione</option><option>Funcionário</option><option>Trabalhador temporário</option><option>Autônomo / eventual</option><option>Prestador terceirizado</option></select></div></div>
+   <div class="notice section">O cadastro-base será conectado à tabela de pessoas do RH na etapa de banco de dados. O prontuário existente de funcionários será preservado.</div>
+  </div>
+ </div>
+ <div id="hrPeriodsPanel" hidden>
+  <div class="card section"><div class="section-head"><h2>Novo período de trabalho</h2><span class="status progress">Estrutura proposta</span></div>
+   <div class="formgrid">
+    <div class="field"><label>Pessoa *</label><select disabled><option>Selecione no banco de trabalhadores</option></select></div>
+    <div class="field"><label>Modalidade do vínculo *</label><select disabled><option>Selecione após validação</option><option>Trabalho temporário</option><option>Serviço autônomo / eventual</option><option>Prestador terceirizado</option></select></div>
+    <div class="field"><label>Função / atividade</label><input disabled placeholder="Ex.: auxiliar operacional"></div>
+    <div class="field"><label>Setor / operação</label><select disabled><option>Selecione o setor</option></select></div>
+    <div class="field"><label>Data de início *</label><input type="date" disabled></div>
+    <div class="field"><label>Data prevista de término *</label><input type="date" disabled></div>
+    <div class="field"><label>Responsável pela supervisão</label><input disabled placeholder="Nome do responsável"></div>
+    <div class="field"><label>Valor combinado / referência</label><input disabled placeholder="R$ 0,00"></div>
+    <div class="field full"><label>Descrição da demanda e observações</label><textarea disabled placeholder="Motivo da convocação, atividade, local e condições"></textarea></div>
+   </div>
+   <div class="form-actions"><button class="btn" type="button" disabled>Salvar período (aguardando integração)</button></div>
+  </div>
+  <div class="card section"><div class="section-head"><h2>Histórico de períodos</h2><input class="search" placeholder="Buscar pessoa ou atividade" disabled></div><div class="table-wrap"><table class="table"><thead><tr><th>Pessoa</th><th>Modalidade</th><th>Atividade</th><th>Início</th><th>Término</th><th>Dias</th><th>Situação</th></tr></thead><tbody><tr><td colspan="7" class="empty">Os períodos serão exibidos aqui após a integração com o banco de dados.</td></tr></tbody></table></div></div>
+ </div>
+ <div id="hrAvailabilityPanel" hidden>
+  <div class="card section"><div class="section-head"><h2>Banco de trabalhadores</h2><span class="muted" style="font-size:12px">Pessoas disponíveis para futuras demandas</span></div><div class="formgrid"><div class="field"><label>Buscar por nome</label><input disabled placeholder="Nome do trabalhador"></div><div class="field"><label>Função</label><select disabled><option>Todas as funções</option></select></div><div class="field"><label>Disponibilidade</label><select disabled><option>Todas</option><option>Disponível</option><option>Indisponível</option></select></div><div class="field"><label>Último período trabalhado</label><input disabled type="date"></div></div><div class="table-wrap section"><table class="table"><thead><tr><th>Nome</th><th>Função</th><th>Contato</th><th>Último período</th><th>Disponibilidade</th></tr></thead><tbody><tr><td colspan="5" class="empty">O banco de trabalhadores será preenchido após a implantação da estrutura de RH.</td></tr></tbody></table></div></div>
+ </div>
+ <div id="hrAttendancePanel" hidden>
+  <div class="card section"><h2>Frequência por período</h2><p class="muted" style="font-size:13px">Registro diário de presença, faltas e horas, associado a cada período de trabalho. Para vínculos em que se aplique, serão configuradas jornada, intervalos e tratamento de horas extras.</p><div class="notice">A frequência não será presumida a partir das datas inicial e final: cada dia trabalhado deverá ser registrado e validado pelo responsável.</div></div>
+ </div>
+ <div id="hrDocumentsPanel" hidden>
+  <div class="card section"><h2>Documentação e conformidade</h2><ul style="font-size:13px;line-height:1.9;color:var(--muted)"><li>Documentos pessoais e cadastrais, conforme a modalidade.</li><li>Contrato ou instrumento aplicável.</li><li>Registros de início, encerramento e responsável.</li><li>Comprovantes e documentos de pagamento.</li><li>Documentos de saúde e segurança ocupacional, quando aplicáveis.</li></ul><div class="notice">Dados pessoais e de saúde exigem acesso restrito, finalidade definida e controles compatíveis com a LGPD.</div></div>
+ </div>
+</section>
+
 <section id="users-permissions" class="page">
  <div class="notice"><b>Central de acessos:</b> cadastre contas individuais, consulte os usuários e configure as permissões por setor. As alterações são processadas por uma função segura no Supabase; a chave administrativa nunca fica no navegador.</div>
  <div class="grid">
@@ -359,7 +429,7 @@
 </section>
 </main></div>
 <script>
-const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito','users-permissions':'Usuários e permissões'};
+const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito','users-permissions':'Usuários e permissões','rh':'Recursos Humanos'};
 let currentProfile=null;let depositOnlyUser=false;let currentSession=null;
 let demoMode=false; let payments=loadPayments(); let invoices=loadInvoices(); let invoiceReceipts=loadInvoiceReceipts();
 let state={clients:[],collections:[]};let weighings=loadWeighings();let supabaseClient=null;let connectedUrl='';let connectedKey='';
@@ -375,7 +445,7 @@ async function applyAccountAccess(session){
  currentSession=session;const {data:profile,error}=await supabaseClient.from('profiles').select('id,full_name,role').eq('id',session.user.id).maybeSingle();
  if(error)throw error;currentProfile=profile||{id:session.user.id,full_name:session.user.email||'',role:'operador'};
  const isAdmin=currentProfile.role==='administrador';depositOnlyUser=false;
- const adminNav=$('depositUsersNav');if(adminNav)adminNav.hidden=true;const usersNav=$('usersPermissionsNav');if(usersNav)usersNav.hidden=!isAdmin;
+ const adminNav=$('depositUsersNav');if(adminNav)adminNav.hidden=true;const usersNav=$('usersPermissionsNav');if(usersNav)usersNav.hidden=!isAdmin;const hrNav=$('hrNav');if(hrNav)hrNav.hidden=!isAdmin;
  if(!isAdmin){
   const {data:allowed,error:permissionError}=await supabaseClient.rpc('has_sector_permission',{p_sector_code:'deposito',p_permission:'can_view'});
   if(permissionError)throw permissionError;
@@ -478,7 +548,7 @@ async function deleteModuleRecord(type,id){if(demoMode||!supabaseClient)return;c
 function setSyncIndicator(message,isError=false){let el=$('syncStatus');if(!el){el=document.createElement('div');el.id='syncStatus';el.style.cssText='position:fixed;right:14px;bottom:14px;z-index:5000;padding:9px 12px;border-radius:8px;background:#064e3b;color:#fff;font-size:11px;max-width:min(420px,90vw);box-shadow:0 5px 20px #0002';document.body.appendChild(el)}el.textContent=message;el.style.background=isError?'#9f2d2d':'#102019';el.hidden=false;clearTimeout(el._hideTimer);el._hideTimer=setTimeout(()=>{el.hidden=true},5000)}
 function toLocalInput(v){if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return '';const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 async function refresh(){try{await loadFromSupabase();render();populateInvoiceLinks();renderInvoices()}catch(e){alert('Erro ao atualizar dados do Supabase: '+(e.message||e))}}
-function go(page){if(depositOnlyUser&&page!=='deposito'){page='deposito'}if((page==='deposit-users'||page==='users-permissions')&&currentProfile?.role!=='administrador'){page='deposito'}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page)?.classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page]||'Descarte Ideal';if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR();loadDepositFinanceData().then(renderDepositFinance)}if(page==='deposito'){loadDepositData().then(renderDeposit)}if(page==='deposit-users'){loadDepositStaffAccounts()}if(page==='users-permissions'){loadManagedUsers()}}
+function go(page){if(depositOnlyUser&&page!=='deposito'){page='deposito'}if((page==='deposit-users'||page==='users-permissions'||page==='rh')&&currentProfile?.role!=='administrador'){page='deposito'}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page)?.classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page]||'Descarte Ideal';if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR();loadDepositFinanceData().then(renderDepositFinance)}if(page==='deposito'){loadDepositData().then(renderDeposit)}if(page==='deposit-users'){loadDepositStaffAccounts()}if(page==='users-permissions'){loadManagedUsers()}if(page==='rh'){showHRTab('overview')}}
 document.querySelectorAll('.nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function showClientForm(c=null){$('clientFormCard').hidden=false;$('clientFormTitle').textContent=c?'Editar cliente':'Novo cliente';$('clientId').value=c?.id||'';$('clientName').value=c?.name||'';$('clientDoc').value=c?.doc||'';$('clientContact').value=c?.contact||'';$('clientStatus').value=c?.status||'Ativo';$('clientAddress').value=c?.address||'';$('clientFormCard').scrollIntoView({behavior:'smooth',block:'start'})}function hideClientForm(){$('clientFormCard').hidden=true;$('clientForm').reset();$('clientId').value=''}
 $('clientForm').addEventListener('submit',async e=>{e.preventDefault();const cid=$('clientId').value;const item={name:$('clientName').value.trim(),document:$('clientDoc').value.trim()||null,contact:$('clientContact').value.trim()||null,status:$('clientStatus').value,address:$('clientAddress').value.trim()||null};if(!item.name)return;const q=cid?supabaseClient.from('clients').update(item).eq('id',cid):supabaseClient.from('clients').insert(item);const {error}=await q;if(error){alert('Não foi possível salvar o cliente: '+error.message);return}hideClientForm();await refresh()});
@@ -692,6 +762,14 @@ function showPaymentTab(tab){
 }
 document.querySelectorAll('[data-payment-tab]').forEach(b=>b.addEventListener('click',()=>showPaymentTab(b.dataset.paymentTab)));
 
+
+
+function showHRTab(tab){
+ const panels={overview:'hrOverviewPanel',people:'hrPeoplePanel',periods:'hrPeriodsPanel',availability:'hrAvailabilityPanel',attendance:'hrAttendancePanel',documents:'hrDocumentsPanel'};
+ Object.entries(panels).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==tab});
+ document.querySelectorAll('[data-hr-tab]').forEach(b=>b.classList.toggle('active',b.dataset.hrTab===tab));
+}
+document.querySelectorAll('[data-hr-tab]').forEach(b=>b.addEventListener('click',()=>showHRTab(b.dataset.hrTab)));
 
 // =========================================================
 // CONTAS DE ACESSO DA EQUIPE DO DEPOSITO (ADMINISTRADOR)
