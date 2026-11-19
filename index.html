@@ -15,6 +15,8 @@
 .subtab{border:1px solid var(--line);background:#fff;color:var(--muted);padding:10px 14px;border-radius:9px;font-weight:700;font-size:12px;cursor:pointer}
 .subtab.active{background:#e4f5ea;border-color:#b7dfc5;color:#12633f}
 @media(max-width:900px){.invoice-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.invoice-summary{grid-template-columns:1fr 1fr}}
+
+.permission-sector-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.permission-sector-option{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px}.permission-sector-option input{width:auto}.permission-table-check{text-align:center;white-space:nowrap}.permission-table-check input{width:17px;height:17px;accent-color:var(--green)}#managedPermissionRows td{vertical-align:middle}#managedPermissionRows td:first-child{font-weight:650}.user-action-group{display:flex;gap:6px;flex-wrap:wrap}.user-action-group button{white-space:nowrap}
 </style><meta name="application-version" content="11.0.0-preparacao"><meta name="description" content="Descarte Ideal ERP V11 em preparação, com identidade verde-esmeralda e estrutura financeira ampliada."></head>
 <body>
 <div id="connectionGate"><div class="gate-card">
@@ -37,7 +39,7 @@
 <div class="nav-title">Comercial e clientes</div><nav class="nav"><button data-page="clientes">◉ &nbsp; Clientes</button><button data-page="coletas">↗ &nbsp; Coletas</button></nav>
 <div class="nav-title">Operações</div><nav class="nav"><button data-page="residuos">♻ &nbsp; Resíduos</button><button data-page="pesagem">⚖ &nbsp; Pesagem</button><button data-page="deposito">▤ &nbsp; Depósito e estoque</button></nav>
 <div class="nav-title">Financeiro</div><nav class="nav"><button data-page="financeiro">◫ &nbsp; Contas e pagamentos</button><button data-page="faturamento">▤ &nbsp; Faturamento e recebimentos</button><button data-page="caixa">$ &nbsp; Caixa e fluxo de caixa</button></nav>
-<div class="nav-title">Administração</div><nav class="nav"><button data-page="deposit-users" id="depositUsersNav" hidden>♙ &nbsp; Equipe do Depósito</button><button disabled>♙ &nbsp; Funcionários e RH</button><button disabled>⚙ &nbsp; Usuários e permissões</button></nav>
+<div class="nav-title">Administração</div><nav class="nav"><button data-page="users-permissions" id="usersPermissionsNav" hidden>♙ &nbsp; Usuários e permissões</button><button disabled>♙ &nbsp; Funcionários e RH</button></nav>
 <div class="nav-title">Gestão e controle</div><nav class="nav"><button disabled>▱ &nbsp; Frota e logística</button><button disabled>▣ &nbsp; Documentos</button><button disabled>◴ &nbsp; Relatórios gerenciais</button></nav></aside>
 <main class="main"><header class="top"><div><div class="eyebrow">ERP DESCARTE IDEAL</div><h1 class="title" id="pageTitle">Visão geral</h1></div><div class="user"><span id="loggedUser">Usuário conectado</span><button class="btn secondary" id="logoutBtn" type="button">Sair</button><div class="avatar">DI</div></div></header>
 <section id="dashboard" class="page active"><div class="notice"><b>Ambiente em evolução:</b> os dados operacionais e financeiros exibidos dependem dos registros existentes no sistema. Esta versão preserva a estrutura atual; a nova base financeira será ativada somente após a migração SQL e a validação dos dados.</div><div class="grid"><div class="card metric"><div class="label">Coletas cadastradas</div><div class="value" id="mColetas">0</div><div class="delta">Total no sistema local</div></div><div class="card metric"><div class="label">Clientes ativos</div><div class="value" id="mClientes">0</div><div class="delta">Cadastros ativos</div></div><div class="card metric"><div class="label">Coletas agendadas</div><div class="value" id="mAgendadas">0</div><div class="delta">Aguardando execução</div></div><div class="card metric"><div class="label">Quantidade estimada</div><div class="value" id="mPeso">0 kg</div><div class="delta">Somatório informado</div></div></div><div class="two section"><div class="card"><div class="section-head"><h2>Coletas recentes</h2><button class="btn secondary" onclick="go('coletas')">Ver coletas</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Cliente</th><th>Data</th><th>Resíduo</th><th>Status</th></tr></thead><tbody id="recentTable"></tbody></table></div></div><div class="card"><div class="section-head"><h2>Acesso rápido</h2></div><p class="muted" style="font-size:13px;line-height:1.6">Organize os cadastros e acompanhe o fluxo operacional da coleta de resíduos.</p><div class="form-actions"><button class="btn" onclick="go('clientes')">+ Cadastrar cliente</button><button class="btn secondary" onclick="go('coletas')">+ Registrar coleta</button></div></div></div></section>
@@ -201,6 +203,39 @@
 
 </section>
 
+<section id="users-permissions" class="page">
+ <div class="notice"><b>Central de acessos:</b> cadastre contas individuais, consulte os usuários e configure as permissões por setor. As alterações são processadas por uma função segura no Supabase; a chave administrativa nunca fica no navegador.</div>
+ <div class="grid">
+  <div class="card metric"><div class="label">Usuários cadastrados</div><div class="value" id="managedUsersCount">—</div><div class="delta">Contas encontradas no Supabase Auth</div></div>
+  <div class="card metric"><div class="label">Setores disponíveis</div><div class="value" id="managedSectorsCount">—</div><div class="delta">Setores ativos da empresa</div></div>
+  <div class="card metric"><div class="label">Contas bloqueadas</div><div class="value" id="managedBlockedCount">—</div><div class="delta">Acessos suspensos</div></div>
+ </div>
+ <div class="card section">
+  <div class="section-head"><h2>Cadastrar novo usuário</h2><span class="muted" style="font-size:12px">Apenas administradores</span></div>
+  <form id="managedUserCreateForm">
+   <div class="formgrid section">
+    <div class="field"><label for="managedUserName">Nome completo *</label><input id="managedUserName" required maxlength="120" autocomplete="name"></div>
+    <div class="field"><label for="managedUserEmail">E-mail de acesso *</label><input id="managedUserEmail" type="email" required maxlength="254" autocomplete="email"></div>
+    <div class="field"><label for="managedUserPassword">Senha inicial *</label><input id="managedUserPassword" type="password" required minlength="8" maxlength="72" autocomplete="new-password"></div>
+    <div class="field"><label for="managedUserRole">Perfil</label><select id="managedUserRole"><option value="operador">Operador</option></select></div>
+    <div class="field full"><label>Setores iniciais</label><div id="managedCreateSectors" class="permission-sector-list"><span class="muted">Carregando setores...</span></div></div>
+   </div>
+   <div class="form-actions"><button class="btn" id="managedUserCreateButton" type="submit">Criar usuário</button><button class="btn secondary" type="reset">Limpar</button></div>
+  </form>
+ </div>
+ <div class="card section">
+  <div class="section-head"><h2>Usuários cadastrados</h2><button class="btn secondary" id="refreshManagedUsers" type="button">Atualizar lista</button></div>
+  <div class="field" style="max-width:360px;margin-bottom:14px"><label for="managedUserSearch">Buscar usuário</label><input id="managedUserSearch" placeholder="Nome ou e-mail"></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Usuário</th><th>E-mail</th><th>Perfil</th><th>Setores</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="managedUsersTable"><tr><td colspan="6" class="empty">Carregando usuários...</td></tr></tbody></table></div>
+ </div>
+ <div class="card section" id="managedPermissionEditor" hidden>
+  <div class="section-head"><div><h2 id="managedPermissionTitle">Permissões do usuário</h2><div class="muted" id="managedPermissionSubtitle"></div></div><button class="btn secondary" type="button" id="closeManagedPermissionEditor">Fechar</button></div>
+  <div class="notice">Marque os setores aos quais a pessoa terá acesso e escolha o que poderá fazer em cada um. Desmarcar um setor remove o acesso daquele usuário ao setor.</div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Setor</th><th>Acesso</th><th>Visualizar</th><th>Criar</th><th>Editar</th><th>Excluir</th><th>Aprovar</th><th>Gerenciar usuários</th></tr></thead><tbody id="managedPermissionRows"></tbody></table></div>
+  <div class="form-actions"><button class="btn" id="saveManagedPermissions" type="button">Salvar permissões</button></div>
+ </div>
+</section>
+
 <section id="deposit-users" class="page">
  <div class="notice"><b>Equipe do Depósito:</b> cadastre os acessos individuais. Você define a senha inicial; ela é enviada diretamente ao Supabase Auth e não fica gravada no banco em texto aberto. Cada conta terá acesso somente ao módulo Depósito.</div>
  <div class="card section">
@@ -324,7 +359,7 @@
 </section>
 </main></div>
 <script>
-const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito'};
+const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito','users-permissions':'Usuários e permissões'};
 let currentProfile=null;let depositOnlyUser=false;let currentSession=null;
 let demoMode=false; let payments=loadPayments(); let invoices=loadInvoices(); let invoiceReceipts=loadInvoiceReceipts();
 let state={clients:[],collections:[]};let weighings=loadWeighings();let supabaseClient=null;let connectedUrl='';let connectedKey='';
@@ -340,7 +375,7 @@ async function applyAccountAccess(session){
  currentSession=session;const {data:profile,error}=await supabaseClient.from('profiles').select('id,full_name,role').eq('id',session.user.id).maybeSingle();
  if(error)throw error;currentProfile=profile||{id:session.user.id,full_name:session.user.email||'',role:'operador'};
  const isAdmin=currentProfile.role==='administrador';depositOnlyUser=false;
- const adminNav=$('depositUsersNav');if(adminNav)adminNav.hidden=!isAdmin;
+ const adminNav=$('depositUsersNav');if(adminNav)adminNav.hidden=true;const usersNav=$('usersPermissionsNav');if(usersNav)usersNav.hidden=!isAdmin;
  if(!isAdmin){
   const {data:allowed,error:permissionError}=await supabaseClient.rpc('has_sector_permission',{p_sector_code:'deposito',p_permission:'can_view'});
   if(permissionError)throw permissionError;
@@ -443,7 +478,7 @@ async function deleteModuleRecord(type,id){if(demoMode||!supabaseClient)return;c
 function setSyncIndicator(message,isError=false){let el=$('syncStatus');if(!el){el=document.createElement('div');el.id='syncStatus';el.style.cssText='position:fixed;right:14px;bottom:14px;z-index:5000;padding:9px 12px;border-radius:8px;background:#064e3b;color:#fff;font-size:11px;max-width:min(420px,90vw);box-shadow:0 5px 20px #0002';document.body.appendChild(el)}el.textContent=message;el.style.background=isError?'#9f2d2d':'#102019';el.hidden=false;clearTimeout(el._hideTimer);el._hideTimer=setTimeout(()=>{el.hidden=true},5000)}
 function toLocalInput(v){if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return '';const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 async function refresh(){try{await loadFromSupabase();render();populateInvoiceLinks();renderInvoices()}catch(e){alert('Erro ao atualizar dados do Supabase: '+(e.message||e))}}
-function go(page){if(depositOnlyUser&&page!=='deposito'){page='deposito'}if(page==='deposit-users'&&currentProfile?.role!=='administrador'){page='deposito'}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page)?.classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page]||'Descarte Ideal';if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR();loadDepositFinanceData().then(renderDepositFinance)}if(page==='deposito'){loadDepositData().then(renderDeposit)}if(page==='deposit-users'){loadDepositStaffAccounts()}}
+function go(page){if(depositOnlyUser&&page!=='deposito'){page='deposito'}if((page==='deposit-users'||page==='users-permissions')&&currentProfile?.role!=='administrador'){page='deposito'}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page)?.classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page]||'Descarte Ideal';if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR();loadDepositFinanceData().then(renderDepositFinance)}if(page==='deposito'){loadDepositData().then(renderDeposit)}if(page==='deposit-users'){loadDepositStaffAccounts()}if(page==='users-permissions'){loadManagedUsers()}}
 document.querySelectorAll('.nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function showClientForm(c=null){$('clientFormCard').hidden=false;$('clientFormTitle').textContent=c?'Editar cliente':'Novo cliente';$('clientId').value=c?.id||'';$('clientName').value=c?.name||'';$('clientDoc').value=c?.doc||'';$('clientContact').value=c?.contact||'';$('clientStatus').value=c?.status||'Ativo';$('clientAddress').value=c?.address||'';$('clientFormCard').scrollIntoView({behavior:'smooth',block:'start'})}function hideClientForm(){$('clientFormCard').hidden=true;$('clientForm').reset();$('clientId').value=''}
 $('clientForm').addEventListener('submit',async e=>{e.preventDefault();const cid=$('clientId').value;const item={name:$('clientName').value.trim(),document:$('clientDoc').value.trim()||null,contact:$('clientContact').value.trim()||null,status:$('clientStatus').value,address:$('clientAddress').value.trim()||null};if(!item.name)return;const q=cid?supabaseClient.from('clients').update(item).eq('id',cid):supabaseClient.from('clients').insert(item);const {error}=await q;if(error){alert('Não foi possível salvar o cliente: '+error.message);return}hideClientForm();await refresh()});
@@ -662,6 +697,51 @@ document.querySelectorAll('[data-payment-tab]').forEach(b=>b.addEventListener('c
 // CONTAS DE ACESSO DA EQUIPE DO DEPOSITO (ADMINISTRADOR)
 // =========================================================
 let depositStaffAccounts=[];
+// =========================================================
+// USUARIOS E PERMISSOES — ADMINISTRACAO CENTRALIZADA
+// =========================================================
+let managedUsers=[];
+let managedSectors=[];
+let managedEditingUser=null;
+function permissionLabel(code){return ({administrador:'Administrador',operador:'Operador'})[code]||code||'Operador'}
+function renderCreateSectorOptions(){const el=$('managedCreateSectors');if(!el)return;el.innerHTML=managedSectors.length?managedSectors.map(sec=>`<label class="permission-sector-option"><input type="checkbox" name="managedCreateSector" value="${esc(sec.id)}"> ${esc(sec.name)}</label>`).join(''):'<span class="muted">Nenhum setor ativo encontrado.</span>'}
+async function loadManagedUsers(){
+ const body=$('managedUsersTable');if(!body||!supabaseClient||currentProfile?.role!=='administrador')return;
+ body.innerHTML='<tr><td colspan="6" class="empty">Carregando usuários...</td></tr>';
+ try{
+  const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'list'}});
+  if(error)throw error;if(data?.error)throw new Error(data.error);
+  managedUsers=data.users||[];managedSectors=data.sectors||[];
+  $('managedUsersCount').textContent=managedUsers.length;$('managedSectorsCount').textContent=managedSectors.length;$('managedBlockedCount').textContent=managedUsers.filter(u=>!u.active).length;
+  renderCreateSectorOptions();renderManagedUsersTable();
+ }catch(err){body.innerHTML=`<tr><td colspan="6" class="empty">Não foi possível carregar: ${esc(err.message||err)}. Verifique se a função admin-manage-users foi publicada no Supabase.</td></tr>`}
+}
+function renderManagedUsersTable(){
+ const body=$('managedUsersTable');if(!body)return;const q=($('managedUserSearch')?.value||'').trim().toLowerCase();
+ const rows=managedUsers.filter(u=>(u.full_name+' '+u.email).toLowerCase().includes(q));
+ body.innerHTML=rows.length?rows.map(u=>{const sectors=(u.access||[]).filter(a=>a.active).map(a=>a.sector_name);const isAdmin=u.role==='administrador';return `<tr><td><b>${esc(u.full_name||'Sem nome')}</b></td><td>${esc(u.email||'—')}</td><td>${permissionLabel(u.role)}</td><td>${esc(sectors.join(', ')||'Sem setor')}</td><td><span class="status ${u.active?'ok':'cancelled'}">${u.active?'Ativo':'Bloqueado'}</span></td><td><div class="user-action-group">${!isAdmin?`<button class="smallbtn" onclick="openManagedPermissions('${u.id}')">Permissões</button><button class="smallbtn" onclick="setManagedUserStatus('${u.id}',${!u.active})">${u.active?'Bloquear':'Reativar'}</button>`:'<span class="muted">Conta protegida</span>'}</div></td></tr>`}).join(''):'<tr><td colspan="6" class="empty">Nenhum usuário encontrado.</td></tr>';
+}
+function openManagedPermissions(userId){
+ const user=managedUsers.find(u=>u.id===userId);if(!user||user.role==='administrador')return;managedEditingUser=user;
+ $('managedPermissionTitle').textContent='Permissões — '+(user.full_name||user.email);$('managedPermissionSubtitle').textContent=user.email||'';
+ const accessBySector=new Map((user.access||[]).map(a=>[a.sector_id,a]));
+ const permissions=[['can_view','Visualizar'],['can_create','Criar'],['can_edit','Editar'],['can_delete','Excluir'],['can_approve','Aprovar'],['can_manage_users','Gerenciar usuários']];
+ $('managedPermissionRows').innerHTML=managedSectors.map(sec=>{const a=accessBySector.get(sec.id)||{};return `<tr data-sector-row="${esc(sec.id)}"><td>${esc(sec.name)}</td><td class="permission-table-check"><input type="checkbox" data-access="active" ${a.active?'checked':''} aria-label="Acesso ao setor ${esc(sec.name)}"></td>${permissions.map(([key,label])=>`<td class="permission-table-check"><input type="checkbox" data-permission="${key}" ${a[key]?'checked':''} ${!a.active?'disabled':''} aria-label="${label} — ${esc(sec.name)}"></td>`).join('')}</tr>`}).join('');
+ $('managedPermissionRows').querySelectorAll('[data-access="active"]').forEach(ch=>ch.addEventListener('change',()=>{const row=ch.closest('tr');row.querySelectorAll('[data-permission]').forEach(p=>p.disabled=!ch.checked)}));
+ $('managedPermissionEditor').hidden=false;$('managedPermissionEditor').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('closeManagedPermissionEditor')?.addEventListener('click',()=>{$('managedPermissionEditor').hidden=true;managedEditingUser=null});
+$('saveManagedPermissions')?.addEventListener('click',async()=>{
+ if(!managedEditingUser)return;const button=$('saveManagedPermissions');button.disabled=true;button.textContent='Salvando...';
+ try{const access=[...$('managedPermissionRows').querySelectorAll('tr[data-sector-row]')].map(row=>{const active=row.querySelector('[data-access]').checked;const item={sector_id:row.dataset.sectorRow,active};row.querySelectorAll('[data-permission]').forEach(ch=>item[ch.dataset.permission]=active&&ch.checked);return item});
+  const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'update_permissions',user_id:managedEditingUser.id,access}});if(error)throw error;if(data?.error)throw new Error(data.error);
+  $('managedPermissionEditor').hidden=true;managedEditingUser=null;await loadManagedUsers();alert('Permissões atualizadas com sucesso.');
+ }catch(err){alert('Não foi possível salvar as permissões: '+(err.message||err))}finally{button.disabled=false;button.textContent='Salvar permissões'}
+});
+async function setManagedUserStatus(userId,active){const u=managedUsers.find(x=>x.id===userId);if(!u)return;if(!confirm(`Deseja ${active?'reativar':'bloquear'} o acesso de ${u.full_name||u.email}?`))return;try{const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'set_active',user_id:userId,active}});if(error)throw error;if(data?.error)throw new Error(data.error);await loadManagedUsers();alert('Acesso '+(active?'reativado':'bloqueado')+' com sucesso.')}catch(err){alert('Não foi possível alterar o acesso: '+(err.message||err))}}
+$('managedUserCreateForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!supabaseClient||currentProfile?.role!=='administrador'){alert('Somente administradores podem cadastrar usuários.');return}const name=$('managedUserName').value.trim(),email=$('managedUserEmail').value.trim().toLowerCase(),password=$('managedUserPassword').value;const sectorIds=[...document.querySelectorAll('input[name="managedCreateSector"]:checked')].map(x=>x.value);if(!sectorIds.length){alert('Selecione pelo menos um setor para o novo usuário.');return}const button=$('managedUserCreateButton');button.disabled=true;button.textContent='Criando...';try{const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'create',name,email,password,role:'operador',sector_ids:sectorIds}});if(error)throw error;if(data?.error)throw new Error(data.error);$('managedUserCreateForm').reset();await loadManagedUsers();alert('Usuário criado. Ele já pode entrar com o e-mail e a senha definidos.')}catch(err){alert('Não foi possível criar o usuário: '+(err.message||err))}finally{button.disabled=false;button.textContent='Criar usuário'}});
+$('refreshManagedUsers')?.addEventListener('click',loadManagedUsers);$('managedUserSearch')?.addEventListener('input',renderManagedUsersTable);
+
 async function loadDepositStaffAccounts(){
  const body=$('depositUsersTable');if(!body||!supabaseClient||currentProfile?.role!=='administrador')return;
  body.innerHTML='<tr><td colspan="6" class="empty">Carregando...</td></tr>';
