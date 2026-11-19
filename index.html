@@ -18,6 +18,7 @@
 
 .permission-sector-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:9px}.permission-sector-option{display:flex;align-items:center;gap:9px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px}.permission-sector-option input{width:auto}.permission-table-check{text-align:center;white-space:nowrap}.permission-table-check input{width:17px;height:17px;accent-color:var(--green)}#managedPermissionRows td{vertical-align:middle}#managedPermissionRows td:first-child{font-weight:650}.user-action-group{display:flex;gap:6px;flex-wrap:wrap}.user-action-group button{white-space:nowrap}
 .org-chart{display:grid;gap:14px}.org-chart-dept{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fbfdfb}.org-chart-dept h3{margin:0 0 10px;font-size:14px;color:var(--green2)}.org-chart-role{display:inline-flex;flex-direction:column;gap:3px;background:#eef7f1;border:1px solid #d6eadc;border-radius:9px;padding:9px 12px;margin:4px;font-size:12px}.org-chart-role b{font-size:12px}.org-chart-role span{color:var(--muted);font-size:11px}.org-actions{display:flex;gap:6px;flex-wrap:wrap}.org-actions button{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 8px;cursor:pointer;font-size:11px}@media(max-width:650px){.org-chart{gap:9px}}
+ .hr-tab{min-width:0}
 </style><meta name="application-version" content="11.0.0-preparacao"><meta name="description" content="Descarte Ideal ERP V11 em preparação, com identidade verde-esmeralda e estrutura financeira ampliada."></head>
 <body>
 <div id="connectionGate"><div class="gate-card">
@@ -40,7 +41,7 @@
 <div class="nav-title">Comercial e clientes</div><nav class="nav"><button data-page="clientes">◉ &nbsp; Clientes</button><button data-page="coletas">↗ &nbsp; Coletas</button></nav>
 <div class="nav-title">Operações</div><nav class="nav"><button data-page="residuos">♻ &nbsp; Resíduos</button><button data-page="pesagem">⚖ &nbsp; Pesagem</button><button data-page="deposito">▤ &nbsp; Depósito e estoque</button></nav>
 <div class="nav-title">Financeiro</div><nav class="nav"><button data-page="financeiro">◫ &nbsp; Contas e pagamentos</button><button data-page="faturamento">▤ &nbsp; Faturamento e recebimentos</button><button data-page="caixa">$ &nbsp; Caixa e fluxo de caixa</button></nav>
-<div class="nav-title">Administração</div><nav class="nav"><button data-page="users-permissions" id="usersPermissionsNav" hidden>♙ &nbsp; Usuários e permissões</button><button data-page="org-structure" id="orgStructureNav" hidden>▦ &nbsp; Estrutura organizacional</button><button disabled>♙ &nbsp; Funcionários e RH</button></nav>
+<div class="nav-title">Administração</div><nav class="nav"><button data-page="users-permissions" id="usersPermissionsNav" hidden>♙ &nbsp; Usuários e permissões</button><button data-page="org-structure" id="orgStructureNav" hidden>▦ &nbsp; Estrutura organizacional</button><button data-page="rh" id="hrNav" hidden>♙ &nbsp; Funcionários e RH</button></nav>
 <div class="nav-title">Gestão e controle</div><nav class="nav"><button disabled>▱ &nbsp; Frota e logística</button><button disabled>▣ &nbsp; Documentos</button><button disabled>◴ &nbsp; Relatórios gerenciais</button></nav></aside>
 <main class="main"><header class="top"><div><div class="eyebrow">ERP DESCARTE IDEAL</div><h1 class="title" id="pageTitle">Visão geral</h1></div><div class="user"><span id="loggedUser">Usuário conectado</span><button class="btn secondary" id="logoutBtn" type="button">Sair</button><div class="avatar">DI</div></div></header>
 <section id="dashboard" class="page active"><div class="notice"><b>Ambiente em evolução:</b> os dados operacionais e financeiros exibidos dependem dos registros existentes no sistema. Esta versão preserva a estrutura atual; a nova base financeira será ativada somente após a migração SQL e a validação dos dados.</div><div class="grid"><div class="card metric"><div class="label">Coletas cadastradas</div><div class="value" id="mColetas">0</div><div class="delta">Total no sistema local</div></div><div class="card metric"><div class="label">Clientes ativos</div><div class="value" id="mClientes">0</div><div class="delta">Cadastros ativos</div></div><div class="card metric"><div class="label">Coletas agendadas</div><div class="value" id="mAgendadas">0</div><div class="delta">Aguardando execução</div></div><div class="card metric"><div class="label">Quantidade estimada</div><div class="value" id="mPeso">0 kg</div><div class="delta">Somatório informado</div></div></div><div class="two section"><div class="card"><div class="section-head"><h2>Coletas recentes</h2><button class="btn secondary" onclick="go('coletas')">Ver coletas</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Cliente</th><th>Data</th><th>Resíduo</th><th>Status</th></tr></thead><tbody id="recentTable"></tbody></table></div></div><div class="card"><div class="section-head"><h2>Acesso rápido</h2></div><p class="muted" style="font-size:13px;line-height:1.6">Organize os cadastros e acompanhe o fluxo operacional da coleta de resíduos.</p><div class="form-actions"><button class="btn" onclick="go('clientes')">+ Cadastrar cliente</button><button class="btn secondary" onclick="go('coletas')">+ Registrar coleta</button></div></div></div></section>
@@ -202,6 +203,23 @@
  </div>
 </div>
 
+</section>
+
+<section id="rh" class="page">
+ <div class="notice"><b>Gestão de Pessoas.</b> Área administrativa para cadastro funcional e pagamentos. Os registros de funcionários e pagamentos utilizam as tabelas de RH já previstas no Supabase. Temporários podem ser identificados pelo tipo de vínculo; a classificação jurídica deve ser validada antes do cadastro.
+ </div>
+ <div class="grid">
+  <div class="card metric"><div class="label">Pessoas cadastradas</div><div class="value" id="rhTotalPeople">0</div><div class="delta">Registros de RH disponíveis</div></div>
+  <div class="card metric"><div class="label">Ativos</div><div class="value" id="rhActivePeople">0</div><div class="delta">Vínculos ativos</div></div>
+  <div class="card metric"><div class="label">Temporários</div><div class="value" id="rhTemporaryPeople">0</div><div class="delta">Tipo de vínculo temporário</div></div>
+  <div class="card metric"><div class="label">Pagamentos registrados</div><div class="value" id="rhPaymentCount">0</div><div class="delta">Histórico financeiro de pessoal</div></div>
+ </div>
+ <div class="subtabs" style="margin-top:18px"><button class="subtab active" data-hr-tab="employees" type="button">Funcionários</button><button class="subtab" data-hr-tab="payments" type="button">Pagamentos e benefícios</button><button class="subtab" data-hr-tab="guidance" type="button">Temporários e eventuais</button></div>
+ <div id="rhTab-employees" class="hr-tab"></div>
+ <div id="rhTab-payments" class="hr-tab" hidden></div>
+ <div id="rhTab-guidance" class="hr-tab" hidden>
+  <div class="card"><h2>Temporários e eventuais</h2><p class="muted" style="line-height:1.6">Cadastre trabalhadores no formulário de Funcionários e selecione o tipo de vínculo adequado, como <b>Temporário</b> ou <b>Autônomo</b>, conforme a relação efetiva e a orientação contábil/jurídica. Informe admissão, situação e observações. A duração de 15 dias, isoladamente, não determina a modalidade legal de contratação.</p><p class="muted" style="line-height:1.6">O módulo atual não possui ainda controles específicos de escala, apontamento diário, documentos anexos, contratos e encerramento de convocação. Esses recursos exigem modelagem e integração próprias antes de serem considerados operacionais.</p><button class="btn" type="button" onclick="hrTab('employees')">Ir para cadastro de funcionários</button></div>
+ </div>
 </section>
 
 <section id="users-permissions" class="page">
@@ -410,7 +428,7 @@
 </section>
 </main></div>
 <script>
-const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito','users-permissions':'Usuários e permissões','org-structure':'Estrutura organizacional'};
+const titles={dashboard:'Visão geral',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito','users-permissions':'Usuários e permissões','org-structure':'Estrutura organizacional',rh:'Funcionários e RH'};
 let currentProfile=null;let depositOnlyUser=false;let currentSession=null;
 let demoMode=false; let payments=loadPayments(); let invoices=loadInvoices(); let invoiceReceipts=loadInvoiceReceipts();
 let state={clients:[],collections:[]};let weighings=loadWeighings();let supabaseClient=null;let connectedUrl='';let connectedKey='';
@@ -426,7 +444,7 @@ async function applyAccountAccess(session){
  currentSession=session;const {data:profile,error}=await supabaseClient.from('profiles').select('id,full_name,role').eq('id',session.user.id).maybeSingle();
  if(error)throw error;currentProfile=profile||{id:session.user.id,full_name:session.user.email||'',role:'operador'};
  const isAdmin=currentProfile.role==='administrador';depositOnlyUser=false;
- const adminNav=$('depositUsersNav');if(adminNav)adminNav.hidden=true;const usersNav=$('usersPermissionsNav');if(usersNav)usersNav.hidden=!isAdmin;const orgNav=$('orgStructureNav');if(orgNav)orgNav.hidden=!isAdmin;
+ const adminNav=$('depositUsersNav');if(adminNav)adminNav.hidden=true;const usersNav=$('usersPermissionsNav');if(usersNav)usersNav.hidden=!isAdmin;const orgNav=$('orgStructureNav');if(orgNav)orgNav.hidden=!isAdmin;const hrNav=$('hrNav');if(hrNav)hrNav.hidden=!isAdmin;
  if(!isAdmin){
   const {data:allowed,error:permissionError}=await supabaseClient.rpc('has_sector_permission',{p_sector_code:'deposito',p_permission:'can_view'});
   if(permissionError)throw permissionError;
@@ -530,7 +548,7 @@ async function deleteModuleRecord(type,id){if(demoMode||!supabaseClient)return;c
 function setSyncIndicator(message,isError=false){let el=$('syncStatus');if(!el){el=document.createElement('div');el.id='syncStatus';el.style.cssText='position:fixed;right:14px;bottom:14px;z-index:5000;padding:9px 12px;border-radius:8px;background:#064e3b;color:#fff;font-size:11px;max-width:min(420px,90vw);box-shadow:0 5px 20px #0002';document.body.appendChild(el)}el.textContent=message;el.style.background=isError?'#9f2d2d':'#102019';el.hidden=false;clearTimeout(el._hideTimer);el._hideTimer=setTimeout(()=>{el.hidden=true},5000)}
 function toLocalInput(v){if(!v)return '';const d=new Date(v);if(Number.isNaN(d.getTime()))return '';const z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}T${z(d.getHours())}:${z(d.getMinutes())}`}
 async function refresh(){try{await loadFromSupabase();render();populateInvoiceLinks();renderInvoices()}catch(e){alert('Erro ao atualizar dados do Supabase: '+(e.message||e))}}
-function go(page){if(depositOnlyUser&&page!=='deposito'){page='deposito'}if((page==='deposit-users'||page==='users-permissions'||page==='org-structure')&&currentProfile?.role!=='administrador'){page='deposito'}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page)?.classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page]||'Descarte Ideal';if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR();loadDepositFinanceData().then(renderDepositFinance)}if(page==='deposito'){loadDepositData().then(renderDeposit)}if(page==='deposit-users'){loadDepositStaffAccounts()}if(page==='users-permissions'){loadManagedUsers()}if(page==='org-structure'){renderOrgModule()}}
+function go(page){if(depositOnlyUser&&page!=='deposito'){page='deposito'}if((page==='deposit-users'||page==='users-permissions'||page==='org-structure'||page==='rh')&&currentProfile?.role!=='administrador'){page='deposito'}document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page)?.classList.add('active');document.querySelectorAll('.nav button[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));$('pageTitle').textContent=titles[page]||'Descarte Ideal';if(page==='coletas')populateClientSelect();if(page==='pesagem'){populateWeighingCollection();renderWeighings()}if(page==='caixa'){renderCash()}if(page==='faturamento'){populateInvoiceLinks();renderInvoices();renderInvoiceReceipts()}if(page==='financeiro'){renderPayments();renderHR();loadDepositFinanceData().then(renderDepositFinance)}if(page==='deposito'){loadDepositData().then(renderDeposit)}if(page==='deposit-users'){loadDepositStaffAccounts()}if(page==='users-permissions'){loadManagedUsers()}if(page==='org-structure'){renderOrgModule()}if(page==='rh'){renderHR();hrTab('employees')}}
 document.querySelectorAll('.nav button[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
 function showClientForm(c=null){$('clientFormCard').hidden=false;$('clientFormTitle').textContent=c?'Editar cliente':'Novo cliente';$('clientId').value=c?.id||'';$('clientName').value=c?.name||'';$('clientDoc').value=c?.doc||'';$('clientContact').value=c?.contact||'';$('clientStatus').value=c?.status||'Ativo';$('clientAddress').value=c?.address||'';$('clientFormCard').scrollIntoView({behavior:'smooth',block:'start'})}function hideClientForm(){$('clientFormCard').hidden=true;$('clientForm').reset();$('clientId').value=''}
 $('clientForm').addEventListener('submit',async e=>{e.preventDefault();const cid=$('clientId').value;const item={name:$('clientName').value.trim(),document:$('clientDoc').value.trim()||null,contact:$('clientContact').value.trim()||null,status:$('clientStatus').value,address:$('clientAddress').value.trim()||null};if(!item.name)return;const q=cid?supabaseClient.from('clients').update(item).eq('id',cid):supabaseClient.from('clients').insert(item);const {error}=await q;if(error){alert('Não foi possível salvar o cliente: '+error.message);return}hideClientForm();await refresh()});
@@ -560,6 +578,19 @@ $('weighingSearch').addEventListener('input',renderWeighings);
 $('weighingGross').addEventListener('input',calculateNet);$('weighingTare').addEventListener('input',calculateNet);
 $('weighingForm').addEventListener('submit',saveWeighing);
 $('demoBtn').addEventListener('click',startDemo);$('connectBtn').addEventListener('click',connectProject);$('forgetConfigBtn').addEventListener('click',()=>{localStorage.removeItem('di_supabase_url');localStorage.removeItem('di_supabase_key');connectedUrl='';connectedKey='';supabaseClient=null;$('supabaseUrl').value='';$('supabaseKey').value='';$('authFields').hidden=true;setStatus('Configuração removida deste navegador.')});$('loginBtn').addEventListener('click',()=>authAction('login'));$('signupBtn').addEventListener('click',()=>authAction('signup'));$('logoutBtn').addEventListener('click',async()=>{if(!demoMode&&supabaseClient)await supabaseClient.auth.signOut();demoMode=false;currentProfile=null;currentSession=null;depositOnlyUser=false;state={clients:[],collections:[]};$('erpApp').hidden=true;$('connectionGate').hidden=false;setStatus('Você saiu do sistema.')});
+// Módulo Funcionários e RH: reaproveita os formulários e integrações de RH existentes.
+(function mountDedicatedHR(){
+ const employees=$('hrEmployeesPanel'), payments=$('employeePaymentsPanel');
+ if(employees) $('rhTab-employees')?.appendChild(employees);
+ if(payments) $('rhTab-payments')?.appendChild(payments);
+ if(employees) employees.hidden=false; if(payments) payments.hidden=false;
+ document.querySelectorAll('[data-hr-tab]').forEach(b=>b.addEventListener('click',()=>hrTab(b.dataset.hrTab)));
+})();
+function hrTab(name){document.querySelectorAll('[data-hr-tab]').forEach(b=>b.classList.toggle('active',b.dataset.hrTab===name));document.querySelectorAll('.hr-tab').forEach(x=>x.hidden=x.id!=='rhTab-'+name);}
+function updateHRDashboard(){
+ const total=hrEmployees.length, active=hrEmployees.filter(x=>(x.employment_status||'ativo')==='ativo').length, temporary=hrEmployees.filter(x=>String(x.employment_type||'').toLowerCase()==='temporário').length;
+ if($('rhTotalPeople'))$('rhTotalPeople').textContent=total; if($('rhActivePeople'))$('rhActivePeople').textContent=active; if($('rhTemporaryPeople'))$('rhTemporaryPeople').textContent=temporary; if($('rhPaymentCount'))$('rhPaymentCount').textContent=hrEmployeePayments.length;
+}
 // Estrutura Organizacional — protótipo local (não sincroniza com Supabase)
 const ORG_KEY='di_org_structure_v1';
 const orgDefaults={departments:['Administrativo','Financeiro','RH','Comercial','Operacional','Logística','Depósito','Ambiental','Tecnologia'].map((name,i)=>({id:'d'+(i+1),name,lead:'',description:'',active:true})),positions:[],assignments:[]};
@@ -767,7 +798,7 @@ $('employeePaymentForm')?.addEventListener('submit',async ev=>{
   resetEmployeePaymentForm();await loadHRData();renderHR();alert('Pagamento registrado com sucesso.');
  }catch(err){alert('Não foi possível salvar o pagamento: '+(err.message||err));}
 });
-function renderHR(){populateEmployeeSectorSelect();populateEmployeePaymentSelect();renderEmployees();renderHRPayments();updateEmployeeNet()}
+function renderHR(){populateEmployeeSectorSelect();populateEmployeePaymentSelect();renderEmployees();renderHRPayments();updateEmployeeNet();updateHRDashboard()}
 function showPaymentTab(tab){
  const map={general:'generalPaymentsPanel',employees:'employeePaymentsPanel',hr:'hrEmployeesPanel'};
  Object.entries(map).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==tab});
