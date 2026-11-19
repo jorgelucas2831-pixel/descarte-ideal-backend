@@ -321,16 +321,22 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
      <div class="field"><label for="hrAttendanceBreakStart">Início do intervalo</label><input id="hrAttendanceBreakStart" type="time"></div>
      <div class="field"><label for="hrAttendanceBreakEnd">Fim do intervalo</label><input id="hrAttendanceBreakEnd" type="time"></div>
      <div class="field"><label for="hrAttendanceExit">Saída</label><input id="hrAttendanceExit" type="time"></div>
-     <div class="field"><label for="hrAttendanceStatus">Ocorrência</label><select id="hrAttendanceStatus"><option value="presente">Presente</option><option value="falta">Falta</option><option value="atestado">Atestado</option><option value="folga">Folga</option><option value="feriado">Feriado</option><option value="abono">Abono</option></select></div>
+     <div class="field"><label for="hrAttendanceStatus">Ocorrência *</label><select id="hrAttendanceStatus"><option value="presente">Presença</option><option value="falta_injustificada">Falta injustificada</option><option value="falta_justificada">Falta justificada</option><option value="atraso">Atraso</option><option value="saida_antecipada">Saída antecipada</option><option value="atestado">Atestado médico</option><option value="folga">Folga</option><option value="feriado">Feriado</option><option value="abono">Abono</option></select></div>
+     <div class="field"><label for="hrAttendanceDeduction">Desconto estimado do dia</label><input id="hrAttendanceDeduction" type="text" readonly value="R$ 0,00"></div>
      <div class="field full"><label for="hrAttendanceNotes">Observações</label><textarea id="hrAttendanceNotes" rows="2" placeholder="Justificativa ou observação"></textarea></div>
     </div>
     <div class="form-actions"><button class="btn" type="submit">Salvar registro</button><button class="btn secondary" type="button" onclick="resetHrAttendanceForm()">Limpar</button></div>
    </form>
-   <p class="muted" style="font-size:12px;margin-top:10px">O cálculo de horas considera os horários informados e desconta o intervalo. Este é um controle gerencial interno, não substitui sistema homologado de ponto nem valida regras legais de jornada.</p>
+   <p class="muted" style="font-size:12px;margin-top:10px">Regra de estimativa configurada: falta injustificada = salário-base mensal ÷ 30. Faltas justificadas, atestados, folgas, feriados e abonos não geram desconto automático. Atrasos e saídas antecipadas ficam registrados, mas não são convertidos em desconto nesta etapa. Confirme a regra com a contabilidade e a convenção coletiva antes de usar na folha.</p>
+  </div>
+  <div class="grid cols-3" style="margin-top:16px" id="hrAttendanceSummary">
+   <div class="card metric"><div class="label">Presenças no mês</div><div class="value" id="hrAttendancePresentCount">0</div></div>
+   <div class="card metric"><div class="label">Faltas injustificadas</div><div class="value" id="hrAttendanceAbsenceCount">0</div></div>
+   <div class="card metric"><div class="label">Descontos estimados</div><div class="value" id="hrAttendanceDeductionTotal">R$ 0,00</div></div>
   </div>
   <div class="card section">
    <div class="section-head"><h2>Registros de frequência</h2><div class="actions"><input class="search" id="hrAttendanceSearch" placeholder="Buscar funcionário..."><input id="hrAttendanceMonth" type="month" aria-label="Filtrar por mês"></div></div>
-   <div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Funcionário</th><th>Entrada</th><th>Intervalo</th><th>Saída</th><th>Horas</th><th>Ocorrência</th><th>Ações</th></tr></thead><tbody id="hrAttendanceTable"></tbody></table></div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Funcionário</th><th>Entrada</th><th>Intervalo</th><th>Saída</th><th>Horas</th><th>Ocorrência</th><th>Desconto</th><th>Ações</th></tr></thead><tbody id="hrAttendanceTable"></tbody></table></div>
   </div>
  </div>
  <div id="rhTab-leave" class="hr-tab" hidden>
@@ -981,44 +987,73 @@ async function syncEmployeePaymentToFinance(paymentId,item,employee){
  if(index>=0)payments[index]=financeItem;else payments.unshift(financeItem);
 }
 
-// FREQUENCIA E PONTO - registros internos persistidos em app_records
+// FREQUENCIA E PONTO — presença, ocorrências e estimativa de desconto
 function attendanceMinutes(start,end){
  if(!start||!end)return 0;
  const [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);
  let n=(eh*60+em)-(sh*60+sm);if(n<0)n+=1440;return n;
 }
 function attendanceDuration(a){
- if(a.status!=='presente')return '—';
+ if(!['presente','atraso','saida_antecipada'].includes(a.status))return '—';
  let total=attendanceMinutes(a.entry,a.exit);
  if(a.breakStart&&a.breakEnd)total-=attendanceMinutes(a.breakStart,a.breakEnd);
  if(total<0)total=0;
  return Math.floor(total/60)+'h '+String(total%60).padStart(2,'0')+'min';
+}
+function attendanceDailyRate(employee){
+ const salary=Number(employee?.base_salary)||0;
+ return Math.round((salary/30)*100)/100;
+}
+function attendanceDeductionFor(employee,status){
+ return status==='falta_injustificada'?attendanceDailyRate(employee):0;
+}
+function attendanceMoney(value){
+ return (Number(value)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+}
+function updateAttendanceDeductionPreview(){
+ const employee=hrEmployees.find(e=>e.id===$('hrAttendanceEmployee')?.value);
+ const status=$('hrAttendanceStatus')?.value;
+ const amount=attendanceDeductionFor(employee,status);
+ const el=$('hrAttendanceDeduction');if(el)el.value=attendanceMoney(amount);
 }
 function populateAttendanceEmployees(){
  const el=$('hrAttendanceEmployee');if(!el)return;
  const current=el.value;
  el.innerHTML='<option value="">Selecione o funcionário</option>'+hrEmployees.filter(e=>e.employment_status!=='desligado').map(e=>`<option value="${esc(e.id)}">${esc(e.full_name)}</option>`).join('');
  if(current)el.value=current;
+ updateAttendanceDeductionPreview();
 }
 function resetHrAttendanceForm(){
  const f=$('hrAttendanceForm');if(!f)return;f.reset();$('hrAttendanceId').value='';
  $('hrAttendanceDate').value=new Date().toISOString().slice(0,10);
+ $('hrAttendanceStatus').value='presente';
  $('hrAttendanceFormTitle').textContent='Registrar frequência';
+ updateAttendanceDeductionPreview();
 }
 function renderHrAttendance(){
  const body=$('hrAttendanceTable');if(!body)return;
  const term=($('hrAttendanceSearch')?.value||'').toLowerCase();
- const month=$('hrAttendanceMonth')?.value||'';
+ const month=$('hrAttendanceMonth')?.value||new Date().toISOString().slice(0,7);
  const rows=hrAttendance.filter(a=>{
   const emp=hrEmployees.find(e=>e.id===a.employeeId);
   return (!term||(emp?.full_name||'').toLowerCase().includes(term))&&(!month||(a.date||'').startsWith(month));
  }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+ const labels={presente:'Presença',falta_injustificada:'Falta injustificada',falta_justificada:'Falta justificada',atraso:'Atraso',saida_antecipada:'Saída antecipada',atestado:'Atestado médico',folga:'Folga',feriado:'Feriado',abono:'Abono'};
+ const present=rows.filter(a=>a.status==='presente').length;
+ const absences=rows.filter(a=>a.status==='falta_injustificada').length;
+ const deductions=rows.reduce((sum,a)=>{
+  const emp=hrEmployees.find(e=>e.id===a.employeeId);
+  return sum+attendanceDeductionFor(emp,a.status);
+ },0);
+ if($('hrAttendancePresentCount'))$('hrAttendancePresentCount').textContent=present;
+ if($('hrAttendanceAbsenceCount'))$('hrAttendanceAbsenceCount').textContent=absences;
+ if($('hrAttendanceDeductionTotal'))$('hrAttendanceDeductionTotal').textContent=attendanceMoney(deductions);
  body.innerHTML=rows.length?rows.map(a=>{
   const emp=hrEmployees.find(e=>e.id===a.employeeId);
-  const labels={presente:'Presente',falta:'Falta',atestado:'Atestado',folga:'Folga',feriado:'Feriado',abono:'Abono'};
   const interval=a.breakStart||a.breakEnd?(a.breakStart||'—')+' – '+(a.breakEnd||'—'):'—';
-  return `<tr><td>${fmtDate(a.date)}</td><td><b>${esc(emp?.full_name||'Funcionário não encontrado')}</b></td><td>${esc(a.entry||'—')}</td><td>${esc(interval)}</td><td>${esc(a.exit||'—')}</td><td>${attendanceDuration(a)}</td><td>${esc(labels[a.status]||a.status||'—')}</td><td><button class="smallbtn" onclick="editHrAttendance('${a.id}')">Editar</button> <button class="smallbtn danger" onclick="deleteHrAttendance('${a.id}')">Excluir</button></td></tr>`;
- }).join(''):'<tr><td colspan="8" class="empty">Nenhum registro de frequência neste filtro.</td></tr>';
+  const discount=attendanceDeductionFor(emp,a.status);
+  return `<tr><td>${fmtDate(a.date)}</td><td><b>${esc(emp?.full_name||'Funcionário não encontrado')}</b></td><td>${esc(a.entry||'—')}</td><td>${esc(interval)}</td><td>${esc(a.exit||'—')}</td><td>${attendanceDuration(a)}</td><td>${esc(labels[a.status]||a.status||'—')}</td><td>${discount?'<b>'+attendanceMoney(discount)+'</b>':'—'}</td><td><button class="smallbtn" onclick="editHrAttendance('${a.id}')">Editar</button> <button class="smallbtn danger" onclick="deleteHrAttendance('${a.id}')">Excluir</button></td></tr>`;
+ }).join(''):'<tr><td colspan="9" class="empty">Nenhum registro de frequência neste filtro.</td></tr>';
 }
 function editHrAttendance(id){
  const a=hrAttendance.find(x=>x.id===id);if(!a)return;
@@ -1027,6 +1062,7 @@ function editHrAttendance(id){
  $('hrAttendanceBreakStart').value=a.breakStart||'';$('hrAttendanceBreakEnd').value=a.breakEnd||'';
  $('hrAttendanceExit').value=a.exit||'';$('hrAttendanceStatus').value=a.status||'presente';
  $('hrAttendanceNotes').value=a.notes||'';$('hrAttendanceFormTitle').textContent='Editar frequência';
+ updateAttendanceDeductionPreview();
  $('hrAttendanceForm').scrollIntoView({behavior:'smooth',block:'center'});
 }
 async function deleteHrAttendance(id){
@@ -1034,19 +1070,25 @@ async function deleteHrAttendance(id){
  try{await deleteModuleRecord('hr_attendance',id);hrAttendance=hrAttendance.filter(a=>a.id!==id);renderHrAttendance();setSyncIndicator('Registro de frequência excluído.')}
  catch(e){alert('Não foi possível excluir: '+e.message)}
 }
+$('hrAttendanceEmployee')?.addEventListener('change',updateAttendanceDeductionPreview);
+$('hrAttendanceStatus')?.addEventListener('change',updateAttendanceDeductionPreview);
 $('hrAttendanceForm')?.addEventListener('submit',async e=>{
  e.preventDefault();
  const id=$('hrAttendanceId').value||('att_'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
+ const employee=hrEmployees.find(x=>x.id===$('hrAttendanceEmployee').value);
+ const status=$('hrAttendanceStatus').value;
  const item={id,employeeId:$('hrAttendanceEmployee').value,date:$('hrAttendanceDate').value,
   entry:$('hrAttendanceEntry').value||'',breakStart:$('hrAttendanceBreakStart').value||'',
   breakEnd:$('hrAttendanceBreakEnd').value||'',exit:$('hrAttendanceExit').value||'',
-  status:$('hrAttendanceStatus').value,notes:$('hrAttendanceNotes').value.trim(),
+  status,notes:$('hrAttendanceNotes').value.trim(),
+  dailySalarySnapshot:Number(employee?.base_salary)||0,
+  discountAmount:attendanceDeductionFor(employee,status),
   updatedAt:new Date().toISOString()};
  if(!item.employeeId||!item.date){alert('Selecione o funcionário e informe a data.');return}
  if((item.breakStart&&!item.breakEnd)||(!item.breakStart&&item.breakEnd)){alert('Informe início e fim do intervalo, ou deixe os dois vazios.');return}
- if(item.entry&&item.exit&&item.status==='presente'&&attendanceMinutes(item.entry,item.exit)<(item.breakStart?attendanceMinutes(item.breakStart,item.breakEnd):0)){alert('O intervalo não pode ser maior que o período entre entrada e saída.');return}
+ if(item.entry&&item.exit&&attendanceMinutes(item.entry,item.exit)<(item.breakStart?attendanceMinutes(item.breakStart,item.breakEnd):0)){alert('O intervalo não pode ser maior que o período entre entrada e saída.');return}
  try{
-  if(demoMode){alert('O controle de frequência requer conexão com o Supabase.');return}
+  if(demoMode||!supabaseClient){alert('O controle de frequência requer conexão com o Supabase.');return}
   const {error}=await supabaseClient.from('app_records').upsert({record_type:'hr_attendance',record_id:id,data:item},{onConflict:'record_type,record_id'});
   if(error)throw error;
   const pos=hrAttendance.findIndex(a=>a.id===id);if(pos>=0)hrAttendance[pos]=item;else hrAttendance.unshift(item);
