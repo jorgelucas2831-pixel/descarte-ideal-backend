@@ -1305,6 +1305,27 @@ let depositStaffAccounts=[];
 let managedUsers=[];
 let managedSectors=[];
 let managedEditingUser=null;
+// Exibe a resposta real da Edge Function, sem expor credenciais ou tokens.
+async function invokeManagedUsers(action, payload={}){
+ const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action,...payload}});
+ if(error){
+  let detail='';
+  const response=error.context;
+  const status=typeof response?.status==='number'?`HTTP ${response.status}`:'';
+  if(response && typeof response.clone==='function'){
+   try{
+    const body=await response.clone().json();
+    detail=typeof body?.error==='string'?body.error:(typeof body?.message==='string'?body.message:'');
+   }catch(_){
+    try{const raw=await response.clone().text();if(raw && raw.length<300 && !/<[a-z][\s\S]*>/i.test(raw))detail=raw;}catch(__){}
+   }
+  }
+  const fallback=error.message||'Falha ao acessar a função.';
+  throw new Error([status,detail||fallback].filter(Boolean).join(' — '));
+ }
+ if(data?.error)throw new Error(data.error);
+ return data||{};
+}
 function permissionLabel(code){return ({administrador:'Administrador',operador:'Operador'})[code]||code||'Operador'}
 function renderCreateSectorOptions(){const el=$('managedCreateSectors');if(!el)return;el.innerHTML=managedSectors.length?managedSectors.map(sec=>`<label class="permission-sector-option"><input type="checkbox" name="managedCreateSector" value="${esc(sec.id)}"> ${esc(sec.name)}</label>`).join(''):'<span class="muted">Nenhum setor ativo encontrado.</span>'}
 async function loadManagedUsers(){
@@ -1329,8 +1350,7 @@ async function loadManagedUsers(){
   return;
  }
  try{
-  const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'list'}});
-  if(error)throw error;if(data?.error)throw new Error(data.error);
+  const data=await invokeManagedUsers('list');
   managedUsers=data.users||[];
   $('managedUsersCount').textContent=managedUsers.length;
   $('managedBlockedCount').textContent=managedUsers.filter(u=>!u.active).length;
@@ -1355,12 +1375,12 @@ $('closeManagedPermissionEditor')?.addEventListener('click',()=>{$('managedPermi
 $('saveManagedPermissions')?.addEventListener('click',async()=>{
  if(!managedEditingUser)return;const button=$('saveManagedPermissions');button.disabled=true;button.textContent='Salvando...';
  try{const access=[...$('managedPermissionRows').querySelectorAll('tr[data-sector-row]')].map(row=>{const active=row.querySelector('[data-access]').checked;const item={sector_id:row.dataset.sectorRow,active};row.querySelectorAll('[data-permission]').forEach(ch=>item[ch.dataset.permission]=active&&ch.checked);return item});
-  const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'update_permissions',user_id:managedEditingUser.id,access}});if(error)throw error;if(data?.error)throw new Error(data.error);
+  await invokeManagedUsers('update_permissions',{user_id:managedEditingUser.id,access});
   $('managedPermissionEditor').hidden=true;managedEditingUser=null;await loadManagedUsers();alert('Permissões atualizadas com sucesso.');
  }catch(err){alert('Não foi possível salvar as permissões: '+(err.message||err))}finally{button.disabled=false;button.textContent='Salvar permissões'}
 });
-async function setManagedUserStatus(userId,active){const u=managedUsers.find(x=>x.id===userId);if(!u)return;if(!confirm(`Deseja ${active?'reativar':'bloquear'} o acesso de ${u.full_name||u.email}?`))return;try{const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'set_active',user_id:userId,active}});if(error)throw error;if(data?.error)throw new Error(data.error);await loadManagedUsers();alert('Acesso '+(active?'reativado':'bloqueado')+' com sucesso.')}catch(err){alert('Não foi possível alterar o acesso: '+(err.message||err))}}
-$('managedUserCreateForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!supabaseClient||currentProfile?.role!=='administrador'){alert('Somente administradores podem cadastrar usuários.');return}const name=$('managedUserName').value.trim(),email=$('managedUserEmail').value.trim().toLowerCase(),password=$('managedUserPassword').value;const sectorIds=[...document.querySelectorAll('input[name="managedCreateSector"]:checked')].map(x=>x.value);if(!sectorIds.length){alert('Selecione pelo menos um setor para o novo usuário.');return}const button=$('managedUserCreateButton');button.disabled=true;button.textContent='Criando...';try{const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'create',name,email,password,role:'operador',sector_ids:sectorIds}});if(error)throw error;if(data?.error)throw new Error(data.error);$('managedUserCreateForm').reset();await loadManagedUsers();alert('Usuário criado. Ele já pode entrar com o e-mail e a senha definidos.')}catch(err){alert('Não foi possível criar o usuário: '+(err.message||err))}finally{button.disabled=false;button.textContent='Criar usuário'}});
+async function setManagedUserStatus(userId,active){const u=managedUsers.find(x=>x.id===userId);if(!u)return;if(!confirm(`Deseja ${active?'reativar':'bloquear'} o acesso de ${u.full_name||u.email}?`))return;try{await invokeManagedUsers('set_active',{user_id:userId,active});await loadManagedUsers();alert('Acesso '+(active?'reativado':'bloqueado')+' com sucesso.')}catch(err){alert('Não foi possível alterar o acesso: '+(err.message||err))}}
+$('managedUserCreateForm')?.addEventListener('submit',async e=>{e.preventDefault();if(!supabaseClient||currentProfile?.role!=='administrador'){alert('Somente administradores podem cadastrar usuários.');return}const name=$('managedUserName').value.trim(),email=$('managedUserEmail').value.trim().toLowerCase(),password=$('managedUserPassword').value;const sectorIds=[...document.querySelectorAll('input[name="managedCreateSector"]:checked')].map(x=>x.value);if(!sectorIds.length){alert('Selecione pelo menos um setor para o novo usuário.');return}const button=$('managedUserCreateButton');button.disabled=true;button.textContent='Criando...';try{await invokeManagedUsers('create',{name,email,password,role:'operador',sector_ids:sectorIds});$('managedUserCreateForm').reset();await loadManagedUsers();alert('Usuário criado. Ele já pode entrar com o e-mail e a senha definidos.')}catch(err){alert('Não foi possível criar o usuário: '+(err.message||err))}finally{button.disabled=false;button.textContent='Criar usuário'}});
 $('refreshManagedUsers')?.addEventListener('click',loadManagedUsers);$('managedUserSearch')?.addEventListener('input',renderManagedUsersTable);
 
 async function loadDepositStaffAccounts(){
