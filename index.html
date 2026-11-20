@@ -827,10 +827,13 @@ let hrEmployeeExtras = [];
 async function loadHRData(){
  if(demoMode || !supabaseClient){hrEmployees=[];hrEmployeePayments=[];hrSectors=[];hrAttendance=[];hrLeaves=[];hrDocuments=[];return}
  try{
-  const [er,pr,sr,ar,at,lv,dc,ex] = await Promise.all([
+  // Setores são essenciais ao formulário e não devem depender das demais consultas do RH.
+  const sectorResult=await supabaseClient.from('company_sectors').select('id,name,code').order('name');
+  if(sectorResult.error)throw sectorResult.error;
+  hrSectors=sectorResult.data||[];
+  const [er,pr,ar,at,lv,dc,ex] = await Promise.all([
    supabaseClient.from('company_employees').select('*').order('full_name'),
    supabaseClient.from('employee_payments').select('*').order('competence',{ascending:false}),
-   supabaseClient.from('company_sectors').select('id,name,code').eq('active',true).order('name'),
    supabaseClient.from('employee_sector_assignments').select('employee_id,sector_id,is_primary,company_sectors(name,code)'),
    supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_attendance'),
    supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_leave'),
@@ -851,7 +854,6 @@ async function loadHRData(){
   hrLeaves = (lv.data || []).map(r=>({...((r.data)||{}),id:r.record_id}));
   hrEmployees = er.data || [];
   hrEmployeePayments = pr.data || [];
-  hrSectors = sr.data || [];
   hrEmployees.forEach(emp=>{
    const a=(ar.data||[]).filter(x=>x.employee_id===emp.id).sort((x,y)=>Number(y.is_primary)-Number(x.is_primary));
    emp._sectorName=a.map(x=>x.company_sectors?.name).filter(Boolean).join(', ');
@@ -859,7 +861,7 @@ async function loadHRData(){
   });
  }catch(err){
   console.warn('RH não carregado:',err);
-  hrEmployees=[];hrEmployeePayments=[];hrSectors=[];
+  hrEmployees=[];hrEmployeePayments=[];
   const msg=$('hrDataNotice');
   if(msg) msg.textContent='Não foi possível carregar os dados de RH. Verifique se as tabelas e permissões foram configuradas no Supabase. Detalhe: '+(err.message||err);
  }
@@ -1306,20 +1308,34 @@ let managedEditingUser=null;
 function permissionLabel(code){return ({administrador:'Administrador',operador:'Operador'})[code]||code||'Operador'}
 function renderCreateSectorOptions(){const el=$('managedCreateSectors');if(!el)return;el.innerHTML=managedSectors.length?managedSectors.map(sec=>`<label class="permission-sector-option"><input type="checkbox" name="managedCreateSector" value="${esc(sec.id)}"> ${esc(sec.name)}</label>`).join(''):'<span class="muted">Nenhum setor ativo encontrado.</span>'}
 async function loadManagedUsers(){
- const body=$('managedUsersTable');if(!body||!supabaseClient||currentProfile?.role!=='administrador')return;
+ const body=$('managedUsersTable');if(!body||!supabaseClient)return;
  body.innerHTML='<tr><td colspan="6" class="empty">Carregando usuários...</td></tr>';
+ const sectorBox=$('managedCreateSectors');if(sectorBox)sectorBox.innerHTML='<span class="muted">Carregando setores...</span>';
  try{
-  const [usersResult,sectorsResult]=await Promise.all([
-   supabaseClient.functions.invoke('admin-manage-users',{body:{action:'list'}}),
-   supabaseClient.from('company_sectors').select('id,name,code').eq('active',true).order('name')
-  ]);
-  const {data,error}=usersResult;
-  if(error)throw error;if(data?.error)throw new Error(data.error);
+  // Carrega setores separadamente: falha na Edge Function de usuários não pode bloquear esta lista.
+  const sectorsResult=await supabaseClient.from('company_sectors').select('id,name,code').order('name');
   if(sectorsResult.error)throw sectorsResult.error;
-  managedUsers=data.users||[];managedSectors=sectorsResult.data||data.sectors||[];
-  $('managedUsersCount').textContent=managedUsers.length;$('managedSectorsCount').textContent=managedSectors.length;$('managedBlockedCount').textContent=managedUsers.filter(u=>!u.active).length;
-  renderCreateSectorOptions();renderManagedUsersTable();
- }catch(err){body.innerHTML=`<tr><td colspan="6" class="empty">Não foi possível carregar: ${esc(err.message||err)}. Verifique se a função admin-manage-users foi publicada no Supabase.</td></tr>`}
+  managedSectors=sectorsResult.data||[];
+  $('managedSectorsCount').textContent=managedSectors.length;
+  renderCreateSectorOptions();
+  if(!managedSectors.length && sectorBox)sectorBox.innerHTML='<span class="muted">Nenhum setor cadastrado em company_sectors.</span>';
+ }catch(sectorError){
+  managedSectors=[];
+  if(sectorBox)sectorBox.innerHTML=`<span class="muted">Erro ao carregar setores: ${esc(sectorError.message||sectorError)}</span>`;
+  console.error('Falha ao carregar setores:',sectorError);
+ }
+ if(currentProfile?.role!=='administrador'){
+  body.innerHTML='<tr><td colspan="6" class="empty">Apenas administradores podem gerenciar usuários.</td></tr>';
+  return;
+ }
+ try{
+  const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'list'}});
+  if(error)throw error;if(data?.error)throw new Error(data.error);
+  managedUsers=data.users||[];
+  $('managedUsersCount').textContent=managedUsers.length;
+  $('managedBlockedCount').textContent=managedUsers.filter(u=>!u.active).length;
+  renderManagedUsersTable();
+ }catch(err){body.innerHTML=`<tr><td colspan="6" class="empty">Não foi possível carregar usuários: ${esc(err.message||err)}. A lista de setores foi carregada independentemente.</td></tr>`}
 }
 function renderManagedUsersTable(){
  const body=$('managedUsersTable');if(!body)return;const q=($('managedUserSearch')?.value||'').trim().toLowerCase();
