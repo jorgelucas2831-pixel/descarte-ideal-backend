@@ -285,6 +285,8 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
     <div class="field"><label for="employeeTermination">Data de desligamento</label><input id="employeeTermination" type="date"><small class="muted">Preencha quando a situação for Desligado.</small></div>
     <div class="field"><label for="employeeSalary">Salário-base (R$)</label><input id="employeeSalary" type="number" min="0" step="0.01" value="0"></div>
     <div class="field"><label for="employeeStatus">Situação</label><select id="employeeStatus"><option value="ativo">Ativo</option><option value="afastado">Afastado</option><option value="desligado">Desligado</option></select></div>
+    <div class="field"><label for="employeeEmergencyName">Contato de emergência</label><input id="employeeEmergencyName" placeholder="Nome do contato"></div>
+    <div class="field"><label for="employeeEmergencyPhone">Telefone de emergência</label><input id="employeeEmergencyPhone" type="tel"></div>
     <div class="field full"><label for="employeeNotes">Observações</label><textarea id="employeeNotes"></textarea></div>
    </div>
    <div class="form-actions"><button class="btn" type="submit">Salvar funcionário</button><button class="btn secondary" type="button" onclick="resetEmployeeForm()">Limpar formulário</button></div>
@@ -307,7 +309,7 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
   <div class="card metric"><div class="label">Temporários</div><div class="value" id="rhTemporaryPeople">0</div><div class="delta">Tipo de vínculo temporário</div></div>
   <div class="card metric"><div class="label">Pagamentos registrados</div><div class="value" id="rhPaymentCount">0</div><div class="delta">Histórico financeiro de pessoal</div></div>
  </div>
- <div class="subtabs" style="margin-top:18px"><button class="subtab active" data-hr-tab="employees" type="button">Funcionários</button><button class="subtab" data-hr-tab="attendance" type="button">Frequência e ponto</button><button class="subtab" data-hr-tab="leave" type="button">Férias e afastamentos</button><button class="subtab" data-hr-tab="payments" type="button">Pagamentos e benefícios</button><button class="subtab" data-hr-tab="guidance" type="button">Temporários e eventuais</button></div>
+ <div class="subtabs" style="margin-top:18px"><button class="subtab active" data-hr-tab="employees" type="button">Funcionários</button><button class="subtab" data-hr-tab="attendance" type="button">Frequência e ponto</button><button class="subtab" data-hr-tab="leave" type="button">Férias e afastamentos</button><button class="subtab" data-hr-tab="payroll" type="button">Fechamento mensal</button><button class="subtab" data-hr-tab="documents" type="button">Documentos</button><button class="subtab" data-hr-tab="management" type="button">Painel gerencial</button><button class="subtab" data-hr-tab="payments" type="button">Pagamentos e benefícios</button><button class="subtab" data-hr-tab="guidance" type="button">Temporários e eventuais</button></div>
  <div id="rhTab-employees" class="hr-tab"></div>
  <div id="rhTab-attendance" class="hr-tab" hidden>
   <div class="card section">
@@ -361,6 +363,45 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
    <div class="section-head"><h2>Histórico de férias e afastamentos</h2><div class="actions"><input class="search" id="hrLeaveSearch" placeholder="Buscar funcionário..."><select id="hrLeaveFilter"><option value="">Todos os tipos</option><option value="ferias">Férias</option><option value="licenca">Licença</option><option value="afastamento">Afastamento</option><option value="atestado">Atestado médico</option><option value="folga">Folga programada</option><option value="outro">Outro</option></select></div></div>
    <div class="table-wrap"><table class="table"><thead><tr><th>Funcionário</th><th>Tipo</th><th>Início</th><th>Fim</th><th>Dias corridos</th><th>Situação</th><th>Referência</th><th>Ações</th></tr></thead><tbody id="hrLeaveTable"></tbody></table></div>
   </div>
+ </div>
+ <div id="rhTab-payroll" class="hr-tab" hidden>
+  <div class="card section">
+   <div class="section-head"><h2>Fechamento mensal da frequência</h2><span class="muted">Prévia gerencial — não substitui folha oficial</span></div>
+   <div class="formgrid"><div class="field"><label for="hrPayrollMonth">Competência</label><input id="hrPayrollMonth" type="month"></div><div class="field"><label for="hrPayrollEmployee">Funcionário</label><select id="hrPayrollEmployee"><option value="">Todos os funcionários</option></select></div></div>
+   <div class="form-actions"><button class="btn" type="button" id="hrPayrollGenerate">Gerar prévia</button><button class="btn secondary" type="button" id="hrPayrollExport">Exportar CSV</button></div>
+   <div class="grid cols-3" style="margin-top:16px"><div class="card metric"><div class="label">Salários-base</div><div class="value" id="hrPayrollBaseTotal">R$ 0,00</div></div><div class="card metric"><div class="label">Descontos estimados</div><div class="value" id="hrPayrollDiscountTotal">R$ 0,00</div></div><div class="card metric"><div class="label">Líquido estimado</div><div class="value" id="hrPayrollNetTotal">R$ 0,00</div></div></div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>Funcionário</th><th>Salário-base</th><th>Presenças</th><th>Faltas injustificadas</th><th>Desconto estimado</th><th>Saldo estimado</th></tr></thead><tbody id="hrPayrollTable"></tbody></table></div>
+   <p class="muted" style="font-size:12px;margin-top:10px">A prévia considera salário-base e faltas injustificadas registradas no mês (salário ÷ 30 por falta). Não calcula INSS, FGTS, IRRF, DSR, adicionais, férias, 13º ou convenções coletivas. Revise com a contabilidade antes de qualquer pagamento.</p>
+  </div>
+ </div>
+ <div id="rhTab-documents" class="hr-tab" hidden>
+  <div class="card section">
+   <div class="section-head"><h2>Documentos dos funcionários</h2><span class="muted">Cadastro e validade</span></div>
+   <form id="hrDocumentForm"><input type="hidden" id="hrDocumentId"><div class="formgrid">
+    <div class="field"><label for="hrDocumentEmployee">Funcionário *</label><select id="hrDocumentEmployee" required></select></div>
+    <div class="field"><label for="hrDocumentType">Tipo de documento *</label><select id="hrDocumentType"><option>Contrato</option><option>Documento pessoal</option><option>CNH</option><option>Atestado</option><option>Certificado</option><option>Comprovante</option><option>Outro</option></select></div>
+    <div class="field"><label for="hrDocumentName">Nome / identificação *</label><input id="hrDocumentName" required placeholder="Ex.: CNH categoria D"></div>
+    <div class="field"><label for="hrDocumentIssue">Data de emissão</label><input id="hrDocumentIssue" type="date"></div>
+    <div class="field"><label for="hrDocumentExpiry">Validade</label><input id="hrDocumentExpiry" type="date"></div>
+    <div class="field"><label for="hrDocumentUrl">Link do arquivo</label><input id="hrDocumentUrl" type="url" placeholder="https://..."></div>
+    <div class="field full"><label for="hrDocumentNotes">Observações</label><textarea id="hrDocumentNotes" rows="2"></textarea></div>
+   </div><div class="form-actions"><button class="btn" type="submit">Salvar documento</button><button class="btn secondary" type="button" onclick="resetHrDocumentForm()">Limpar</button></div></form>
+   <p class="muted" style="font-size:12px">Esta versão registra metadados e link seguro do documento. O envio de arquivos diretamente ao sistema depende da configuração de um bucket privado no Supabase Storage, ainda não ativado.</p>
+  </div>
+  <div class="card section"><div class="section-head"><h2>Arquivo documental</h2><input id="hrDocumentSearch" class="search" placeholder="Buscar funcionário ou documento"></div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>Funcionário</th><th>Documento</th><th>Emissão</th><th>Validade</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="hrDocumentsTable"></tbody></table></div>
+  </div>
+ </div>
+ <div id="rhTab-management" class="hr-tab" hidden>
+  <div class="grid cols-3">
+   <div class="card metric"><div class="label">Funcionários ativos</div><div class="value" id="hrMngActive">0</div></div>
+   <div class="card metric"><div class="label">Afastados</div><div class="value" id="hrMngAway">0</div></div>
+   <div class="card metric"><div class="label">Documentos vencendo em 30 dias</div><div class="value" id="hrMngDocsDue">0</div></div>
+   <div class="card metric"><div class="label">Faltas injustificadas no mês</div><div class="value" id="hrMngAbsences">0</div></div>
+   <div class="card metric"><div class="label">Férias / afastamentos em andamento</div><div class="value" id="hrMngLeaves">0</div></div>
+   <div class="card metric"><div class="label">Folha-base mensal estimada</div><div class="value" id="hrMngPayroll">R$ 0,00</div></div>
+  </div>
+  <div class="card section"><div class="section-head"><h2>Distribuição por departamento</h2></div><div id="hrMngDepartments" class="grid cols-3"></div></div>
  </div>
  <div id="rhTab-payments" class="hr-tab" hidden></div>
  <div id="rhTab-guidance" class="hr-tab" hidden>
@@ -732,7 +773,7 @@ $('demoBtn')?.addEventListener('click',startDemo);$('connectBtn')?.addEventListe
  if(employees) employees.hidden=false; if(payments) payments.hidden=false;
  document.querySelectorAll('[data-hr-tab]').forEach(b=>b.addEventListener('click',()=>hrTab(b.dataset.hrTab)));
 })();
-function hrTab(name){document.querySelectorAll('[data-hr-tab]').forEach(b=>b.classList.toggle('active',b.dataset.hrTab===name));document.querySelectorAll('.hr-tab').forEach(x=>x.hidden=x.id!=='rhTab-'+name);if(name==='attendance'){populateAttendanceEmployees();renderHrAttendance();if(!$('hrAttendanceDate').value)$('hrAttendanceDate').value=new Date().toISOString().slice(0,10)}if(name==='leave'){populateLeaveEmployees();renderHrLeaves()}}
+function hrTab(name){document.querySelectorAll('[data-hr-tab]').forEach(b=>b.classList.toggle('active',b.dataset.hrTab===name));document.querySelectorAll('.hr-tab').forEach(x=>x.hidden=x.id!=='rhTab-'+name);if(name==='attendance'){populateAttendanceEmployees();renderHrAttendance();if(!$('hrAttendanceDate').value)$('hrAttendanceDate').value=new Date().toISOString().slice(0,10)}if(name==='leave'){populateLeaveEmployees();renderHrLeaves()}if(name==='payroll'){populateHrAdminSelects();generateHrPayroll()}if(name==='documents'){populateHrAdminSelects();renderHrDocuments()}if(name==='management'){renderHrManagement()}}
 function updateHRDashboard(){
  const total=hrEmployees.length, active=hrEmployees.filter(x=>(x.employment_status||'ativo')==='ativo').length, temporary=hrEmployees.filter(x=>String(x.employment_type||'').toLowerCase()==='temporário').length;
  if($('rhTotalPeople'))$('rhTotalPeople').textContent=total; if($('rhActivePeople'))$('rhActivePeople').textContent=active; if($('rhTemporaryPeople'))$('rhTemporaryPeople').textContent=temporary; if($('rhPaymentCount'))$('rhPaymentCount').textContent=hrEmployeePayments.length;
@@ -780,16 +821,21 @@ let hrEmployeePayments = [];
 let hrSectors = [];
 let hrAttendance = [];
 let hrLeaves = [];
+let hrDocuments = [];
+let hrEmployeeExtras = [];
 
 async function loadHRData(){
- if(demoMode || !supabaseClient){hrEmployees=[];hrEmployeePayments=[];hrSectors=[];hrAttendance=[];hrLeaves=[];return}
+ if(demoMode || !supabaseClient){hrEmployees=[];hrEmployeePayments=[];hrSectors=[];hrAttendance=[];hrLeaves=[];hrDocuments=[];return}
  try{
-  const [er,pr,sr,ar,at,lv] = await Promise.all([
+  const [er,pr,sr,ar,at,lv,dc,ex] = await Promise.all([
    supabaseClient.from('company_employees').select('*').order('full_name'),
    supabaseClient.from('employee_payments').select('*').order('competence',{ascending:false}),
    supabaseClient.from('company_sectors').select('id,name,code').eq('active',true).order('name'),
    supabaseClient.from('employee_sector_assignments').select('employee_id,sector_id,is_primary,company_sectors(name,code)'),
-   supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_attendance')
+   supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_attendance'),
+   supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_leave'),
+   supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_document'),
+   supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_employee_extra')
   ]);
   if(er.error) throw er.error;
   if(pr.error) throw pr.error;
@@ -797,6 +843,10 @@ async function loadHRData(){
   if(ar.error) throw ar.error;
   if(at.error) throw at.error;
   if(lv.error) throw lv.error;
+  if(dc.error) throw dc.error;
+  if(ex.error) throw ex.error;
+  hrEmployeeExtras = (ex.data || []).map(r=>({...((r.data)||{}),id:r.record_id}));
+  hrDocuments = (dc.data || []).map(r=>({...((r.data)||{}),id:r.record_id}));
   hrAttendance = (at.data || []).map(r=>({...((r.data)||{}),id:r.record_id}));
   hrLeaves = (lv.data || []).map(r=>({...((r.data)||{}),id:r.record_id}));
   hrEmployees = er.data || [];
@@ -826,7 +876,7 @@ function populateEmployeePaymentSelect(selected=''){
  if(selected)el.value=selected;
 }
 function resetEmployeeForm(){
- $('employeeForm').reset();$('employeeId').value='';$('employeeSalary').value='0';$('employeeStatus').value='ativo';$('employeeFormTitle').textContent='Cadastrar funcionário';populateEmployeeSectorSelect();
+ $('employeeForm').reset();$('employeeId').value='';$('employeeEmergencyName').value='';$('employeeEmergencyPhone').value='';$('employeeSalary').value='0';$('employeeStatus').value='ativo';$('employeeFormTitle').textContent='Cadastrar funcionário';populateEmployeeSectorSelect();
 }
 function editEmployee(id){
  const e=hrEmployees.find(x=>x.id===id);if(!e)return;
@@ -835,7 +885,7 @@ function editEmployee(id){
  $('employeePhone').value=e.phone||'';$('employeeAddress').value=e.address||'';$('employeeJob').value=e.job_title||'';
  populateEmployeeSectorSelect(e._primarySectorId);$('employeeType').value=e.employment_type||'';
  $('employeeAdmission').value=e.admission_date||'';$('employeeTermination').value=e.termination_date||'';$('employeeSalary').value=e.base_salary||0;
- $('employeeStatus').value=e.employment_status||'ativo';$('employeeNotes').value=e.notes||'';
+ $('employeeStatus').value=e.employment_status||'ativo';$('employeeNotes').value=e.notes||'';const extra=hrEmployeeExtras.find(x=>x.employeeId===id);$('employeeEmergencyName').value=extra?.emergencyName||'';$('employeeEmergencyPhone').value=extra?.emergencyPhone||'';
  $('employeeFormTitle').textContent='Editar funcionário';$('employeeForm').scrollIntoView({behavior:'smooth',block:'start'});
 }
 function renderEmployees(){
@@ -879,6 +929,9 @@ $('employeeForm')?.addEventListener('submit',async ev=>{
    const {error:ae}=await supabaseClient.from('employee_sector_assignments').upsert({employee_id:saved.id,sector_id:sectorId,is_primary:true},{onConflict:'employee_id,sector_id'});
    if(ae)throw ae;
   }
+  const extra={id:'extra_'+saved.id,employeeId:saved.id,emergencyName:$('employeeEmergencyName').value.trim(),emergencyPhone:$('employeeEmergencyPhone').value.trim()};
+  const {error:extraError}=await supabaseClient.from('app_records').upsert({record_type:'hr_employee_extra',record_id:extra.id,data:extra},{onConflict:'record_type,record_id'});
+  if(extraError)console.warn('Contato de emergência não salvo:',extraError.message);
   resetEmployeeForm();await loadHRData();renderHR();alert('Funcionário salvo com sucesso.');
  }catch(err){alert('Não foi possível salvar o funcionário: '+(err.message||err));}
 });
@@ -1162,7 +1215,74 @@ $('hrLeaveForm')?.addEventListener('submit',async e=>{
 });
 $('hrLeaveSearch')?.addEventListener('input',renderHrLeaves);
 $('hrLeaveFilter')?.addEventListener('change',renderHrLeaves);
-function renderHR(){populateEmployeeSectorSelect();populateEmployeePaymentSelect();populateAttendanceEmployees();populateLeaveEmployees();renderEmployees();renderHRPayments();renderHrAttendance();renderHrLeaves();updateEmployeeNet();updateHRDashboard()}
+
+// FECHAMENTO MENSAL, DOCUMENTOS E PAINEL GERENCIAL
+function hrMonthValue(){return $('hrPayrollMonth')?.value||new Date().toISOString().slice(0,7)}
+function hrMoney(v){return (Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+function populateHrAdminSelects(){
+ const opts=hrEmployees.map(e=>`<option value="${esc(e.id)}">${esc(e.full_name)}</option>`).join('');
+ if($('hrDocumentEmployee'))$('hrDocumentEmployee').innerHTML='<option value="">Selecione o funcionário</option>'+opts;
+ if($('hrPayrollEmployee'))$('hrPayrollEmployee').innerHTML='<option value="">Todos os funcionários</option>'+opts;
+}
+function generateHrPayroll(){
+ const month=hrMonthValue(),only=$('hrPayrollEmployee')?.value||'';
+ const people=hrEmployees.filter(e=>e.employment_status!=='desligado'&&(!only||e.id===only));
+ const rows=people.map(e=>{
+  const entries=hrAttendance.filter(a=>a.employeeId===e.id&&(a.date||'').startsWith(month));
+  const abs=entries.filter(a=>a.status==='falta_injustificada').length;
+  const pres=entries.filter(a=>a.status==='presente').length;
+  const base=Number(e.base_salary)||0,discount=Math.round((base/30)*abs*100)/100;
+  return {name:e.full_name,base,pres,abs,discount,net:Math.max(0,base-discount)};
+ });
+ $('hrPayrollBaseTotal').textContent=hrMoney(rows.reduce((s,x)=>s+x.base,0));
+ $('hrPayrollDiscountTotal').textContent=hrMoney(rows.reduce((s,x)=>s+x.discount,0));
+ $('hrPayrollNetTotal').textContent=hrMoney(rows.reduce((s,x)=>s+x.net,0));
+ $('hrPayrollTable').innerHTML=rows.length?rows.map(x=>`<tr><td><b>${esc(x.name)}</b></td><td>${hrMoney(x.base)}</td><td>${x.pres}</td><td>${x.abs}</td><td>${hrMoney(x.discount)}</td><td><b>${hrMoney(x.net)}</b></td></tr>`).join(''):'<tr><td colspan="6" class="empty">Nenhum funcionário para esta competência.</td></tr>';
+ window.hrPayrollExportRows=rows;
+}
+$('hrPayrollGenerate')?.addEventListener('click',generateHrPayroll);
+$('hrPayrollMonth')?.addEventListener('change',generateHrPayroll);
+$('hrPayrollEmployee')?.addEventListener('change',generateHrPayroll);
+$('hrPayrollExport')?.addEventListener('click',()=>{
+ const rows=window.hrPayrollExportRows||[];
+ if(!rows.length){alert('Gere a prévia antes de exportar.');return}
+ const csv='\ufeff'+[['Funcionário','Salário-base','Presenças','Faltas injustificadas','Desconto estimado','Líquido estimado'],...rows.map(x=>[x.name,x.base,x.pres,x.abs,x.discount,x.net])].map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='previa_folha_'+hrMonthValue()+'.csv';a.click();URL.revokeObjectURL(a.href);
+});
+function resetHrDocumentForm(){const f=$('hrDocumentForm');if(!f)return;f.reset();$('hrDocumentId').value=''}
+function renderHrDocuments(){
+ const body=$('hrDocumentsTable');if(!body)return;
+ const term=($('hrDocumentSearch')?.value||'').toLowerCase(),today=new Date();today.setHours(0,0,0,0);
+ const rows=hrDocuments.filter(d=>{const e=hrEmployees.find(x=>x.id===d.employeeId);return !term||[e?.full_name,d.name,d.type].join(' ').toLowerCase().includes(term)}).sort((a,b)=>(a.expiry||'9999').localeCompare(b.expiry||'9999'));
+ body.innerHTML=rows.length?rows.map(d=>{
+  const e=hrEmployees.find(x=>x.id===d.employeeId),days=d.expiry?Math.ceil((new Date(d.expiry+'T00:00:00')-today)/86400000):null;
+  const status=days===null?'Sem validade':days<0?'Vencido':days<=30?'Vence em breve':'Vigente';
+  return `<tr><td>${esc(e?.full_name||'Funcionário não encontrado')}</td><td>${esc(d.type)} — ${esc(d.name)}</td><td>${d.issue?fmtDate(d.issue):'—'}</td><td>${d.expiry?fmtDate(d.expiry):'—'}</td><td>${status}</td><td>${d.url?`<a href="${esc(d.url)}" target="_blank" rel="noopener">Abrir</a> `:''}<button class="smallbtn" onclick="editHrDocument('${d.id}')">Editar</button> <button class="smallbtn danger" onclick="deleteHrDocument('${d.id}')">Excluir</button></td></tr>`;
+ }).join(''):'<tr><td colspan="6" class="empty">Nenhum documento cadastrado.</td></tr>';
+}
+function editHrDocument(id){const d=hrDocuments.find(x=>x.id===id);if(!d)return;populateHrAdminSelects();$('hrDocumentId').value=id;$('hrDocumentEmployee').value=d.employeeId;$('hrDocumentType').value=d.type;$('hrDocumentName').value=d.name;$('hrDocumentIssue').value=d.issue||'';$('hrDocumentExpiry').value=d.expiry||'';$('hrDocumentUrl').value=d.url||'';$('hrDocumentNotes').value=d.notes||'';$('hrDocumentForm').scrollIntoView({behavior:'smooth',block:'center'})}
+async function deleteHrDocument(id){if(!confirm('Excluir este documento do cadastro?'))return;try{await deleteModuleRecord('hr_document',id);hrDocuments=hrDocuments.filter(x=>x.id!==id);renderHrDocuments();renderHrManagement()}catch(e){alert('Não foi possível excluir: '+e.message)}}
+$('hrDocumentForm')?.addEventListener('submit',async ev=>{
+ ev.preventDefault();const id=$('hrDocumentId').value||('doc_'+Date.now()+'_'+Math.random().toString(36).slice(2,7));
+ const item={id,employeeId:$('hrDocumentEmployee').value,type:$('hrDocumentType').value,name:$('hrDocumentName').value.trim(),issue:$('hrDocumentIssue').value||'',expiry:$('hrDocumentExpiry').value||'',url:$('hrDocumentUrl').value.trim(),notes:$('hrDocumentNotes').value.trim(),updatedAt:new Date().toISOString()};
+ if(!item.employeeId||!item.name){alert('Selecione o funcionário e informe o nome do documento.');return}
+ if(item.url&&!/^https:\/\//i.test(item.url)){alert('Informe um link HTTPS válido.');return}
+ try{if(demoMode||!supabaseClient)throw new Error('Conecte ao Supabase para salvar documentos.');const {error}=await supabaseClient.from('app_records').upsert({record_type:'hr_document',record_id:id,data:item},{onConflict:'record_type,record_id'});if(error)throw error;const i=hrDocuments.findIndex(x=>x.id===id);if(i>=0)hrDocuments[i]=item;else hrDocuments.unshift(item);resetHrDocumentForm();renderHrDocuments();renderHrManagement();setSyncIndicator('Documento registrado.')}catch(e){alert('Não foi possível salvar: '+e.message)}
+});
+$('hrDocumentSearch')?.addEventListener('input',renderHrDocuments);
+function renderHrManagement(){
+ const active=hrEmployees.filter(e=>e.employment_status==='ativo').length,away=hrEmployees.filter(e=>e.employment_status==='afastado').length;
+ const month=new Date().toISOString().slice(0,7),abs=hrAttendance.filter(a=>(a.date||'').startsWith(month)&&a.status==='falta_injustificada').length;
+ const now=new Date(),limit=new Date(now);limit.setDate(limit.getDate()+30);
+ const due=hrDocuments.filter(d=>d.expiry&&new Date(d.expiry+'T00:00:00')>=now&&new Date(d.expiry+'T00:00:00')<=limit).length;
+ const leaves=hrLeaves.filter(x=>['programado','em_andamento'].includes(x.status)).length;
+ const base=hrEmployees.filter(e=>e.employment_status==='ativo').reduce((s,e)=>s+(Number(e.base_salary)||0),0);
+ const set=(id,v)=>{if($(id))$(id).textContent=v};
+ set('hrMngActive',active);set('hrMngAway',away);set('hrMngDocsDue',due);set('hrMngAbsences',abs);set('hrMngLeaves',leaves);set('hrMngPayroll',hrMoney(base));
+ const counts=hrSectors.map(s=>({name:s.name,count:hrEmployees.filter(e=>e._primarySectorId===s.id).length})).filter(x=>x.count);
+ if($('hrMngDepartments'))$('hrMngDepartments').innerHTML=counts.length?counts.map(x=>`<div class="card metric"><div class="label">${esc(x.name)}</div><div class="value">${x.count}</div><div class="delta">Funcionários vinculados</div></div>`).join(''):'<p class="muted">Ainda não há funcionários vinculados aos departamentos.</p>';
+}
+function renderHR(){populateEmployeeSectorSelect();populateEmployeePaymentSelect();populateAttendanceEmployees();populateLeaveEmployees();populateHrAdminSelects();renderEmployees();renderHRPayments();renderHrAttendance();renderHrLeaves();renderHrDocuments();renderHrManagement();updateEmployeeNet();updateHRDashboard()}
 function showPaymentTab(tab){
  const map={general:'generalPaymentsPanel',employees:'employeePaymentsPanel',hr:'hrEmployeesPanel'};
  Object.entries(map).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==tab});
@@ -1189,9 +1309,14 @@ async function loadManagedUsers(){
  const body=$('managedUsersTable');if(!body||!supabaseClient||currentProfile?.role!=='administrador')return;
  body.innerHTML='<tr><td colspan="6" class="empty">Carregando usuários...</td></tr>';
  try{
-  const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action:'list'}});
+  const [usersResult,sectorsResult]=await Promise.all([
+   supabaseClient.functions.invoke('admin-manage-users',{body:{action:'list'}}),
+   supabaseClient.from('company_sectors').select('id,name,code').eq('active',true).order('name')
+  ]);
+  const {data,error}=usersResult;
   if(error)throw error;if(data?.error)throw new Error(data.error);
-  managedUsers=data.users||[];managedSectors=data.sectors||[];
+  if(sectorsResult.error)throw sectorsResult.error;
+  managedUsers=data.users||[];managedSectors=sectorsResult.data||data.sectors||[];
   $('managedUsersCount').textContent=managedUsers.length;$('managedSectorsCount').textContent=managedSectors.length;$('managedBlockedCount').textContent=managedUsers.filter(u=>!u.active).length;
   renderCreateSectorOptions();renderManagedUsersTable();
  }catch(err){body.innerHTML=`<tr><td colspan="6" class="empty">Não foi possível carregar: ${esc(err.message||err)}. Verifique se a função admin-manage-users foi publicada no Supabase.</td></tr>`}
