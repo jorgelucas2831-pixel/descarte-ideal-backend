@@ -1307,35 +1307,49 @@ let managedSectors=[];
 let managedEditingUser=null;
 // Exibe a resposta real da Edge Function, sem expor credenciais ou tokens.
 async function invokeManagedUsers(action, payload={}){
- // Garante que a Edge Function receba o access token atual do usuário autenticado.
+ // Recupera a sessão atual e renova somente se estiver perto do vencimento.
  const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
- if(sessionError)throw new Error('Não foi possível validar sua sessão. Saia do sistema e entre novamente. Detalhe: '+sessionError.message);
+ if(sessionError)throw new Error('Não foi possível consultar sua sessão: '+sessionError.message);
  let session=sessionData?.session;
  if(!session?.access_token)throw new Error('Sua sessão não está ativa. Saia do sistema e entre novamente.');
- // Renova a sessão quando estiver expirada ou prestes a expirar.
- if(session.expires_at && session.expires_at*1000 <= Date.now()+60000){
+ if(session.expires_at && session.expires_at*1000<=Date.now()+60000){
   const {data:refreshData,error:refreshError}=await supabaseClient.auth.refreshSession();
-  if(refreshError || !refreshData?.session?.access_token)throw new Error('Sua sessão expirou e não pôde ser renovada. Saia do sistema e entre novamente.');
+  if(refreshError||!refreshData?.session?.access_token)throw new Error('Sua sessão expirou e não pôde ser renovada. Entre novamente.');
   session=refreshData.session;
  }
- const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action,...payload},headers:{Authorization:`Bearer ${session.access_token}`}});
- if(error){
-  let detail='';
-  const response=error.context;
-  const status=typeof response?.status==='number'?`HTTP ${response.status}`:'';
-  if(response && typeof response.clone==='function'){
-   try{
-    const body=await response.clone().json();
-    detail=typeof body?.error==='string'?body.error:(typeof body?.message==='string'?body.message:'');
-   }catch(_){
-    try{const raw=await response.clone().text();if(raw && raw.length<300 && !/<[a-z][\s\S]*>/i.test(raw))detail=raw;}catch(__){}
-   }
-  }
-  const fallback=error.message||'Falha ao acessar a função.';
-  throw new Error([status,detail||fallback].filter(Boolean).join(' — '));
+ // Confirma que o token pertence ao projeto configurado no navegador.
+ let {data:userData,error:userError}=await supabaseClient.auth.getUser(session.access_token);
+ if(userError||!userData?.user){
+  const {data:refreshData,error:refreshError}=await supabaseClient.auth.refreshSession();
+  if(refreshError||!refreshData?.session?.access_token)throw new Error('O token local foi recusado pelo Supabase Auth. Entre novamente. Detalhe: '+(userError?.message||refreshError?.message||'sessão inválida'));
+  session=refreshData.session;
+  const verified=await supabaseClient.auth.getUser(session.access_token);
+  if(verified.error||!verified.data?.user)throw new Error('Não foi possível validar a sessão renovada. Confirme se a URL e a chave pública pertencem ao projeto correto.');
  }
- if(data?.error)throw new Error(data.error);
- return data||{};
+ const endpoint=connectedUrl.replace(/\/+$/,'')+'/functions/v1/admin-manage-users';
+ let response;
+ try{
+  response=await fetch(endpoint,{
+   method:'POST',
+   headers:{
+    'Content-Type':'application/json',
+    'apikey':connectedKey,
+    'Authorization':'Bearer '+session.access_token
+   },
+   body:JSON.stringify({action,...payload})
+  });
+ }catch(networkError){
+  throw new Error('Falha de conexão com admin-manage-users: '+(networkError?.message||networkError));
+ }
+ let result={};
+ const raw=await response.text();
+ try{result=raw?JSON.parse(raw):{}}catch(_){result={error:raw||'Resposta inválida da Edge Function.'}}
+ if(!response.ok){
+  const detail=typeof result?.error==='string'?result.error:(typeof result?.message==='string'?result.message:'A função recusou a solicitação.');
+  throw new Error('HTTP '+response.status+' — '+detail);
+ }
+ if(result?.error)throw new Error(result.error);
+ return result;
 }
 function permissionLabel(code){return ({administrador:'Administrador',operador:'Operador'})[code]||code||'Operador'}
 function renderCreateSectorOptions(){const el=$('managedCreateSectors');if(!el)return;el.innerHTML=managedSectors.length?managedSectors.map(sec=>`<label class="permission-sector-option"><input type="checkbox" name="managedCreateSector" value="${esc(sec.id)}"> ${esc(sec.name)}</label>`).join(''):'<span class="muted">Nenhum setor ativo encontrado.</span>'}
