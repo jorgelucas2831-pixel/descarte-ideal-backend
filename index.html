@@ -1307,7 +1307,18 @@ let managedSectors=[];
 let managedEditingUser=null;
 // Exibe a resposta real da Edge Function, sem expor credenciais ou tokens.
 async function invokeManagedUsers(action, payload={}){
- const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action,...payload}});
+ // Garante que a Edge Function receba o access token atual do usuário autenticado.
+ const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
+ if(sessionError)throw new Error('Não foi possível validar sua sessão. Saia do sistema e entre novamente. Detalhe: '+sessionError.message);
+ let session=sessionData?.session;
+ if(!session?.access_token)throw new Error('Sua sessão não está ativa. Saia do sistema e entre novamente.');
+ // Renova a sessão quando estiver expirada ou prestes a expirar.
+ if(session.expires_at && session.expires_at*1000 <= Date.now()+60000){
+  const {data:refreshData,error:refreshError}=await supabaseClient.auth.refreshSession();
+  if(refreshError || !refreshData?.session?.access_token)throw new Error('Sua sessão expirou e não pôde ser renovada. Saia do sistema e entre novamente.');
+  session=refreshData.session;
+ }
+ const {data,error}=await supabaseClient.functions.invoke('admin-manage-users',{body:{action,...payload},headers:{Authorization:`Bearer ${session.access_token}`}});
  if(error){
   let detail='';
   const response=error.context;
