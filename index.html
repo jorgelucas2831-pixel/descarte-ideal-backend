@@ -869,7 +869,10 @@ let hrDocuments = [];
 let hrEmployeeExtras = [];
 
 async function loadHRData(){
- if(demoMode || !supabaseClient){hrEmployees=[];hrEmployeePayments=[];hrSectors=[];hrAttendance=[];hrLeaves=[];hrDocuments=[];return}
+ if(demoMode || !supabaseClient){
+  hrEmployees=[];hrEmployeePayments=[];hrSectors=[];hrAttendance=[];hrLeaves=[];hrDocuments=[];hrEmployeeExtras=[];
+  return;
+ }
  try{
   // Setores são essenciais ao formulário e não devem depender das demais consultas do RH.
   const sectorResult=await supabaseClient.from('company_sectors').select('id,name,code').order('name');
@@ -905,7 +908,8 @@ async function loadHRData(){
   });
  }catch(err){
   console.warn('RH não carregado:',err);
-  hrEmployees=[];hrEmployeePayments=[];
+  // Evita exibir dados antigos/parciais como se fossem atuais após falha de consulta.
+  hrEmployees=[];hrEmployeePayments=[];hrSectors=[];hrAttendance=[];hrLeaves=[];hrDocuments=[];hrEmployeeExtras=[];
   const msg=$('hrDataNotice');
   if(msg) msg.textContent='Não foi possível carregar os dados de RH. Verifique se as tabelas e permissões foram configuradas no Supabase. Detalhe: '+(err.message||err);
  }
@@ -978,7 +982,12 @@ $('employeeForm')?.addEventListener('submit',async ev=>{
   const extra={id:'extra_'+saved.id,employeeId:saved.id,emergencyName:$('employeeEmergencyName').value.trim(),emergencyPhone:$('employeeEmergencyPhone').value.trim()};
   const {error:extraError}=await supabaseClient.from('app_records').upsert({record_type:'hr_employee_extra',record_id:extra.id,data:extra},{onConflict:'record_type,record_id'});
   if(extraError)console.warn('Contato de emergência não salvo:',extraError.message);
-  resetEmployeeForm();await loadHRData();renderHR();alert('Funcionário salvo com sucesso.');
+  resetEmployeeForm();await loadHRData();renderHR();
+  if(extraError){
+   alert('Funcionário salvo, mas o contato de emergência não foi gravado. Abra o cadastro novamente e tente salvar esse dado. Detalhe: '+extraError.message);
+  }else{
+   alert('Funcionário salvo com sucesso.');
+  }
  }catch(err){alert('Não foi possível salvar o funcionário: '+(err.message||err));}
 });
 
