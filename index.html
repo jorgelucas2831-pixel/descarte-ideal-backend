@@ -2020,7 +2020,7 @@ $('depositOperationForm')?.addEventListener('submit',async e=>{
    payment_condition:condition,first_due_date:firstDueDate,installments_count:installments,payment_method:paymentMethod
   }).select().single();
   if(oe)throw oe;
-  const item={operation_id:op.id,material_id:materialId,quantity,gross_weight:null,tare_weight:null,unit_price,notes:null};
+  const item={operation_id:op.id,material_id:materialId,quantity,gross_weight:null,tare_weight:null,unit_price:unitPrice,notes:null};
   const {error:ie}=await supabaseClient.from('deposit_operation_items').insert(item);
   if(ie){await supabaseClient.from('deposit_operations').delete().eq('id',op.id);throw ie}
   resetDepositOperationForm();await loadDepositData();renderDeposit();
