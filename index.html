@@ -699,23 +699,28 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
  </div>
  <div id="depositOperationsPanel">
   <div class="card section">
-   <div class="section-head"><h2 id="depositOperationTitle">Registrar operação</h2><span class="muted" style="font-size:12px">A operação será salva como rascunho</span></div>
+   <div class="section-head"><h2 id="depositOperationTitle">Registrar compra ou venda</h2><span class="muted" style="font-size:12px">Registro direto no estoque</span></div>
    <form id="depositOperationForm">
     <div class="formgrid section">
-     <div class="field"><label for="depositOperationType">Tipo de operação *</label><select id="depositOperationType" required><option value="purchase">Compra — entrada no estoque</option><option value="sale">Venda — saída do estoque</option></select></div>
-     <div class="field"><label for="depositOperationDate">Data *</label><input id="depositOperationDate" type="date" required></div>
-     <div class="field"><label for="depositPaymentCondition">Condição de pagamento *</label><select id="depositPaymentCondition" required><option value="">Selecione</option><option value="cash">À vista</option><option value="term">A prazo (parcela única)</option><option value="installment">Parcelado</option></select></div>
-     <div class="field" id="depositPaymentMethodWrap" hidden><label for="depositPaymentMethod">Forma de pagamento *</label><select id="depositPaymentMethod"><option value="pix">Pix</option><option value="dinheiro">Dinheiro</option><option value="transferencia">Transferência</option><option value="boleto">Boleto</option><option value="cartao">Cartão</option><option value="outro">Outro</option></select></div>
-     <div class="field" id="depositFirstDueWrap" hidden><label for="depositFirstDueDate">Primeiro vencimento *</label><input id="depositFirstDueDate" type="date"></div>
-     <div class="field" id="depositInstallmentsWrap" hidden><label for="depositInstallmentsCount">Quantidade de parcelas *</label><input id="depositInstallmentsCount" type="number" min="2" step="1" value="2"></div>
-     <div class="field"><label for="depositParty">Fornecedor / comprador</label><select id="depositParty"><option value="">Não informado</option></select></div>
-     <div class="field"><label for="depositMaterial">Material *</label><select id="depositMaterial" required><option value="">Carregando materiais...</option></select><button class="smallbtn" type="button" id="depositGoMaterials" style="margin-top:7px">+ Cadastrar material</button><small id="depositMaterialHelp" class="muted">Escolha o material comprado ou vendido.</small></div>
-     <div class="field"><label for="depositQuantity">Peso comprado/vendido (kg) *</label><input id="depositQuantity" type="number" min="0.001" step="0.001" placeholder="Ex.: 150" required></div>
-     <div class="field"><label for="depositUnitPrice">Preço por kg (R$) *</label><input id="depositUnitPrice" type="number" min="0" step="0.0001" required></div>
-     <div class="field"><label for="depositLineTotal">Total da operação</label><input id="depositLineTotal" readonly value="R$ 0,00"></div>
-     <div class="field full"><label for="depositOperationNotes">Observações / identificação da pesagem</label><textarea id="depositOperationNotes" placeholder="Ex.: placa do veículo, número do ticket, condição do material..."></textarea></div>
+     <div class="field"><label for="depositOperationType">O que deseja registrar?</label><select id="depositOperationType" required><option value="purchase">Compra — entrada no estoque</option><option value="sale">Venda — saída do estoque</option></select></div>
+     <div class="field"><label for="depositMaterial">Material *</label><select id="depositMaterial" required><option value="">Carregando materiais...</option></select><button class="smallbtn" type="button" id="depositGoMaterials" style="margin-top:7px">+ Cadastrar material</button><small id="depositMaterialHelp" class="muted">Escolha o material.</small></div>
+     <div class="field"><label for="depositQuantity">Quantidade (kg) *</label><input id="depositQuantity" type="number" min="0.001" step="0.001" placeholder="Ex.: 150" required></div>
+     <div class="field"><label for="depositUnitPrice">Preço por kg (R$) *</label><input id="depositUnitPrice" type="number" min="0" step="0.0001" placeholder="Ex.: 5,00" required></div>
+     <div class="field full"><label for="depositLineTotal">Total da operação</label><input id="depositLineTotal" readonly value="R$ 0,00" style="font-size:22px;font-weight:800"></div>
     </div>
-    <div class="form-actions"><button class="btn" type="submit">Salvar rascunho</button><button class="btn secondary" type="button" id="depositResetOperation">Limpar formulário</button></div>
+    <details class="section" style="margin:0 0 16px">
+     <summary style="cursor:pointer;font-weight:700;color:var(--green);padding:8px 0">Detalhes opcionais: pagamento, pessoa e observações</summary>
+     <div class="formgrid section">
+      <div class="field"><label for="depositPaymentCondition">Condição de pagamento</label><select id="depositPaymentCondition"><option value="cash">À vista</option><option value="term">A prazo (parcela única)</option><option value="installment">Parcelado</option></select></div>
+      <div class="field" id="depositPaymentMethodWrap"><label for="depositPaymentMethod">Forma de pagamento</label><select id="depositPaymentMethod"><option value="pix">Pix</option><option value="dinheiro">Dinheiro</option><option value="transferencia">Transferência</option><option value="boleto">Boleto</option><option value="cartao">Cartão</option><option value="outro">Outro</option></select></div>
+      <div class="field" id="depositFirstDueWrap" hidden><label for="depositFirstDueDate">Primeiro vencimento *</label><input id="depositFirstDueDate" type="date"></div>
+      <div class="field" id="depositInstallmentsWrap" hidden><label for="depositInstallmentsCount">Quantidade de parcelas *</label><input id="depositInstallmentsCount" type="number" min="2" step="1" value="2"></div>
+      <div class="field"><label for="depositParty">Fornecedor / comprador</label><select id="depositParty"><option value="">Não informado</option></select></div>
+      <div class="field full"><label for="depositOperationNotes">Observações</label><textarea id="depositOperationNotes" placeholder="Ex.: placa do veículo, ticket da pesagem ou observações..."></textarea></div>
+     </div>
+    </details>
+    <input id="depositOperationDate" type="hidden">
+    <div class="form-actions"><button class="btn" type="submit" id="depositSubmitOperation">Registrar compra</button><button class="btn secondary" type="button" id="depositResetOperation">Limpar</button></div>
    </form>
   </div>
   <div class="card section">
@@ -1947,7 +1952,7 @@ function syncDepositPaymentFields(){
  $('depositInstallmentsCount').required=split;
 }
 function resetDepositOperationForm(){
- const f=$('depositOperationForm');if(!f)return;f.reset();$('depositOperationDate').value=new Date().toISOString().slice(0,10);$('depositFirstDueDate').value=new Date().toISOString().slice(0,10);$('depositInstallmentsCount').value=2;$('depositLineTotal').value=money(0);populateDepositSelects();syncDepositPaymentFields();
+ const f=$('depositOperationForm');if(!f)return;f.reset();$('depositOperationDate').value=new Date().toISOString().slice(0,10);$('depositPaymentCondition').value='cash';$('depositPaymentMethod').value='pix';$('depositFirstDueDate').value=new Date().toISOString().slice(0,10);$('depositInstallmentsCount').value=2;$('depositLineTotal').value=money(0);$('depositSubmitOperation').textContent=$('depositOperationType').value==='purchase'?'Registrar compra':'Registrar venda';populateDepositSelects();syncDepositPaymentFields();
 }
 function updateDepositTotal(){
  const q=Number($('depositQuantity')?.value)||0,p=Number($('depositUnitPrice')?.value)||0;
@@ -1955,7 +1960,7 @@ function updateDepositTotal(){
 }
 $('depositQuantity')?.addEventListener('input',updateDepositTotal);
 $('depositUnitPrice')?.addEventListener('input',updateDepositTotal);
-$('depositOperationType')?.addEventListener('change',()=>{updateDepositTotal()});
+$('depositOperationType')?.addEventListener('change',()=>{$('depositSubmitOperation').textContent=$('depositOperationType').value==='purchase'?'Registrar compra':'Registrar venda';updateDepositTotal()});
 $('depositPaymentCondition')?.addEventListener('change',syncDepositPaymentFields);
 syncDepositPaymentFields();
 $('depositResetOperation')?.addEventListener('click',resetDepositOperationForm);
@@ -2023,8 +2028,11 @@ $('depositOperationForm')?.addEventListener('submit',async e=>{
   const item={operation_id:op.id,material_id:materialId,quantity,gross_weight:null,tare_weight:null,unit_price:unitPrice,notes:null};
   const {error:ie}=await supabaseClient.from('deposit_operation_items').insert(item);
   if(ie){await supabaseClient.from('deposit_operations').delete().eq('id',op.id);throw ie}
-  resetDepositOperationForm();await loadDepositData();renderDeposit();
-  alert('Rascunho '+op.operation_number+' salvo com condição de pagamento definida. Ao confirmar, o estoque e o Financeiro serão atualizados automaticamente.');
+  const {error:confirmError}=await supabaseClient.from('deposit_operations').update({status:'confirmed'}).eq('id',op.id);
+  if(confirmError)throw new Error('A compra foi salva, mas não pôde ser confirmada: '+confirmError.message+' O rascunho ficou preservado.');
+  await Promise.all([loadDepositData(),loadDepositFinanceData()]);
+  renderDeposit();renderDepositFinance();
+  alert((type==='purchase'?'Compra':'Venda')+' registrada com sucesso! Estoque e Financeiro atualizados.');
  }catch(err){alert('Não foi possível registrar a operação: '+(err.message||err))}
 });
 async function confirmDepositOperation(id){
