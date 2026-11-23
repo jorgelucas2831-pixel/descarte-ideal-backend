@@ -3,6 +3,14 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Descarte Ideal — Gestão Ambiental</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#247a43">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Descarte Ideal">
+<link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/icon.svg">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
@@ -2156,5 +2164,14 @@ $('documentForm')?.addEventListener('submit',async e=>{
 });
 ['documentSearch','documentFilterCategory','documentFilterStatus'].forEach(id=>$(id)?.addEventListener(id==='documentSearch'?'input':'change',renderDocuments));
 
+</script>
+<script>
+/* PWA registration: the service worker is network-only and never stores ERP data. */
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+      .catch(error => console.warn('Não foi possível registrar o aplicativo instalável:', error));
+  });
+}
 </script></body></html>
 <!-- republicacao solicitada em 2026-11-23 -->
