@@ -1,0 +1,21 @@
+{
+  "id": "/",
+  "name": "Descarte Ideal",
+  "short_name": "Descarte Ideal",
+  "description": "Sistema de gestão ambiental Descarte Ideal",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f2f7ed",
+  "theme_color": "#247a43",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
