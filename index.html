@@ -1811,3 +1811,4 @@ $('depositPartyForm')?.addEventListener('submit',async e=>{
 function exportDepositStock(){if(!depositStock.length){alert('Não há estoque para exportar.');return}const rows=[['Material','Categoria','Unidade','Quantidade','Custo médio','Valor estimado'],...depositStock.map(s=>[s.material_name,s.category,s.unit,s.quantity_on_hand,s.average_unit_cost,s.estimated_stock_cost])];downloadCSV('descarte_ideal_deposito_estoque.csv',rows)}
 
 </script></body></html>
+<!-- republicacao solicitada em 2026-11-23 -->
