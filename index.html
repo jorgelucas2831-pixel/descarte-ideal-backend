@@ -491,7 +491,7 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
     <div class="field"><label for="employeeType">Tipo de vínculo</label><select id="employeeType"><option value="">Não informado</option><option value="CLT">CLT</option><option value="PJ">PJ</option><option value="Temporário">Temporário</option><option value="Estágio">Estágio</option><option value="Autônomo">Autônomo</option><option value="Outro">Outro</option></select></div>
     <div class="field"><label for="employeeAdmission">Data de admissão</label><input id="employeeAdmission" type="date"></div>
     <div class="field"><label for="employeeTermination">Data de desligamento</label><input id="employeeTermination" type="date"><small class="muted">Preencha quando a situação for Desligado.</small></div>
-    <div class="field"><label for="employeeSalary">Salário-base (R$)</label><input id="employeeSalary" type="number" min="0" step="0.01" value="0"></div>
+    <div class="field"><label for="employeeRemuneration">Modelo de remuneração</label><select id="employeeRemuneration"><option value="salario_fixo">Salário fixo</option><option value="comissionado">Somente comissão</option><option value="fixo_comissao">Fixo + comissão</option><option value="diaria">Diária</option><option value="producao">Por produção</option><option value="outro">Outro</option></select></div><div class="field" id="employeeSalaryContainer"><label for="employeeSalary">Salário-base (R$)</label><input id="employeeSalary" type="number" min="0" step="0.01" value="0"></div>
     <div class="field"><label for="employeeStatus">Situação</label><select id="employeeStatus"><option value="ativo">Ativo</option><option value="afastado">Afastado</option><option value="desligado">Desligado</option></select></div>
     <div class="field"><label for="employeeEmergencyName">Contato de emergência</label><input id="employeeEmergencyName" placeholder="Nome do contato"></div>
     <div class="field"><label for="employeeEmergencyPhone">Telefone de emergência</label><input id="employeeEmergencyPhone" type="tel"></div>
@@ -500,7 +500,7 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
    <div class="form-actions"><button class="btn" type="submit">Salvar funcionário</button><button class="btn secondary" type="button" onclick="resetEmployeeForm()">Limpar formulário</button></div>
   </form>
  </div>
- <div class="card section">
+ <div class="card section"><div class="section-head"><h2>Regras de comissão</h2></div><form id="employeeCommissionRuleForm"><div class="formgrid"><div class="field"><label>Funcionário *</label><select id="commissionRuleEmployee" required></select></div><div class="field"><label>Nome da regra *</label><input id="commissionRuleName" required></div><div class="field"><label>Origem</label><select id="commissionRuleSource"><option value="geral">Geral</option><option value="venda">Vendas</option><option value="servico">Serviços</option><option value="frete">Fretes</option><option value="operacao">Operações</option></select></div><div class="field"><label>Cálculo</label><select id="commissionRuleCalc"><option value="percentual">Percentual</option><option value="valor_fixo">Valor fixo</option></select></div><div class="field"><label>Percentual / valor *</label><input id="commissionRuleRate" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Base</label><select id="commissionRuleBase"><option value="valor_bruto">Valor bruto</option><option value="valor_liquido">Valor líquido</option><option value="quantidade">Quantidade</option></select></div><div class="field"><label>Início da vigência</label><input id="commissionRuleFrom" type="date" required></div><div class="field"><label>Fim da vigência</label><input id="commissionRuleUntil" type="date"></div></div><div class="form-actions"><button class="btn" type="submit">Salvar regra</button></div></form><div class="table-wrap section"><table class="table"><thead><tr><th>Funcionário</th><th>Regra</th><th>Origem</th><th>Cálculo</th><th>Valor</th><th>Vigência</th><th>Status</th></tr></thead><tbody id="employeeCommissionRulesTable"></tbody></table></div></div><div class="card section"><div class="section-head"><h2>Lançar comissão</h2><span class="muted">Aprovação antes do pagamento</span></div><form id="employeeCommissionForm"><div class="formgrid"><div class="field"><label>Funcionário *</label><select id="commissionEmployee" required></select></div><div class="field"><label>Regra *</label><select id="commissionRule" required></select></div><div class="field"><label>Descrição *</label><input id="commissionDescription" required></div><div class="field"><label>Competência *</label><input id="commissionCompetence" type="date" required></div><div class="field"><label>Base de cálculo *</label><input id="commissionBase" type="number" min="0" step="0.01" required></div><div class="field"><label>Comissão calculada</label><input id="commissionAmountPreview" readonly value="R$ 0,00"></div></div><div class="form-actions"><button class="btn" type="submit">Registrar pendente</button></div></form><div class="table-wrap section"><table class="table"><thead><tr><th>Funcionário</th><th>Descrição</th><th>Competência</th><th>Base</th><th>Comissão</th><th>Status</th><th>Ação</th></tr></thead><tbody id="employeeCommissionsTable"></tbody></table></div></div><div class="card section">
   <div class="section-head"><h2>Funcionários cadastrados</h2><input id="employeeSearch" class="search" placeholder="Buscar por nome, CPF, cargo ou setor"></div>
   <div class="table-wrap"><table class="table"><thead><tr><th>Funcionário</th><th>CPF</th><th>Cargo</th><th>Setor</th><th>Vínculo</th><th>Salário-base</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="employeesTable"></tbody></table></div>
  </div>
@@ -1281,7 +1281,7 @@ let hrSectors = [];
 let hrAttendance = [];
 let hrLeaves = [];
 let hrDocuments = [];
-let hrEmployeeExtras = [];
+let hrEmployeeExtras = [];let hrCommissionRules=[];let hrCommissions=[];
 
 async function loadHRData(){
  if(demoMode || !supabaseClient){
@@ -1293,14 +1293,16 @@ async function loadHRData(){
   const sectorResult=await supabaseClient.from('company_sectors').select('id,name,code').order('name');
   if(sectorResult.error)throw sectorResult.error;
   hrSectors=sectorResult.data||[];
-  const [er,pr,ar,at,lv,dc,ex] = await Promise.all([
+  const [er,pr,ar,at,lv,dc,ex,cr,cm] = await Promise.all([
    supabaseClient.from('company_employees').select('*').order('full_name'),
    supabaseClient.from('employee_payments').select('*').order('competence',{ascending:false}),
    supabaseClient.from('employee_sector_assignments').select('employee_id,sector_id,is_primary,company_sectors(name,code)'),
    supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_attendance'),
    supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_leave'),
    supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_document'),
-   supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_employee_extra')
+   supabaseClient.from('app_records').select('record_id,data').eq('record_type','hr_employee_extra'),
+   supabaseClient.from('employee_commission_rules').select('*').order('created_at',{ascending:false}),
+   supabaseClient.from('employee_commissions').select('*').order('competence',{ascending:false})
   ]);
   if(er.error) throw er.error;
   if(pr.error) throw pr.error;
@@ -1309,13 +1311,13 @@ async function loadHRData(){
   if(at.error) throw at.error;
   if(lv.error) throw lv.error;
   if(dc.error) throw dc.error;
-  if(ex.error) throw ex.error;
+  if(ex.error) throw ex.error;if(cr.error)throw cr.error;if(cm.error)throw cm.error;
   hrEmployeeExtras = (ex.data || []).map(r=>({...((r.data)||{}),id:r.record_id}));
   hrDocuments = (dc.data || []).map(r=>({...((r.data)||{}),id:r.record_id}));
   hrAttendance = (at.data || []).map(r=>({...((r.data)||{}),id:r.record_id}));
   hrLeaves = (lv.data || []).map(r=>({...((r.data)||{}),id:r.record_id}));
   hrEmployees = er.data || [];
-  hrEmployeePayments = pr.data || [];
+  hrEmployeePayments = pr.data || [];hrCommissionRules=cr.data||[];hrCommissions=cm.data||[];
   hrEmployees.forEach(emp=>{
    const a=(ar.data||[]).filter(x=>x.employee_id===emp.id).sort((x,y)=>Number(y.is_primary)-Number(x.is_primary));
    emp._sectorName=a.map(x=>x.company_sectors?.name).filter(Boolean).join(', ');
@@ -1340,8 +1342,10 @@ function populateEmployeePaymentSelect(selected=''){
  el.innerHTML='<option value="">Selecione o funcionário</option>'+hrEmployees.filter(e=>e.employment_status!=='desligado').map(e=>`<option value="${esc(e.id)}">${esc(e.full_name)}</option>`).join('');
  if(selected)el.value=selected;
 }
+function updateEmployeeRemunerationFields(){const type=$('employeeRemuneration')?.value||'salario_fixo',fixed=['salario_fixo','fixo_comissao'].includes(type);if($('employeeSalaryContainer'))$('employeeSalaryContainer').hidden=!fixed;if($('employeeSalary')){$('employeeSalary').required=fixed;if(!fixed)$('employeeSalary').value='';else if($('employeeSalary').value==='')$('employeeSalary').value='0'}}
+$('employeeRemuneration')?.addEventListener('change',updateEmployeeRemunerationFields);
 function resetEmployeeForm(){
- $('employeeForm').reset();$('employeeId').value='';$('employeeEmergencyName').value='';$('employeeEmergencyPhone').value='';$('employeeSalary').value='0';$('employeeStatus').value='ativo';$('employeeFormTitle').textContent='Cadastrar funcionário';populateEmployeeSectorSelect();
+ $('employeeForm').reset();$('employeeId').value='';$('employeeEmergencyName').value='';$('employeeEmergencyPhone').value='';$('employeeSalary').value='0';$('employeeRemuneration').value='salario_fixo';$('employeeStatus').value='ativo';$('employeeFormTitle').textContent='Cadastrar funcionário';populateEmployeeSectorSelect();updateEmployeeRemunerationFields();
 }
 function editEmployee(id){
  const e=hrEmployees.find(x=>x.id===id);if(!e)return;
@@ -1349,7 +1353,7 @@ function editEmployee(id){
  $('employeeRg').value=e.rg||'';$('employeeBirth').value=e.birth_date||'';$('employeeEmail').value=e.email||'';
  $('employeePhone').value=e.phone||'';$('employeeAddress').value=e.address||'';$('employeeJob').value=e.job_title||'';
  populateEmployeeSectorSelect(e._primarySectorId);$('employeeType').value=e.employment_type||'';
- $('employeeAdmission').value=e.admission_date||'';$('employeeTermination').value=e.termination_date||'';$('employeeSalary').value=e.base_salary||0;
+ $('employeeAdmission').value=e.admission_date||'';$('employeeTermination').value=e.termination_date||'';$('employeeSalary').value=e.base_salary??'';$('employeeRemuneration').value=e.remuneration_type||'salario_fixo';updateEmployeeRemunerationFields();
  $('employeeStatus').value=e.employment_status||'ativo';$('employeeNotes').value=e.notes||'';const extra=hrEmployeeExtras.find(x=>x.employeeId===id);$('employeeEmergencyName').value=extra?.emergencyName||'';$('employeeEmergencyPhone').value=extra?.emergencyPhone||'';
  $('employeeFormTitle').textContent='Editar funcionário';$('employeeForm').scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -1371,7 +1375,7 @@ $('employeeForm')?.addEventListener('submit',async ev=>{
   email:$('employeeEmail').value.trim()||null,phone:$('employeePhone').value.trim()||null,
   address:$('employeeAddress').value.trim()||null,job_title:$('employeeJob').value.trim()||null,
   employment_type:$('employeeType').value||null,admission_date:$('employeeAdmission').value||null,
-  termination_date:$('employeeTermination').value||null,base_salary:Number($('employeeSalary').value)||0,employment_status:$('employeeStatus').value,
+  termination_date:$('employeeTermination').value||null,remuneration_type:$('employeeRemuneration').value,base_salary:['salario_fixo','fixo_comissao'].includes($('employeeRemuneration').value)?(Number($('employeeSalary').value)||0):null,employment_status:$('employeeStatus').value,
   notes:$('employeeNotes').value.trim()||null
  };
  try{
@@ -1511,6 +1515,17 @@ async function syncEmployeePaymentToFinance(paymentId,item,employee){
  const index=payments.findIndex(p=>p.id===financeId);
  if(index>=0)payments[index]=financeItem;else payments.unshift(financeItem);
 }
+
+
+function populateCommissionSelects(){const opts='<option value="">Selecione</option>'+hrEmployees.filter(e=>e.employment_status!=='desligado').map(e=>'<option value="'+esc(e.id)+'">'+esc(e.full_name)+'</option>').join('');['commissionRuleEmployee','commissionEmployee'].forEach(id=>{const el=$(id);if(el){const v=el.value;el.innerHTML=opts;el.value=v}});const el=$('commissionRule');if(el){const v=el.value;el.innerHTML='<option value="">Selecione a regra</option>'+hrCommissionRules.filter(r=>r.active).map(r=>'<option value="'+esc(r.id)+'">'+esc((hrEmployees.find(e=>e.id===r.employee_id)?.full_name||'')+' — '+r.rule_name)+'</option>').join('');el.value=v}}
+function updateCommissionPreview(){const r=hrCommissionRules.find(x=>x.id===$('commissionRule')?.value),b=Number($('commissionBase')?.value)||0,a=r?(r.calculation_type==='percentual'?b*Number(r.rate)/100:Number(r.rate)):0;if($('commissionAmountPreview'))$('commissionAmountPreview').value=money(a)}
+$('commissionRule')?.addEventListener('change',updateCommissionPreview);$('commissionBase')?.addEventListener('input',updateCommissionPreview);
+$('commissionEmployee')?.addEventListener('change',()=>{const id=$('commissionEmployee').value,el=$('commissionRule');if(el){el.value='';Array.from(el.options).forEach(o=>{const r=hrCommissionRules.find(x=>x.id===o.value);o.hidden=!!r&&r.employee_id!==id})}updateCommissionPreview()});
+$('employeeCommissionRuleForm')?.addEventListener('submit',async e=>{e.preventDefault();const x={employee_id:$('commissionRuleEmployee').value,rule_name:$('commissionRuleName').value.trim(),source_type:$('commissionRuleSource').value,calculation_type:$('commissionRuleCalc').value,rate:Number($('commissionRuleRate').value),calculation_base:$('commissionRuleBase').value,valid_from:$('commissionRuleFrom').value,valid_until:$('commissionRuleUntil').value||null,created_by:currentSession?.user?.id||null};try{const {error}=await supabaseClient.from('employee_commission_rules').insert(x);if(error)throw error;$('employeeCommissionRuleForm').reset();await loadHRData();renderHR();alert('Regra cadastrada.')}catch(e){alert('Falha ao salvar regra: '+(e.message||e))}});
+$('employeeCommissionForm')?.addEventListener('submit',async e=>{e.preventDefault();const r=hrCommissionRules.find(x=>x.id===$('commissionRule').value),b=Number($('commissionBase').value)||0;if(!r||r.employee_id!==$('commissionEmployee').value){alert('Escolha uma regra do funcionário selecionado.');return}const a=r.calculation_type==='percentual'?b*Number(r.rate)/100:Number(r.rate);if(b<=0||a<=0){alert('Base e comissão devem ser maiores que zero.');return}const x={employee_id:r.employee_id,rule_id:r.id,source_type:r.source_type,description:$('commissionDescription').value.trim(),competence:$('commissionCompetence').value,calculation_base:b,applied_rate:Number(r.rate),calculation_type:r.calculation_type,commission_amount:Number(a.toFixed(2)),status:'pendente',created_by:currentSession?.user?.id||null};try{const {error}=await supabaseClient.from('employee_commissions').insert(x);if(error)throw error;$('employeeCommissionForm').reset();await loadHRData();renderHR();alert('Comissão registrada para aprovação.')}catch(e){alert('Falha ao lançar comissão: '+(e.message||e))}});
+async function approveEmployeeCommission(id){const x=hrCommissions.find(c=>c.id===id);if(!x||x.status!=='pendente'||!confirm('Aprovar comissão de '+money(x.commission_amount)+'?'))return;try{const {error}=await supabaseClient.from('employee_commissions').update({status:'aprovada',approved_by:currentSession?.user?.id||null,approved_at:new Date().toISOString()}).eq('id',id);if(error)throw error;await loadHRData();renderHR()}catch(e){alert('Falha ao aprovar: '+(e.message||e))}}
+async function payEmployeeCommission(id){const x=hrCommissions.find(c=>c.id===id),emp=hrEmployees.find(e=>e.id===x?.employee_id);if(!x||!emp||x.status!=='aprovada'||x.employee_payment_id||!confirm('Gerar pagamento pendente de '+money(x.commission_amount)+' para '+emp.full_name+'?'))return;try{const today=new Date().toISOString().slice(0,10),p={employee_id:x.employee_id,payment_type:'comissao',competence:x.competence,due_date:today,gross_amount:x.commission_amount,deductions_amount:0,net_amount:x.commission_amount,paid_amount:0,payment_status:'pendente',reference:'COMMISSION|'+x.id,notes:'Comissão aprovada: '+x.description};const {data,error}=await supabaseClient.from('employee_payments').insert(p).select('id').single();if(error)throw error;await syncEmployeePaymentToFinance(data.id,p,emp);const {error:ue}=await supabaseClient.from('employee_commissions').update({employee_payment_id:data.id}).eq('id',id);if(ue)throw ue;await loadHRData();renderHR();renderPayments();renderCash();alert('Pagamento gerado e integrado ao Financeiro. Registre a quitação no painel de pagamentos.')}catch(e){alert('Falha ao gerar pagamento: '+(e.message||e))}}
+function renderEmployeeCommissions(){const a=$('employeeCommissionRulesTable'),b=$('employeeCommissionsTable');if(a)a.innerHTML=hrCommissionRules.length?hrCommissionRules.map(r=>'<tr><td>'+esc(hrEmployees.find(e=>e.id===r.employee_id)?.full_name||'—')+'</td><td>'+esc(r.rule_name)+'</td><td>'+esc(r.source_type)+'</td><td>'+(r.calculation_type==='percentual'?'Percentual':'Valor fixo')+'</td><td>'+(r.calculation_type==='percentual'?r.rate+'%':money(r.rate))+'</td><td>'+fmtDate(r.valid_from)+' — '+(r.valid_until?fmtDate(r.valid_until):'Sem término')+'</td><td>'+(r.active?'Ativa':'Inativa')+'</td></tr>').join(''):'<tr><td colspan="7" class="empty">Nenhuma regra cadastrada.</td></tr>';if(b)b.innerHTML=hrCommissions.length?hrCommissions.map(x=>{const action=x.status==='pendente'?'<button class="smallbtn" onclick="approveEmployeeCommission(\''+x.id+'\')">Aprovar</button>':x.status==='aprovada'&&!x.employee_payment_id?'<button class="smallbtn" onclick="payEmployeeCommission(\''+x.id+'\')">Gerar pagamento</button>':x.employee_payment_id?'Pagamento gerado':'—';return '<tr><td>'+esc(hrEmployees.find(e=>e.id===x.employee_id)?.full_name||'—')+'</td><td>'+esc(x.description)+'</td><td>'+fmtDate(x.competence)+'</td><td>'+money(x.calculation_base)+'</td><td>'+money(x.commission_amount)+'</td><td>'+esc(x.status)+'</td><td>'+action+'</td></tr>'}).join(''):'<tr><td colspan="7" class="empty">Nenhuma comissão lançada.</td></tr>'}
 
 // FREQUENCIA E PONTO — presença, ocorrências e estimativa de desconto
 function attendanceMinutes(start,end){
@@ -1754,7 +1769,7 @@ function renderHrManagement(){
  const counts=hrSectors.map(s=>({name:s.name,count:hrEmployees.filter(e=>e._primarySectorId===s.id).length})).filter(x=>x.count);
  if($('hrMngDepartments'))$('hrMngDepartments').innerHTML=counts.length?counts.map(x=>`<div class="card metric"><div class="label">${esc(x.name)}</div><div class="value">${x.count}</div><div class="delta">Funcionários vinculados</div></div>`).join(''):'<p class="muted">Ainda não há funcionários vinculados aos departamentos.</p>';
 }
-function renderHR(){populateEmployeeSectorSelect();populateEmployeePaymentSelect();populateAttendanceEmployees();populateLeaveEmployees();populateHrAdminSelects();renderEmployees();renderHRPayments();renderHrAttendance();renderHrLeaves();renderHrDocuments();renderHrManagement();updateEmployeeNet();updateHRDashboard()}
+function renderHR(){populateEmployeeSectorSelect();populateEmployeePaymentSelect();populateAttendanceEmployees();populateLeaveEmployees();populateHrAdminSelects();populateCommissionSelects();renderEmployees();renderHRPayments();renderEmployeeCommissions();renderHrAttendance();renderHrLeaves();renderHrDocuments();renderHrManagement();updateEmployeeNet();updateHRDashboard()}
 function showPaymentTab(tab){
  const map={general:'generalPaymentsPanel',employees:'employeePaymentsPanel',hr:'hrEmployeesPanel'};
  Object.entries(map).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==tab});
