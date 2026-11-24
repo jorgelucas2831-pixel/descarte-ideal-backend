@@ -897,7 +897,7 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
 </section>
 </main></div>
 <script>
-const titles={dashboard:'Visão geral',relatorios:'Relatórios gerenciais',propostas:'Propostas comerciais',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito','users-permissions':'Usuários e permissões','org-structure':'Estrutura organizacional',rh:'Funcionários e RH',frota:'Frotas e logística',documentos:'Central documental'};
+const titles={dashboard:'Visão geral',relatorios:'Relatórios gerenciais',propostas:'Propostas comerciais',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',precificacao:'Precificação e custos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito','users-permissions':'Usuários e permissões','org-structure':'Estrutura organizacional',rh:'Funcionários e RH',frota:'Frotas e logística',documentos:'Central documental'};
 let currentProfile=null;let depositOnlyUser=false;let currentSession=null;
 let demoMode=false; let payments=loadPayments(); let invoices=loadInvoices(); let invoiceReceipts=loadInvoiceReceipts(); let recurringExpenses=[];
 let state={clients:[],collections:[]};let fleetPartners=[],fleetVehicles=[],fleetDrivers=[],fleetFreights=[],documents=[];let weighings=loadWeighings();let supabaseClient=null;let connectedUrl='';let connectedKey='';
