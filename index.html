@@ -1303,6 +1303,8 @@ const ORG_KEY='di_org_structure_v1';
 const orgDefaults={departments:['Administração','Administrativo','Ambiental','Comercial','Depósito','Estoque','Financeiro','Frota e Manutenção','Operacional','Recursos Humanos','Materiais','Transporte','Serviços'].map((name,i)=>({id:'d'+(i+1),name,lead:'',description:'',active:true})),positions:[],assignments:[]};
 function orgLoad(){try{return JSON.parse(localStorage.getItem(ORG_KEY))||structuredClone(orgDefaults)}catch{return structuredClone(orgDefaults)}}
 let orgData=orgLoad();
+// Acrescenta os setores-padrão que faltarem sem apagar departamentos já personalizados.
+orgDefaults.departments.forEach(d=>{if(!orgData.departments.some(x=>String(x.name||'').trim().toLowerCase()===d.name.toLowerCase()))orgData.departments.push({...d,id:orgId()})});
 function orgSave(){localStorage.setItem(ORG_KEY,JSON.stringify(orgData));renderOrgModule();setSyncIndicator('Estrutura organizacional salva neste navegador.');}
 function orgId(){return 'org_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
 function orgLines(v){return String(v||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean)}
