@@ -933,14 +933,38 @@ $('invoiceSearch')?.addEventListener('input',renderInvoices);$('invoicePeriod')?
 
 // FASE 1 — Frotas e Logística: cadastros persistidos em app_records.
 function fleetTab(tab){
- const panels={partners:'fleetPartnersPanel',vehicles:'fleetVehiclesPanel',drivers:'fleetDriversPanel'};
+ const panels={partners:'fleetPartnersPanel',vehicles:'fleetVehiclesPanel',drivers:'fleetDriversPanel',freights:'fleetFreightsPanel'};
  Object.entries(panels).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==tab});
  document.querySelectorAll('[data-fleet-tab]').forEach(b=>b.classList.toggle('active',b.dataset.fleetTab===tab));
- populateFleetPartnerSelects();renderFleet();
+ populateFleetPartnerSelects();renderFleet();renderFleetFreights();
 }
+
+function resetFleetFreightForm(){const form=$('fleetFreightForm');if(!form)return;form.reset();$('fleetFreightId').value='';$('fleetFreightDate').value=new Date().toISOString().slice(0,10);populateFleetFreightSelects()}
+function populateFleetFreightSelects(){
+ const p=$('fleetFreightPartner');if(p){const old=p.value;p.innerHTML='<option value="">Selecione a transportadora</option>'+fleetPartners.filter(x=>x.status==='ativo').map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('');if(old)p.value=old}
+ const c=$('fleetFreightCollection');if(c){const old=c.value;c.innerHTML='<option value="">Sem vínculo</option>'+state.collections.map(x=>'<option value="'+esc(x.id)+'">'+esc(clientName(x.clientId))+' — '+esc(x.waste||'Coleta')+' — '+esc(fmtDate(x.date))+'</option>').join('');if(old)c.value=old}
+}
+function renderFleetFreights(){
+ populateFleetFreightSelects();
+ const total=fleetFreights.reduce((a,x)=>a+(Number(x.cost)||0),0),pending=fleetFreights.filter(x=>x.status!=='paid').reduce((a,x)=>a+(Number(x.cost)||0),0);
+ if($('fleetFreightTotal'))$('fleetFreightTotal').textContent=money(total);
+ if($('fleetFreightPending'))$('fleetFreightPending').textContent=money(pending);
+ const el=$('fleetFreightsTable');if(!el)return;
+ el.innerHTML=fleetFreights.length?fleetFreights.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(x=>'<tr><td>'+fmtDate(x.date)+'</td><td>'+esc(fleetPartnerName(x.partner_id))+'</td><td>'+esc(state.collections.find(c=>c.id===x.collection_id)?.waste||'—')+'</td><td><b>'+money(x.cost)+'</b></td><td><span class="status '+(x.status==='paid'?'ok':'pending')+'">'+(x.status==='paid'?'Pago':'Pendente')+'</span></td><td><button class="smallbtn" onclick="editFleetFreight(\''+esc(x.id)+'\')">Editar</button><button class="smallbtn" onclick="toggleFleetFreightPayment(\''+esc(x.id)+'\')">'+(x.status==='paid'?'Reabrir':'Marcar pago')+'</button></td></tr>').join(''):'<tr><td colspan="6" class="empty">Nenhum custo de frete registrado.</td></tr>';
+}
+function editFleetFreight(id){const x=fleetFreights.find(y=>y.id===id);if(!x)return;$('fleetFreightId').value=x.id;$('fleetFreightPartner').value=x.partner_id;$('fleetFreightCollection').value=x.collection_id||'';$('fleetFreightDate').value=x.date||'';$('fleetFreightCost').value=x.cost;$('fleetFreightReference').value=x.reference||'';$('fleetFreightStatus').value=x.status||'pending';$('fleetFreightNotes').value=x.notes||'';$('fleetFreightForm').scrollIntoView({behavior:'smooth',block:'start'})}
+async function toggleFleetFreightPayment(id){const next=fleetFreights.map(x=>x.id===id?{...x,status:x.status==='paid'?'pending':'paid',updated_at:new Date().toISOString()}:x);try{await saveModuleRecords('fleet_freights',next);fleetFreights=next;renderFleetFreights()}catch(e){alert('Não foi possível atualizar o pagamento do frete: '+(e.message||e))}}
+$('fleetFreightForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();if(demoMode||!supabaseClient){alert('Conecte ao Supabase para registrar custos de frete.');return}
+ const id=$('fleetFreightId').value||('freight-'+(crypto.randomUUID?.()||Date.now()));
+ const item={id,partner_id:$('fleetFreightPartner').value,collection_id:$('fleetFreightCollection').value||null,date:$('fleetFreightDate').value,cost:Number($('fleetFreightCost').value),reference:$('fleetFreightReference').value.trim()||null,status:$('fleetFreightStatus').value,notes:$('fleetFreightNotes').value.trim()||null,updated_at:new Date().toISOString()};
+ if(!item.partner_id||!item.date||!Number.isFinite(item.cost)||item.cost<=0){alert('Informe transportadora, data e custo válido.');return}
+ const next=fleetFreights.some(x=>x.id===id)?fleetFreights.map(x=>x.id===id?item:x):[{...item,created_at:item.updated_at},...fleetFreights];
+ try{await saveModuleRecords('fleet_freights',next);fleetFreights=next;resetFleetFreightForm();renderFleetFreights();alert('Custo de frete salvo no controle da frota terceirizada.')}catch(err){alert('Não foi possível salvar o frete: '+(err.message||err))}
+});
 function fleetPartnerName(id){return fleetPartners.find(x=>x.id===id)?.name||'Parceiro não encontrado'}
 function populateFleetPartnerSelects(){
- ['fleetVehiclePartner','fleetDriverPartner'].forEach(id=>{const el=$(id);if(!el)return;const old=el.value;el.innerHTML='<option value="">Selecione o parceiro</option>'+fleetPartners.filter(p=>p.status==='ativo').map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');if(old)el.value=old});
+ ['fleetVehiclePartner','fleetDriverPartner','fleetFreightPartner'].forEach(id=>{const el=$(id);if(!el)return;const old=el.value;el.innerHTML='<option value="">Selecione o parceiro</option>'+fleetPartners.filter(p=>p.status==='ativo').map(p=>'<option value="'+esc(p.id)+'">'+esc(p.name)+'</option>').join('');if(old)el.value=old});
 }
 function renderFleet(){
  const set=(id,v)=>{const el=$(id);if(el)el.textContent=v};
