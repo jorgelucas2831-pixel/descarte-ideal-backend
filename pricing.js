@@ -48,6 +48,10 @@ function render(){
 }
 async function loadPricingData(){
  if(!supabaseClient||demoMode)return;
+ const defaults=[['Papel','Reciclável'],['Plástico','Reciclável'],['Metal','Reciclável'],['Vidro','Reciclável'],['Orgânico','Orgânico'],['Eletrônico','Especial'],['Outro','Outros']];
+ const existing=await fetchTable('waste_types');
+ const missing=defaults.filter(([name])=>!existing.some(x=>String(x.name).toLowerCase()===name.toLowerCase()));
+ if(missing.length){const seed=await supabaseClient.from('waste_types').insert(missing.map(([name,category])=>({name,category,unit:'kg',active:true})));if(seed.error&&seed.error.code!=='23505')console.warn('Não foi possível sincronizar tipos básicos de resíduos:',seed.error)}
  const tables=['waste_types','waste_price_rules','waste_destinations','destination_waste_rates','freight_rate_rules','collection_pricing'],keys=['wastes','sales','destinations','rates','freights','operations'];
  const rs=await Promise.allSettled(tables.map(fetchTable));rs.forEach((r,i)=>{if(r.status==='fulfilled')d[keys[i]]=r.value;else console.warn('Falha ao carregar '+tables[i],r.reason)});render();
 }
@@ -74,11 +78,22 @@ function fillCollection(cp){
 async function saveCollection(e){
  e.preventDefault();e.stopImmediatePropagation();
  if(!supabaseClient||demoMode){alert('Conecte ao Supabase para salvar coleta e precificação.');return}
- const id=$('collectionId').value,date=$('collectionDate').value,waste=$('collectionWaste').value,item={client_id:$('collectionClient').value,scheduled_at:new Date(date).toISOString(),waste_name:waste,quantity_kg:Number($('collectionQty').value)||0,responsible:$('collectionResponsible').value.trim()||null,status:$('collectionStatus').value,address:$('collectionAddress').value.trim()||null,notes:$('collectionNotes').value.trim()||null};
+ const id=$('collectionId').value,date=$('collectionDate').value,waste=$('collectionWaste').value,qty=Number($('collectionQty').value)||0;
+ const wt=d.wastes.find(x=>String(x.name).toLowerCase()===String(waste).toLowerCase());
+ const item={client_id:$('collectionClient').value,scheduled_at:new Date(date).toISOString(),waste_type_id:wt?.id||null,waste_name:waste,quantity_kg:qty,responsible:$('collectionResponsible').value.trim()||null,status:$('collectionStatus').value,address:$('collectionAddress').value.trim()||null,notes:$('collectionNotes').value.trim()||null};
  if(!item.client_id||!date||!waste)return;
  const q=id?supabaseClient.from('collections').update(item).eq('id',id).select('id').single():supabaseClient.from('collections').insert(item).select('id').single(),r=await q;
  if(r.error){alert('Não foi possível salvar a coleta: '+r.error.message);return}
- const wt=d.wastes.find(x=>x.name.toLowerCase()===waste.toLowerCase()),payload={collection_id:r.data.id,client_id:item.client_id,waste_type_id:wt?.id||null,waste_name_snapshot:waste,quantity_kg:item.quantity_kg,distance_km:Number($('collectionDistance').value)||0,sale_price_rule_id:$('collectionSaleRule').value||null,freight_rate_rule_id:$('collectionFreightRule').value||null,destination_rate_id:$('collectionDestinationRate').value||null,freight_cost_actual:$('collectionFreightActual').value?Number($('collectionFreightActual').value):null,other_revenue:Number($('collectionOtherRevenue').value)||0,other_cost:Number($('collectionOtherCost').value)||0};
+ const sale=d.sales.find(x=>x.id===$('collectionSaleRule').value),freight=d.freights.find(x=>x.id===$('collectionFreightRule').value),rate=d.rates.find(x=>x.id===$('collectionDestinationRate').value);
+ const basisAmount=(basis,unit)=>basis==='kg'?qty*unit:basis==='ton'?(qty/1000)*unit:unit;
+ const saleValue=sale?Math.max(basisAmount(sale.unit_basis,Number(sale.unit_price)||0),Number(sale.minimum_charge)||0):0;
+ const distance=Number($('collectionDistance').value)||0,chargedDistance=freight?.round_trip?distance*2:distance;
+ let freightCalc=0;
+ if(freight){const model=freight.rate_model;freightCalc=model==='fixed_trip'?Number(freight.fixed_amount)||0:model==='per_km'?chargedDistance*(Number(freight.rate_per_km)||0):model==='per_kg'?qty*(Number(freight.rate_per_kg)||0):model==='per_ton'?(qty/1000)*(Number(freight.rate_per_ton)||0):model==='km_plus_kg'?(Number(freight.fixed_amount)||0)+chargedDistance*(Number(freight.rate_per_km)||0)+qty*(Number(freight.rate_per_kg)||0):Number(freight.fixed_amount)||0;freightCalc=Math.max(freightCalc,Number(freight.minimum_charge)||0);if(freight.maximum_charge!=null)freightCalc=Math.min(freightCalc,Number(freight.maximum_charge))}
+ const freightActual=$('collectionFreightActual').value===''?null:Number($('collectionFreightActual').value),freightEffective=freightActual==null?freightCalc:freightActual;
+ const destinationCalc=rate?Math.max(basisAmount(rate.charge_basis,Number(rate.unit_cost)||0),Number(rate.minimum_charge)||0):0;
+ const otherRevenue=Number($('collectionOtherRevenue').value)||0,otherCost=Number($('collectionOtherCost').value)||0,totalRevenue=saleValue+otherRevenue,totalCost=freightEffective+destinationCalc+otherCost,profit=totalRevenue-totalCost;
+ const payload={collection_id:r.data.id,client_id:item.client_id,waste_type_id:wt?.id||null,waste_name_snapshot:waste,quantity_kg:qty,distance_km:distance,sale_price_rule_id:sale?.id||null,sale_unit_basis:sale?.unit_basis||'kg',sale_unit_price:Number(sale?.unit_price)||0,sale_minimum_charge:Number(sale?.minimum_charge)||0,waste_revenue:saleValue,freight_rate_rule_id:freight?.id||null,transport_partner_record_id:freight?.partner_record_id||null,transport_partner_name_snapshot:freight?.partner_name_snapshot||null,freight_operation:freight?.operation_type||'collection',freight_rate_model:freight?.rate_model||'negotiated',freight_fixed_amount:Number(freight?.fixed_amount)||0,freight_rate_per_km:Number(freight?.rate_per_km)||0,freight_rate_per_kg:Number(freight?.rate_per_kg)||0,freight_rate_per_ton:Number(freight?.rate_per_ton)||0,freight_minimum_charge:Number(freight?.minimum_charge)||0,freight_maximum_charge:freight?.maximum_charge??null,freight_round_trip:!!freight?.round_trip,freight_cost_actual:freightActual,freight_cost_calculated:freightCalc,freight_cost_effective:freightEffective,destination_rate_id:rate?.id||null,destination_id:rate?.destination_id||null,destination_name_snapshot:rate?destName(rate.destination_id):null,destination_charge_basis:rate?.charge_basis||'kg',destination_unit_cost:Number(rate?.unit_cost)||0,destination_minimum_charge:Number(rate?.minimum_charge)||0,destination_cost_calculated:destinationCalc,destination_cost_effective:destinationCalc,other_revenue:otherRevenue,other_cost:otherCost,total_revenue:totalRevenue,total_cost:totalCost,gross_profit:profit,margin_percent:totalRevenue?(profit/totalRevenue)*100:0,pricing_snapshot:{sale_rule:sale||null,freight_rule:freight||null,destination_rate:rate||null,calculated_at:new Date().toISOString()}};
  const pr=await supabaseClient.from('collection_pricing').upsert(payload,{onConflict:'collection_id'});
  if(pr.error){alert('Coleta salva, mas a precificação falhou. Verifique acesso do setor Operacional: '+pr.error.message);return}
  hideCollectionForm?.();await refresh?.();await loadPricingData();
