@@ -164,7 +164,7 @@ begin
       using errcode = '42501';
   end if;
 
-  if (to_jsonb(new) - 'status') is distinct from (to_jsonb(old) - 'status')
+  if (to_jsonb(new) - 'status' - 'updated_at') is distinct from (to_jsonb(old) - 'status' - 'updated_at')
      and not public.has_sector_permission('comercial','edit') then
     raise exception 'Permissão de edição comercial necessária para alterar os dados da proposta'
       using errcode = '42501';
