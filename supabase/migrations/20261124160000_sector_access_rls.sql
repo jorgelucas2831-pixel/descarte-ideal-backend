@@ -120,7 +120,7 @@ create policy sales_prospects_delete
 on public.sales_prospects for delete to authenticated
 using (public.has_sector_permission('comercial','delete'));
 
--- PROPOSTAS: edição comercial; mudança para aprovada/recusada exige approve.
+-- PROPOSTAS: edição comercial; aprovação/recusa exige permissão approve.
 alter table public.service_proposals enable row level security;
 drop policy if exists "Authenticated users manage service proposals" on public.service_proposals;
 
@@ -150,6 +150,9 @@ create policy service_proposals_delete
 on public.service_proposals for delete to authenticated
 using (public.has_sector_permission('comercial','delete'));
 
+-- A aprovação deve ser validada tanto na criação quanto na atualização.
+-- Sem este controle no INSERT, um usuário com create poderia inserir
+-- diretamente uma proposta já aprovada ou recusada.
 create or replace function public.enforce_service_proposal_approval_permission()
 returns trigger
 language plpgsql
@@ -157,6 +160,15 @@ security invoker
 set search_path = public, pg_temp
 as $$
 begin
+  if tg_op = 'INSERT' then
+    if new.status in ('approved','rejected')
+       and not public.has_sector_permission('comercial','approve') then
+      raise exception 'Permissão de aprovação comercial necessária para criar proposta com status %', new.status
+        using errcode = '42501';
+    end if;
+    return new;
+  end if;
+
   if new.status is distinct from old.status
      and new.status in ('approved','rejected')
      and not public.has_sector_permission('comercial','approve') then
@@ -176,7 +188,7 @@ $$;
 
 drop trigger if exists service_proposals_approval_permission on public.service_proposals;
 create trigger service_proposals_approval_permission
-before update on public.service_proposals
+before insert or update on public.service_proposals
 for each row execute function public.enforce_service_proposal_approval_permission();
 
 -- SERVIÇOS TERCEIRIZADOS: setor definido pela categoria da ordem.
