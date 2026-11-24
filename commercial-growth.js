@@ -180,7 +180,16 @@ function growthResetProposalNumber(){if($g('gProposalNumber')&&!$g('gProposalId'
 const baseLoad=typeof loadFromSupabase==='function'?loadFromSupabase:null;
 if(baseLoad){loadFromSupabase=async function(){await baseLoad();await loadGrowthData()}}
 const baseGo=typeof go==='function'?go:null;
-if(baseGo){go=function(page){baseGo(page);if(['prospeccao','propostas','terceirizados','inteligencia'].includes(page)){renderGrowth();if(!demoMode)loadGrowthData()} }}
+if(baseGo){go=function(page){
+ baseGo(page);
+ const growthTitles={prospeccao:'Prospecção comercial',propostas:'Propostas comerciais',terceirizados:'Serviços terceirizados',inteligencia:'Inteligência comercial'};
+ document.querySelectorAll('#growthNav [data-growth-page]').forEach(button=>button.classList.toggle('active',button.dataset.growthPage===page));
+ if(growthTitles[page]){
+  const title=$g('pageTitle');if(title)title.textContent=growthTitles[page];
+  renderGrowth();if(!demoMode)loadGrowthData();
+  if(window.matchMedia('(max-width:760px)').matches&&typeof setMobileNav==='function')setMobileNav(false);
+ }
+}}
 window.growthReload=loadGrowthData;window.growthResetProspect=growthResetProspect;window.growthEditProspect=growthEditProspect;window.growthResetProposal=growthResetProposal;window.growthEditProposal=growthEditProposal;window.growthPrintProposal=growthPrintProposal;window.growthEditOrder=growthEditOrder;window.growthConvertProspect=growthConvertProspect;window.growthSaveSegments=growthSaveSegments;
 
 /* Filtro visual da carteira por frente comercial, sem duplicar cadastros. */
