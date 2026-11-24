@@ -434,6 +434,20 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
 </div><div class="form-actions"><button class="btn" type="submit">Salvar lançamento</button><button class="btn secondary" type="button" onclick="resetPaymentForm()">Limpar formulário</button><button class="btn secondary" type="button" onclick="exportPayments()">Exportar CSV</button></div></form></div>
 <div class="card section"><div class="section-head"><h2>Contas e movimentações</h2><div class="report-filter"><input id="paymentSearch" class="search" placeholder="Buscar nome, categoria ou descrição"><select id="paymentKindFilter" class="search" aria-label="Filtrar tipo"><option value="todos">Todos os movimentos</option><option value="pagar">Contas a pagar</option><option value="receber">Contas a receber</option></select><select id="paymentStatusFilter" class="search" aria-label="Filtrar situação"><option value="todos">Todas as situações</option><option value="Pendente">Pendente</option><option value="Parcial">Parcial</option><option value="Pago/Recebido">Pago/Recebido</option><option value="Cancelado">Cancelado</option><option value="Vencido">Vencido</option></select></div></div>
 <div class="table-wrap"><table class="table"><thead><tr><th>Tipo</th><th>Responsável</th><th>Categoria / descrição</th><th>Valor total</th><th>Pago/recebido</th><th>Saldo</th><th>Vencimento</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="paymentsTable"></tbody></table></div></div>
+<div class="card section">
+ <div class="section-head"><div><h2>Despesas recorrentes</h2><p class="muted" style="font-size:12px;margin:5px 0 0">Cadastre despesas fixas uma vez e gere os lançamentos de cada competência sem duplicidade.</p></div></div>
+ <form id="recurringExpenseForm"><input type="hidden" id="recurringExpenseId"><div class="formgrid">
+  <div class="field"><label for="recurringExpenseName">Descrição *</label><input id="recurringExpenseName" required placeholder="Ex.: aluguel da sede"></div>
+  <div class="field"><label for="recurringExpensePayee">Fornecedor / beneficiário *</label><input id="recurringExpensePayee" required placeholder="Nome do beneficiário"></div>
+  <div class="field"><label for="recurringExpenseCategory">Categoria *</label><select id="recurringExpenseCategory" required><option value="">Selecione</option><option>Aluguel e estrutura</option><option>Água, luz e internet</option><option>Contabilidade e serviços</option><option>Salários e diárias</option><option>Impostos e taxas</option><option>Combustível</option><option>Manutenção</option><option>Seguros</option><option>Sistemas e assinaturas</option><option>Outros</option></select></div>
+  <div class="field"><label for="recurringExpenseAmount">Valor previsto (R$) *</label><input id="recurringExpenseAmount" type="number" min="0.01" step="0.01" required></div>
+  <div class="field"><label for="recurringExpenseDay">Dia de vencimento *</label><input id="recurringExpenseDay" type="number" min="1" max="31" value="10" required></div>
+  <div class="field"><label for="recurringExpenseStart">Início da recorrência *</label><input id="recurringExpenseStart" type="date" required></div>
+  <div class="field full"><label for="recurringExpenseNotes">Observações</label><textarea id="recurringExpenseNotes"></textarea></div>
+ </div><div class="form-actions"><button class="btn" type="submit">Salvar despesa recorrente</button><button class="btn secondary" type="button" onclick="resetRecurringExpenseForm()">Limpar</button></div></form>
+ <div class="section-head" style="margin-top:22px"><h2>Modelos cadastrados</h2><div class="report-filter"><input id="recurringCompetence" type="month" class="search"><button class="btn secondary" type="button" onclick="generateRecurringExpenses()">Gerar contas do mês</button></div></div>
+ <div class="table-wrap"><table class="table"><thead><tr><th>Despesa</th><th>Beneficiário</th><th>Categoria</th><th>Valor</th><th>Vencimento</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="recurringExpensesTable"></tbody></table></div>
+</div>
 </div>
 <div class="card section" id="depositFinancialCard">
  <div class="section-head"><div><h2>Operações integradas do Depósito</h2><p class="muted" style="font-size:12px;margin:5px 0 0">Compras geram contas a pagar; vendas geram contas a receber. Registre pagamentos parciais ou totais por parcela.</p></div><button class="btn secondary" type="button" id="refreshDepositFinance">Atualizar</button></div>
@@ -861,7 +875,7 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
 <script>
 const titles={dashboard:'Visão geral',relatorios:'Relatórios gerenciais',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito','users-permissions':'Usuários e permissões','org-structure':'Estrutura organizacional',rh:'Funcionários e RH',frota:'Frotas e logística',documentos:'Central documental'};
 let currentProfile=null;let depositOnlyUser=false;let currentSession=null;
-let demoMode=false; let payments=loadPayments(); let invoices=loadInvoices(); let invoiceReceipts=loadInvoiceReceipts();
+let demoMode=false; let payments=loadPayments(); let invoices=loadInvoices(); let invoiceReceipts=loadInvoiceReceipts(); let recurringExpenses=[];
 let state={clients:[],collections:[]};let fleetPartners=[],fleetVehicles=[],fleetDrivers=[],fleetFreights=[],documents=[];let weighings=loadWeighings();let supabaseClient=null;let connectedUrl='';let connectedKey='';
 const $=id=>document.getElementById(id);
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -887,7 +901,7 @@ async function applyAccountAccess(session){
  if(depositOnlyUser){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('deposito').classList.add('active');$('pageTitle').textContent='Depósito'}
 }
 async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await applyAccountAccess(session);if(depositOnlyUser){await loadDepositData();renderDeposit();go('deposito');return}await loadFromSupabase();await syncBillingToFinance();await loadHRData();await loadDepositData();await loadDepositFinanceData();render();renderWeighings();renderPayments();renderDepositFinance();renderInvoices();renderInvoiceReceipts();renderHR();renderDeposit();await loadDepositStaffAccounts()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível carregar os dados ou permissões. Confira as migrações SQL e a configuração da função. Detalhe: '+(e.message||e),true)}}
-function startDemo(){demoMode=true;state={clients:[{id:'demo-c1',name:'Cliente Exemplo Ltda.',doc:'00.000.000/0001-00',contact:'(21) 90000-0000',status:'Ativo',address:'São João de Meriti - RJ'}],collections:[{id:'demo-co1',clientId:'demo-c1',date:new Date().toISOString().slice(0,16),waste:'Papel',qty:250,responsible:'Equipe A',status:'Agendada',address:'Centro',notes:''}]};weighings=loadWeighings();payments=loadPayments();$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent='Modo demonstração';render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();go('dashboard')}
+function startDemo(){demoMode=true;try{recurringExpenses=JSON.parse(localStorage.getItem('di_recurring_expenses')||'[]')}catch(e){recurringExpenses=[]}state={clients:[{id:'demo-c1',name:'Cliente Exemplo Ltda.',doc:'00.000.000/0001-00',contact:'(21) 90000-0000',status:'Ativo',address:'São João de Meriti - RJ'}],collections:[{id:'demo-co1',clientId:'demo-c1',date:new Date().toISOString().slice(0,16),waste:'Papel',qty:250,responsible:'Equipe A',status:'Agendada',address:'Centro',notes:''}]};weighings=loadWeighings();payments=loadPayments();$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent='Modo demonstração';render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();go('dashboard')}
 function loadPayments(){try{const x=JSON.parse(localStorage.getItem('di_payments')||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
 async function persistPayments(){if(demoMode){localStorage.setItem('di_payments',JSON.stringify(payments));return}return await saveModuleRecords('payments',payments)}
 function loadCashOpening(){try{return JSON.parse(localStorage.getItem('di_cash_opening')||'{"amount":0,"date":""}')}catch(e){return {amount:0,date:''}}}
@@ -897,7 +911,7 @@ $('cashOpeningForm')?.addEventListener('submit',async e=>{e.preventDefault();con
 function money(n){return (Number(n)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
 function resetPaymentForm(){if($('paymentForm')){$('paymentForm').reset();$('paymentId').value='';$('paymentFormTitle').textContent='Novo lançamento'}}
 function openInvoiceInBilling(id){go('faturamento');populateInvoiceLinks();const sel=$('receiptInvoice');if(sel){sel.value=id;selectInvoiceReceipt(id)}}
-function renderPayments(){if(!$('paymentsTable'))return;
+function renderPayments(){if(!$('paymentsTable'))return;renderRecurringExpenses();
  const invoiceRows=invoices.map(i=>({id:'invoice_'+i.id,sourceInvoiceId:i.id,kind:'receber',person:invoiceClientName(i.id),category:'Faturamento',desc:(i.number||'Fatura')+' — '+(i.description||'Serviço faturado'),amount:Number(i.total)||0,paidAmount:invoicePaid(i),due:i.due||'',status:invoiceStatus(i),method:'',account:'',paidDate:'',notes:i.notes||''}));
  const combined=[...payments,...invoiceRows];const q=($('paymentSearch')?.value||'').toLowerCase();const kf=$('paymentKindFilter')?.value||'todos';const sf=$('paymentStatusFilter')?.value||'todos';
  const rows=combined.filter(p=>{const text=[p.person,p.desc,p.kind,p.status,p.category,p.account,p.notes].join(' ').toLowerCase();const st=p.sourceInvoiceId?invoiceStatus(invoices.find(i=>i.id===p.sourceInvoiceId)||{total:0}):effectivePaymentStatus(p);return text.includes(q)&&(kf==='todos'||p.kind===kf)&&(sf==='todos'||st===sf)}).sort((a,b)=>(a.due||'').localeCompare(b.due||''));
@@ -910,6 +924,53 @@ function renderPayments(){if(!$('paymentsTable'))return;
 function editPayment(id){const p=payments.find(x=>x.id===id);if(!p)return;$('paymentId').value=p.id;$('paymentKind').value=p.kind;$('paymentPerson').value=p.person;$('paymentDesc').value=p.desc;$('paymentAmount').value=p.amount;$('paymentDue').value=p.due;$('paymentStatus').value=p.status;$('paymentMethod').value=p.method||'Pix';$('paymentDate').value=p.paidDate||'';$('paymentNotes').value=p.notes||'';$('paymentFormTitle').textContent='Editar lançamento';$('paymentForm').scrollIntoView({behavior:'smooth',block:'start'})}
 async function togglePayment(id){const p=payments.find(x=>x.id===id);if(!p)return;const previous={...p};if(p.status==='Pago/Recebido'){p.status='Pendente';p.paidDate=''}else{p.status='Pago/Recebido';p.paidDate=new Date().toISOString().slice(0,10)}try{await persistPayments();renderPayments()}catch(err){Object.assign(p,previous);renderPayments();alert('Não foi possível atualizar o lançamento. Nenhuma alteração foi confirmada no banco. Detalhe: '+(err.message||err))}}
 async function deletePayment(id){if(!confirm('Excluir este lançamento?'))return;const previous=payments.slice();payments=payments.filter(p=>p.id!==id);try{await deleteModuleRecord('payments',id);renderPayments()}catch(e){payments=previous;renderPayments();alert('Não foi possível excluir no Supabase. O lançamento foi restaurado na tela. Detalhe: '+e.message)}}
+function resetRecurringExpenseForm(){
+ $('recurringExpenseForm')?.reset();$('recurringExpenseId').value='';$('recurringExpenseDay').value='10';$('recurringExpenseStart').value=new Date().toISOString().slice(0,10);
+}
+function editRecurringExpense(id){
+ const x=recurringExpenses.find(v=>v.id===id);if(!x)return;
+ $('recurringExpenseId').value=x.id;$('recurringExpenseName').value=x.description||'';$('recurringExpensePayee').value=x.person||'';
+ $('recurringExpenseCategory').value=x.category||'';$('recurringExpenseAmount').value=x.amount||0;$('recurringExpenseDay').value=x.day||10;
+ $('recurringExpenseStart').value=x.startDate||'';$('recurringExpenseNotes').value=x.notes||'';
+ $('recurringExpenseForm').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function renderRecurringExpenses(){
+ const body=$('recurringExpensesTable');if(!body)return;
+ body.innerHTML=recurringExpenses.length?recurringExpenses.slice().sort((a,b)=>String(a.description).localeCompare(String(b.description))).map(x=>
+  `<tr><td><b>${esc(x.description)}</b></td><td>${esc(x.person)}</td><td>${esc(x.category)}</td><td>${money(x.amount)}</td><td>Todo dia ${Number(x.day)||1}</td><td><span class="status ${x.active===false?'cancelled':'ok'}">${x.active===false?'Inativa':'Ativa'}</span></td><td><div class="actions"><button class="smallbtn" onclick="editRecurringExpense('${x.id}')">Editar</button><button class="smallbtn" onclick="toggleRecurringExpense('${x.id}')">${x.active===false?'Ativar':'Desativar'}</button><button class="smallbtn" onclick="deleteRecurringExpense('${x.id}')">Excluir</button></div></td></tr>`).join(''):'<tr><td colspan="7" class="empty">Nenhuma despesa recorrente cadastrada.</td></tr>';
+}
+async function persistRecurringExpenses(){
+ if(demoMode){localStorage.setItem('di_recurring_expenses',JSON.stringify(recurringExpenses));return}
+ await saveModuleRecords('recurring_expenses',recurringExpenses);
+}
+$('recurringExpenseForm')?.addEventListener('submit',async e=>{
+ e.preventDefault();const id=$('recurringExpenseId').value,day=Number($('recurringExpenseDay').value),amount=Number($('recurringExpenseAmount').value);
+ if(!Number.isInteger(day)||day<1||day>31||!Number.isFinite(amount)||amount<=0){alert('Confira o dia de vencimento e o valor.');return}
+ const item={id:id||('rec_'+Date.now()),description:$('recurringExpenseName').value.trim(),person:$('recurringExpensePayee').value.trim(),category:$('recurringExpenseCategory').value,amount,day,startDate:$('recurringExpenseStart').value,notes:$('recurringExpenseNotes').value.trim(),active:true,updatedAt:new Date().toISOString()};
+ const prev=recurringExpenses.slice();recurringExpenses=id?recurringExpenses.map(x=>x.id===id?{...x,...item,active:x.active!==false}:x):[item,...recurringExpenses];
+ try{await persistRecurringExpenses();resetRecurringExpenseForm();renderRecurringExpenses();alert('Despesa recorrente salva.')}catch(err){recurringExpenses=prev;renderRecurringExpenses();alert('Não foi possível salvar a recorrência: '+(err.message||err))}
+});
+async function toggleRecurringExpense(id){
+ const x=recurringExpenses.find(v=>v.id===id);if(!x)return;const prev=x.active;x.active=x.active===false;
+ try{await persistRecurringExpenses();renderRecurringExpenses()}catch(e){x.active=prev;renderRecurringExpenses();alert('Não foi possível alterar a recorrência: '+e.message)}
+}
+async function deleteRecurringExpense(id){
+ if(!confirm('Excluir este modelo? Os lançamentos já gerados serão preservados.'))return;
+ const prev=recurringExpenses.slice();recurringExpenses=recurringExpenses.filter(x=>x.id!==id);
+ try{await persistRecurringExpenses();renderRecurringExpenses()}catch(e){recurringExpenses=prev;renderRecurringExpenses();alert('Não foi possível excluir: '+e.message)}
+}
+async function generateRecurringExpenses(){
+ const month=$('recurringCompetence')?.value;if(!month){alert('Selecione a competência que deseja gerar.');return}
+ const [year,mon]=month.split('-').map(Number),created=[];
+ const dueDate=day=>{const last=new Date(year,mon,0).getDate();return year+'-'+String(mon).padStart(2,'0')+'-'+String(Math.min(Number(day)||1,last)).padStart(2,'0')};
+ recurringExpenses.filter(x=>x.active!==false&&(!x.startDate||x.startDate.slice(0,7)<=month)).forEach(x=>{
+  if(payments.some(p=>p.sourceRecurringId===x.id&&p.recurrenceCompetence===month))return;
+  created.push({id:'recpay_'+x.id+'_'+month,kind:'pagar',person:x.person,category:x.category,desc:x.description,amount:Number(x.amount)||0,paidAmount:0,due:dueDate(x.day),status:'Pendente',method:'',account:'Despesas recorrentes',paidDate:'',notes:x.notes||'',source:'recurring',sourceRecurringId:x.id,recurrenceCompetence:month,updatedAt:new Date().toISOString()});
+ });
+ if(!created.length){alert('Nenhuma nova conta para gerar. Verifique se já existem lançamentos ou modelos ativos.');return}
+ const prev=payments.slice();payments=[...created,...payments];
+ try{await persistPayments();renderPayments();alert(created.length+' conta(s) gerada(s) para '+month+'. Confira os vencimentos antes de registrar os pagamentos.')}catch(e){payments=prev;renderPayments();alert('Não foi possível gerar as contas: '+e.message)}
+}
 function exportPayments(){if(!payments.length){alert('Não há lançamentos para exportar.');return}const headers=['Tipo','Nome','Descrição','Valor','Vencimento','Situação','Forma','Data quitação','Observações'];const rows=payments.map(p=>[p.kind,p.person,p.desc,p.amount,p.due,p.status,p.method,p.paidDate,p.notes]);const csv='\ufeff'+[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='descarte_ideal_financeiro.csv';a.click();URL.revokeObjectURL(url)}
 $('paymentForm')?.addEventListener('submit',async e=>{e.preventDefault();const id=$('paymentId').value;const amount=Number($('paymentAmount').value);if(!Number.isFinite(amount)||amount<=0){alert('Informe um valor maior que zero.');return}const item={id:id||('p_'+Date.now()),kind:$('paymentKind').value,person:$('paymentPerson').value.trim(),desc:$('paymentDesc').value.trim(),amount,due:$('paymentDue').value,status:$('paymentStatus').value,method:$('paymentMethod').value,paidDate:$('paymentDate').value,notes:$('paymentNotes').value.trim(),updatedAt:new Date().toISOString()};const previous=payments.slice();if(id)payments=payments.map(p=>p.id===id?item:p);else payments.unshift(item);try{await persistPayments();resetPaymentForm();renderPayments()}catch(err){payments=previous;renderPayments();alert('Não foi possível salvar o lançamento. Os dados anteriores foram preservados. Detalhe: '+(err.message||err))}});$('paymentSearch')?.addEventListener('input',renderPayments);
 
@@ -1083,14 +1144,14 @@ async function loadFromSupabase(){
  if(cr.error)throw cr.error;if(rr.error)throw rr.error;if(wr.error)throw wr.error;
  state.clients=cr.data.map(c=>({id:c.id,name:c.name,doc:c.document||'',contact:c.contact||'',status:c.status,address:c.address||''}));
  state.collections=rr.data.map(c=>({id:c.id,clientId:c.client_id,date:toLocalInput(c.scheduled_at),waste:c.waste_name,qty:Number(c.quantity_kg)||0,responsible:c.responsible||'',status:c.status,address:c.address||'',notes:c.notes||''}));
- const grouped={weighings:[],payments:[],invoices:[],invoice_receipts:[],cash_openings:[],fleet_partners:[],fleet_vehicles:[],fleet_drivers:[],fleet_freights:[],documents:[]};
+ const grouped={weighings:[],payments:[],invoices:[],invoice_receipts:[],cash_openings:[],fleet_partners:[],fleet_vehicles:[],fleet_drivers:[],fleet_freights:[],documents:[],recurring_expenses:[]};
  wr.data.forEach(r=>{if(grouped[r.record_type])grouped[r.record_type].push(r.data||{})});
  fleetPartners=grouped.fleet_partners;fleetVehicles=grouped.fleet_vehicles;fleetDrivers=grouped.fleet_drivers;fleetFreights=grouped.fleet_freights;documents=grouped.documents;
  const legacy={weighings:loadWeighings(),payments:loadPayments(),invoices:loadInvoices(),invoice_receipts:loadInvoiceReceipts()};
  const labels={weighings:'pesagens',payments:'lançamentos financeiros',invoices:'faturas',invoice_receipts:'recebimentos de faturas'};
  const emptyTypes=Object.keys(legacy).filter(type=>grouped[type].length===0&&legacy[type].length>0);
  if(emptyTypes.length){const detail=emptyTypes.map(type=>legacy[type].length+' '+labels[type]).join(', ');if(confirm('Encontramos dados antigos salvos somente neste navegador ('+detail+'). Deseja copiá-los para o Supabase desta conta? Os dados locais não serão apagados.')){for(const type of emptyTypes){grouped[type]=legacy[type];await saveModuleRecords(type,grouped[type])}}}
- weighings=grouped.weighings;payments=grouped.payments;invoices=grouped.invoices;invoiceReceipts=grouped.invoice_receipts;
+ weighings=grouped.weighings;payments=grouped.payments;invoices=grouped.invoices;invoiceReceipts=grouped.invoice_receipts;recurringExpenses=grouped.recurring_expenses;
  const opening=grouped.cash_openings.find(x=>x.id==='main');
  if(opening){localStorage.setItem('di_cash_opening',JSON.stringify({amount:Number(opening.amount)||0,date:opening.date||''}))}
  else {const legacyOpening=loadCashOpening();if((Number(legacyOpening.amount)||0)!==0||legacyOpening.date){if(confirm('Encontramos um saldo inicial antigo salvo neste navegador. Deseja copiá-lo para o Supabase?'))await saveModuleRecords('cash_openings',[{id:'main',...legacyOpening}]);localStorage.setItem('di_cash_opening',JSON.stringify(legacyOpening))}else localStorage.removeItem('di_cash_opening')}
