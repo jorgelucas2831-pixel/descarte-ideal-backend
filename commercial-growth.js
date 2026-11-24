@@ -182,6 +182,27 @@ if(baseLoad){loadFromSupabase=async function(){await baseLoad();await loadGrowth
 const baseGo=typeof go==='function'?go:null;
 if(baseGo){go=function(page){baseGo(page);if(['prospeccao','propostas','terceirizados','inteligencia'].includes(page)){renderGrowth();if(!demoMode)loadGrowthData()} }}
 window.growthReload=loadGrowthData;window.growthResetProspect=growthResetProspect;window.growthEditProspect=growthEditProspect;window.growthResetProposal=growthResetProposal;window.growthEditProposal=growthEditProposal;window.growthPrintProposal=growthPrintProposal;window.growthEditOrder=growthEditOrder;window.growthConvertProspect=growthConvertProspect;window.growthSaveSegments=growthSaveSegments;
-inject();bindForms();growthResetProposalNumber();
+
+/* Filtro visual da carteira por frente comercial, sem duplicar cadastros. */
+function injectClientSegmentFilter(){
+ const search=$g('clientSearch');if(!search||$g('gClientSegmentFilter'))return;
+ const wrap=search.parentElement;
+ wrap.insertAdjacentHTML('beforeend','<select id="gClientSegmentFilter" class="search" style="max-width:190px"><option value="all">Todas as clientelas</option><option value="materials">Clientes de materiais</option><option value="services">Clientes de serviços</option><option value="transport">Clientes de transporte</option><option value="integrated">Clientes integrados</option><option value="unclassified">Sem classificação</option></select>');
+ $g('gClientSegmentFilter').addEventListener('change',growthApplyClientSegmentFilter);
+}
+function growthApplyClientSegmentFilter(){
+ const filter=$g('gClientSegmentFilter')?.value||'all',table=$g('clientsTable');if(!table)return;
+ [...table.querySelectorAll('tr')].forEach(tr=>{
+  const name=tr.querySelector('td')?.querySelector('b')?.textContent?.trim();
+  if(!name||filter==='all'){tr.hidden=false;return}
+  const c=(state.clients||[]).find(x=>x.name===name);const seg=segmentRows.filter(x=>String(x.client_id)===String(c?.id)).map(x=>x.segment);
+  const visible=filter==='integrated'?seg.length>1:filter==='unclassified'?seg.length===0:seg.includes(filter);
+  tr.hidden=!visible;
+ });
+}
+const baseRender=typeof render==='function'?render:null;
+if(baseRender){render=function(){baseRender();growthApplyClientSegmentFilter()}}
+
+inject();injectClientSegmentFilter();bindForms();growthResetProposalNumber();
 if(typeof state!=='undefined'&&state.clients)renderGrowth();
 })();
