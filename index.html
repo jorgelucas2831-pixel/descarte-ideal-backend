@@ -219,7 +219,7 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
   <article class="card metric"><div class="label">Motoristas ativos</div><div class="value" id="fleetDriverCount">0</div><div class="delta">Condutores cadastrados</div></article>
   <article class="card metric"><div class="label">Documentos a vencer</div><div class="value" id="fleetExpiringCount">0</div><div class="delta">Próximos 30 dias</div></article>
  </div>
- <div class="subtabs"><button class="subtab active" data-fleet-tab="partners" onclick="fleetTab('partners')">Parceiros</button><button class="subtab" data-fleet-tab="vehicles" onclick="fleetTab('vehicles')">Veículos</button><button class="subtab" data-fleet-tab="drivers" onclick="fleetTab('drivers')">Motoristas</button></div>
+ <div class="subtabs"><button class="subtab active" data-fleet-tab="partners" onclick="fleetTab('partners')">Parceiros</button><button class="subtab" data-fleet-tab="vehicles" onclick="fleetTab('vehicles')">Veículos</button><button class="subtab" data-fleet-tab="drivers" onclick="fleetTab('drivers')">Motoristas</button><button class="subtab" data-fleet-tab="freights" onclick="fleetTab('freights')">Fretes terceirizados</button></div>
  <div id="fleetPartnersPanel">
   <div class="two">
    <div class="card"><div class="section-head"><h2 id="fleetPartnerFormTitle">Cadastrar parceiro</h2><button class="smallbtn" onclick="resetFleetForm('partner')">Limpar</button></div>
@@ -246,6 +246,25 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
     </div><div class="form-actions"><button class="btn" type="submit">Salvar veículo</button></div></form>
    </div>
    <div class="card"><div class="section-head"><h2>Veículos cadastrados</h2><input class="search" id="fleetVehicleSearch" placeholder="Buscar placa, modelo..."></div><div class="table-wrap"><table class="table"><thead><tr><th>Veículo</th><th>Parceiro</th><th>Capacidade</th><th>Status</th><th>Ações</th></tr></thead><tbody id="fleetVehiclesTable"></tbody></table></div></div>
+  </div>
+ </div>
+ <div id="fleetFreightsPanel" hidden>
+  <div class="two">
+   <div class="card"><div class="section-head"><h2>Registrar custo de frete</h2></div>
+    <form id="fleetFreightForm"><input type="hidden" id="fleetFreightId"><div class="formgrid">
+     <div class="field full"><label>Transportadora / parceiro *</label><select id="fleetFreightPartner" required></select></div>
+     <div class="field"><label>Coleta vinculada</label><select id="fleetFreightCollection"><option value="">Sem vínculo</option></select></div>
+     <div class="field"><label>Data do frete *</label><input id="fleetFreightDate" type="date" required></div>
+     <div class="field"><label>Custo cobrado pela transportadora (R$) *</label><input id="fleetFreightCost" type="number" min="0.01" step="0.01" required placeholder="Ex.: 350,00"></div>
+     <div class="field"><label>Referência / viagem</label><input id="fleetFreightReference" maxlength="120" placeholder="Ex.: viagem 125 / placa"></div>
+     <div class="field"><label>Pagamento</label><select id="fleetFreightStatus"><option value="pending">Pendente</option><option value="paid">Pago</option></select></div>
+     <div class="field full"><label>Observações</label><textarea id="fleetFreightNotes" maxlength="1000"></textarea></div>
+    </div><div class="form-actions"><button class="btn" type="submit">Salvar custo do frete</button><button class="btn secondary" type="button" onclick="resetFleetFreightForm()">Limpar</button></div></form>
+   </div>
+   <div class="card"><div class="section-head"><h2>Resumo dos fretes</h2></div>
+    <div class="grid"><article class="metric"><div class="label">Custos registrados</div><div class="value" id="fleetFreightTotal">R$ 0,00</div></article><article class="metric"><div class="label">Pendentes</div><div class="value" id="fleetFreightPending">R$ 0,00</div></article></div>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Transportadora</th><th>Coleta</th><th>Custo</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="fleetFreightsTable"></tbody></table></div>
+   </div>
   </div>
  </div>
  <div id="fleetDriversPanel" hidden>
@@ -353,7 +372,9 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
  <div class="field"><label for="invoiceQuantity">Quantidade (kg/unidades)</label><input id="invoiceQuantity" type="number" min="0" step="0.001" placeholder="Opcional"></div>
  <div class="field"><label for="invoiceUnitPrice">Valor unitário (R$)</label><input id="invoiceUnitPrice" type="number" min="0" step="0.01" value="0"></div>
  <div class="field"><label for="invoiceDiscount">Desconto (R$)</label><input id="invoiceDiscount" type="number" min="0" step="0.01" value="0"></div>
+ <div class="field"><label for="invoiceFreight">Frete cobrado do cliente (R$)</label><input id="invoiceFreight" type="number" min="0" step="0.01" value="0" placeholder="Valor adicional"></div>
  <div class="field"><label for="invoiceTotal">Valor total da fatura (R$) *</label><input id="invoiceTotal" type="number" min="0.01" step="0.01" required></div>
+ <input type="hidden" id="invoiceBaseAmount" value="0">
  <div class="field"><label for="invoiceReference">Referência / contrato</label><input id="invoiceReference" placeholder="Pedido, contrato ou referência"></div>
  <div class="field full"><label for="invoiceNotes">Observações</label><textarea id="invoiceNotes"></textarea></div>
 </div><div class="form-actions"><button class="btn" type="submit">Salvar fatura</button><button class="btn secondary" type="button" onclick="resetInvoiceForm()">Limpar formulário</button><button class="btn secondary" type="button" onclick="exportInvoices()">Exportar relatório CSV</button></div></form></div>
@@ -823,7 +844,7 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
 const titles={dashboard:'Visão geral',relatorios:'Relatórios gerenciais',clientes:'Clientes',coletas:'Coletas',residuos:'Resíduos',pesagem:'Controle de pesagem',deposito:'Depósito',financeiro:'Contas e pagamentos',faturamento:'Faturamento e recebimentos',caixa:'Caixa e fluxo de caixa','deposit-users':'Equipe do Depósito','users-permissions':'Usuários e permissões','org-structure':'Estrutura organizacional',rh:'Funcionários e RH',frota:'Frotas e logística',documentos:'Central documental'};
 let currentProfile=null;let depositOnlyUser=false;let currentSession=null;
 let demoMode=false; let payments=loadPayments(); let invoices=loadInvoices(); let invoiceReceipts=loadInvoiceReceipts();
-let state={clients:[],collections:[]};let fleetPartners=[],fleetVehicles=[],fleetDrivers=[],documents=[];let weighings=loadWeighings();let supabaseClient=null;let connectedUrl='';let connectedKey='';
+let state={clients:[],collections:[]};let fleetPartners=[],fleetVehicles=[],fleetDrivers=[],fleetFreights=[],documents=[];let weighings=loadWeighings();let supabaseClient=null;let connectedUrl='';let connectedKey='';
 const $=id=>document.getElementById(id);
 function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function setStatus(msg,error=false){$('connectionStatus').textContent=msg;$('connectionStatus').className='gate-status'+(error?' error':'')}
@@ -999,9 +1020,9 @@ async function loadFromSupabase(){
  if(cr.error)throw cr.error;if(rr.error)throw rr.error;if(wr.error)throw wr.error;
  state.clients=cr.data.map(c=>({id:c.id,name:c.name,doc:c.document||'',contact:c.contact||'',status:c.status,address:c.address||''}));
  state.collections=rr.data.map(c=>({id:c.id,clientId:c.client_id,date:toLocalInput(c.scheduled_at),waste:c.waste_name,qty:Number(c.quantity_kg)||0,responsible:c.responsible||'',status:c.status,address:c.address||'',notes:c.notes||''}));
- const grouped={weighings:[],payments:[],invoices:[],invoice_receipts:[],cash_openings:[],fleet_partners:[],fleet_vehicles:[],fleet_drivers:[],documents:[]};
+ const grouped={weighings:[],payments:[],invoices:[],invoice_receipts:[],cash_openings:[],fleet_partners:[],fleet_vehicles:[],fleet_drivers:[],fleet_freights:[],documents:[]};
  wr.data.forEach(r=>{if(grouped[r.record_type])grouped[r.record_type].push(r.data||{})});
- fleetPartners=grouped.fleet_partners;fleetVehicles=grouped.fleet_vehicles;fleetDrivers=grouped.fleet_drivers;documents=grouped.documents;
+ fleetPartners=grouped.fleet_partners;fleetVehicles=grouped.fleet_vehicles;fleetDrivers=grouped.fleet_drivers;fleetFreights=grouped.fleet_freights;documents=grouped.documents;
  const legacy={weighings:loadWeighings(),payments:loadPayments(),invoices:loadInvoices(),invoice_receipts:loadInvoiceReceipts()};
  const labels={weighings:'pesagens',payments:'lançamentos financeiros',invoices:'faturas',invoice_receipts:'recebimentos de faturas'};
  const emptyTypes=Object.keys(legacy).filter(type=>grouped[type].length===0&&legacy[type].length>0);
