@@ -15,7 +15,7 @@ function inject(){
  const sidebar=document.querySelector('.sidebar');
  if(sidebar&&!$g('growthNavTitle')){
   const anchor=[...sidebar.querySelectorAll('.nav-title')].find(x=>x.textContent.includes('Gestão comercial'));
-  if(anchor){anchor.insertAdjacentHTML('afterend',`<nav class="nav" id="growthNav"><button data-growth-page="prospeccao">◎ &nbsp; Prospecção</button><button data-growth-page="propostas">▤ &nbsp; Propostas de serviço</button><button data-growth-page="terceirizados">▱ &nbsp; Serviços terceirizados</button><button data-growth-page="inteligencia">◴ &nbsp; Origem do faturamento</button></nav>`);}
+  if(anchor){anchor.insertAdjacentHTML('afterend',`<nav class="nav" id="growthNav"><button data-growth-page="prospeccao">◎ &nbsp; Prospecção</button><button data-growth-page="inteligencia">◴ &nbsp; Origem do faturamento</button></nav><div class="nav-title">Serviços</div><nav class="nav" id="growthServicesNav"><button data-growth-page="propostas">▤ &nbsp; Propostas de serviço</button><button data-growth-page="terceirizados">▱ &nbsp; Serviços terceirizados</button></nav>`);}
  }
  const main=document.querySelector('main.main');
  if(main&&!$g('prospeccao')){
