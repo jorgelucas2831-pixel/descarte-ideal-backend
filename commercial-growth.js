@@ -147,7 +147,7 @@ function renderGrowth(){
  const sum=k=>outsourcedOrders.reduce((a,x)=>a+Number(x[k]||0),0);set('gOrderCount',outsourcedOrders.length);set('gOrderCosts',moneyG(sum('cost_amount')));set('gOrderBilled',moneyG(sum('billed_amount')));set('gOrderMargin',moneyG(sum('billed_amount')-sum('cost_amount')));
  const oq=($g('gOrderSearch')?.value||'').toLowerCase(),ors=outsourcedOrders.filter(x=>(x.order_number+' '+x.provider_name+' '+x.description).toLowerCase().includes(oq));
  if($g('gOrdersTable'))$g('gOrdersTable').innerHTML=ors.length?ors.map(x=>'<tr><td>'+escG(x.service_date)+'<br>'+escG(x.order_number)+'</td><td>'+escG(x.provider_name)+'</td><td><b>'+moneyG(x.cost_amount)+'</b></td><td>'+escG(statusOrder[x.status]||x.status)+'</td><td><button class="smallbtn" onclick="growthEditOrder(\''+x.id+'\')">Editar</button></td></tr>').join(''):'<tr><td colspan="5" class="empty">Nenhuma contratação registrada.</td></tr>';
- renderRevenue();
+ renderRevenue();growthApplyClientSegmentFilter();
 }
 function renderRevenue(){
  const period=$g('gRevenuePeriod')?.value||'month',now=new Date(),inRange=d=>{if(!d)return false;if(period==='all')return true;return period==='month'?String(d).slice(0,7)===now.toISOString().slice(0,7):String(d).slice(0,4)===String(now.getFullYear())};
