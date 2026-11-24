@@ -483,7 +483,7 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
   </form>
  </div>
  <div class="card section">
-  <div class="section-head"><h2>Histórico de pagamentos</h2><input id="employeePaymentSearch" class="search" placeholder="Buscar funcionário ou pagamento"></div>
+  <div class="section-head"><h2>Histórico de pagamentos</h2><div class="report-filter"><input id="employeePayrollMonth" type="month" class="search" aria-label="Filtrar competência"><input id="employeePaymentSearch" class="search" placeholder="Buscar funcionário ou pagamento"></div></div>
   <div class="table-wrap"><table class="table"><thead><tr><th>Funcionário</th><th>Tipo</th><th>Competência</th><th>Bruto</th><th>Descontos</th><th>Líquido</th><th>Pago</th><th>Vencimento</th><th>Situação</th><th>Ação</th></tr></thead><tbody id="employeePaymentsTable"></tbody></table></div>
  </div>
 </div>
@@ -936,6 +936,7 @@ function editRecurringExpense(id){
 }
 function renderRecurringExpenses(){
  const body=$('recurringExpensesTable');if(!body)return;
+ if($('recurringCompetence')&&!$('recurringCompetence').value)$('recurringCompetence').value=new Date().toISOString().slice(0,7);
  body.innerHTML=recurringExpenses.length?recurringExpenses.slice().sort((a,b)=>String(a.description).localeCompare(String(b.description))).map(x=>
   `<tr><td><b>${esc(x.description)}</b></td><td>${esc(x.person)}</td><td>${esc(x.category)}</td><td>${money(x.amount)}</td><td>Todo dia ${Number(x.day)||1}</td><td><span class="status ${x.active===false?'cancelled':'ok'}">${x.active===false?'Inativa':'Ativa'}</span></td><td><div class="actions"><button class="smallbtn" onclick="editRecurringExpense('${x.id}')">Editar</button><button class="smallbtn" onclick="toggleRecurringExpense('${x.id}')">${x.active===false?'Ativar':'Desativar'}</button><button class="smallbtn" onclick="deleteRecurringExpense('${x.id}')">Excluir</button></div></td></tr>`).join(''):'<tr><td colspan="7" class="empty">Nenhuma despesa recorrente cadastrada.</td></tr>';
 }
@@ -1493,12 +1494,13 @@ function editEmployeePayment(id){
 }
 function renderHRPayments(){
  if(!$('employeePaymentsTable'))return;
- const q=($('employeePaymentSearch')?.value||'').toLowerCase();
- const netTotal=hrEmployeePayments.filter(p=>p.payment_status!=='cancelado').reduce((a,p)=>a+(Number(p.net_amount)||0),0);
+ const q=($('employeePaymentSearch')?.value||'').toLowerCase(),month=$('employeePayrollMonth')?.value||'';
+ const periodPayments=hrEmployeePayments.filter(p=>!month||String(p.competence||'').slice(0,7)===month);
+ const netTotal=periodPayments.filter(p=>p.payment_status!=='cancelado').reduce((a,p)=>a+(Number(p.net_amount)||0),0);
  $('hrPayrollTotal').textContent=money(netTotal);
- $('hrPendingCount').textContent=hrEmployeePayments.filter(p=>p.payment_status==='pendente'||p.payment_status==='parcial').length;
- $('hrPaidCount').textContent=hrEmployeePayments.filter(p=>p.payment_status==='pago').length;
- const rows=hrEmployeePayments.filter(p=>{
+ $('hrPendingCount').textContent=periodPayments.filter(p=>p.payment_status==='pendente'||p.payment_status==='parcial').length;
+ $('hrPaidCount').textContent=periodPayments.filter(p=>p.payment_status==='pago').length;
+ const rows=periodPayments.filter(p=>{
   const emp=hrEmployees.find(e=>e.id===p.employee_id);
   return [emp?.full_name,p.payment_type,p.payment_status,p.notes].join(' ').toLowerCase().includes(q);
  });
@@ -1509,7 +1511,7 @@ function renderHRPayments(){
   return `<tr><td>${esc(emp?.full_name||'Funcionário não encontrado')}</td><td>${typeNames[p.payment_type]||esc(p.payment_type)}</td><td>${fmtDate(p.competence)}</td><td>${money(p.gross_amount)}</td><td>${money(p.deductions_amount)}</td><td><b>${money(p.net_amount)}</b></td><td>${money(p.paid_amount)}</td><td>${fmtDate(p.due_date)}</td><td><span class="status ${cls}">${esc(status)}</span></td><td><button class="smallbtn" onclick="editEmployeePayment('${p.id}')">Editar</button></td></tr>`;
  }).join(''):'<tr><td colspan="10" class="empty">Nenhum pagamento encontrado.</td></tr>';
 }
-$('employeePaymentSearch')?.addEventListener('input',renderHRPayments);
+$('employeePaymentSearch')?.addEventListener('input',renderHRPayments);$('employeePayrollMonth')?.addEventListener('change',renderHRPayments);
 $('employeePaymentForm')?.addEventListener('submit',async ev=>{
  ev.preventDefault();
  if(demoMode||!supabaseClient){alert('Conecte ao Supabase para registrar pagamentos.');return}
