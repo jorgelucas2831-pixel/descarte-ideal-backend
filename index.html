@@ -182,6 +182,11 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
 .executive-user #loggedUser{max-width:78px}
 }
 @media(prefers-reduced-motion:reduce){.sidebar,.mobile-nav-scrim{transition:none!important}}
+
+/* Painel gerencial de fretes terceirizados */
+.fleet-freight-dashboard{display:grid;gap:13px;min-width:0}.fleet-freight-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fleet-freight-kpi{display:flex;align-items:center;gap:10px;min-width:0;padding:13px 12px;background:#fff;border:1px solid #e0e9dc;border-radius:13px;box-shadow:0 3px 12px #355c300b}.fleet-kpi-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:10px;background:#e8f4e6;color:#247a43;font-size:20px;font-weight:800}.pending-kpi .fleet-kpi-icon{background:#fff2dc;color:#a66b13}.paid-kpi .fleet-kpi-icon{background:#e3f4e8;color:#218347}.count-kpi .fleet-kpi-icon{background:#eaf2fc;color:#3974ad}.fleet-freight-kpi small,.fleet-freight-kpi em{display:block;color:#718071;font-size:10px;font-style:normal}.fleet-freight-kpi strong{display:block;color:#214b2e;font-size:clamp(15px,1.5vw,20px);line-height:1.25;margin:4px 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.fleet-freight-insights{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fleet-insight-card{padding:14px;min-width:0}.fleet-insight-heading{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.fleet-insight-heading h3,.fleet-freight-recent h3{margin:0;font-size:14px}.fleet-insight-heading p,.fleet-freight-recent p{margin:4px 0 0;color:var(--muted);font-size:10px}.fleet-insight-heading>span{color:#43824d;font-size:19px}.fleet-trend{height:150px;display:flex;align-items:flex-end;gap:7px;padding:15px 2px 0;border-bottom:1px solid var(--line)}.fleet-trend-month{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}.fleet-trend-bar-wrap{height:105px;width:100%;display:flex;align-items:flex-end;justify-content:center}.fleet-trend-bar{width:min(27px,75%);min-height:3px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#69b96d,#247a43)}.fleet-trend-month small{font-size:9px;color:var(--muted)}.fleet-trend-month b{font-size:9px;color:#47634b;white-space:nowrap}.fleet-status-summary{display:flex;align-items:center;justify-content:center;gap:15px;min-height:150px}.fleet-status-ring{width:112px;height:112px;flex:0 0 112px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#247a43 0deg 0deg,#e9b34e 0deg 360deg);position:relative}.fleet-status-ring:before{content:"";position:absolute;inset:13px;background:#fff;border-radius:50%}.fleet-status-ring>div{position:relative;display:grid;text-align:center;gap:1px}.fleet-status-ring strong{font-size:22px;color:#214b2e}.fleet-status-ring small{font-size:10px;color:var(--muted)}.fleet-status-legend{display:grid;gap:13px;min-width:90px}.fleet-status-legend>div{display:grid;grid-template-columns:9px 1fr auto;align-items:center;gap:6px;font-size:10px;color:#586c5c}.fleet-status-legend i{width:9px;height:9px;border-radius:50%}.paid-dot{background:#247a43}.pending-dot{background:#e9b34e}.fleet-status-legend b{color:#294b32}.fleet-freight-recent{padding:14px;min-width:0}.fleet-freight-recent .section-head{align-items:center}.fleet-history-count{font-size:10px;color:#47724d;background:#edf5e9;padding:5px 8px;border-radius:20px;white-space:nowrap}.fleet-freight-recent .table{min-width:560px}.fleet-freight-recent .table th,.fleet-freight-recent .table td{padding:10px 8px}.fleet-freight-recent .table td{font-size:11px}
+@media(max-width:1150px){.fleet-freight-insights{grid-template-columns:1fr}.fleet-freight-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.fleet-freight-kpis{grid-template-columns:1fr 1fr;gap:7px}.fleet-freight-kpi{padding:10px 8px;gap:7px}.fleet-kpi-icon{width:29px;height:29px;flex-basis:29px;font-size:17px}.fleet-freight-kpi strong{font-size:15px}.fleet-status-summary{gap:10px}.fleet-status-ring{width:95px;height:95px;flex-basis:95px}.fleet-status-ring:before{inset:11px}.fleet-freight-recent .section-head{align-items:flex-start}}
 </style><meta name="application-version" content="13.0.0-integracao-financeira"><meta name="description" content="Descarte Ideal ERP V13 com integração de faturamento, recebimentos e central financeira."></head>
 <body>
 <div id="connectionGate"><div class="gate-card">
@@ -261,9 +266,18 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
      <div class="field full"><label>Observações</label><textarea id="fleetFreightNotes" maxlength="1000"></textarea></div>
     </div><div class="form-actions"><button class="btn" type="submit">Salvar custo do frete</button><button class="btn secondary" type="button" onclick="resetFleetFreightForm()">Limpar</button></div></form>
    </div>
-   <div class="card"><div class="section-head"><h2>Resumo dos fretes</h2></div>
-    <div class="grid fleet-freight-summary"><article class="metric"><div class="label">Custos registrados</div><div class="value" id="fleetFreightTotal">R$ 0,00</div></article><article class="metric"><div class="label">Pendentes</div><div class="value" id="fleetFreightPending">R$ 0,00</div></article></div>
-    <div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Transportadora</th><th>Coleta</th><th>Custo</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="fleetFreightsTable"></tbody></table></div>
+   <div class="fleet-freight-dashboard">
+    <div class="fleet-freight-kpis">
+     <article class="fleet-freight-kpi"><span class="fleet-kpi-icon">▤</span><div><small>Custos registrados</small><strong id="fleetFreightTotal">R$ 0,00</strong><em>Todos os fretes</em></div></article>
+     <article class="fleet-freight-kpi pending-kpi"><span class="fleet-kpi-icon">◷</span><div><small>Valores pendentes</small><strong id="fleetFreightPending">R$ 0,00</strong><em id="fleetFreightPendingCount">0 fretes</em></div></article>
+     <article class="fleet-freight-kpi paid-kpi"><span class="fleet-kpi-icon">✓</span><div><small>Valores pagos</small><strong id="fleetFreightPaid">R$ 0,00</strong><em id="fleetFreightPaidCount">0 fretes</em></div></article>
+     <article class="fleet-freight-kpi count-kpi"><span class="fleet-kpi-icon">↗</span><div><small>Quantidade de fretes</small><strong id="fleetFreightCount">0</strong><em>Registros cadastrados</em></div></article>
+    </div>
+    <div class="fleet-freight-insights">
+     <article class="card fleet-insight-card"><div class="fleet-insight-heading"><div><h3>Evolução dos custos</h3><p>Valores registrados nos últimos 6 meses</p></div><span>▥</span></div><div id="fleetFreightTrend" class="fleet-trend"><div class="empty">Sem dados suficientes para exibir a evolução.</div></div></article>
+     <article class="card fleet-insight-card"><div class="fleet-insight-heading"><div><h3>Situação dos pagamentos</h3><p>Distribuição dos fretes registrados</p></div><span>◉</span></div><div class="fleet-status-summary"><div class="fleet-status-ring" id="fleetFreightStatusRing"><div><strong id="fleetFreightStatusCount">0</strong><small>fretes</small></div></div><div class="fleet-status-legend"><div><i class="paid-dot"></i><span>Pagos</span><b id="fleetFreightPaidShare">0%</b></div><div><i class="pending-dot"></i><span>Pendentes</span><b id="fleetFreightPendingShare">0%</b></div></div></div></article>
+    </div>
+    <article class="card fleet-freight-recent"><div class="section-head"><div><h3>Últimos fretes registrados</h3><p>Histórico de custos e situação de pagamento</p></div><span class="fleet-history-count" id="fleetFreightHistoryCount">0 registros</span></div><div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Transportadora</th><th>Coleta</th><th>Custo (R$)</th><th>Situação</th><th>Ações</th></tr></thead><tbody id="fleetFreightsTable"></tbody></table></div></article>
    </div>
   </div>
  </div>
@@ -952,11 +966,26 @@ function populateFleetFreightSelects(){
 }
 function renderFleetFreights(){
  populateFleetFreightSelects();
- const total=fleetFreights.reduce((a,x)=>a+(Number(x.cost)||0),0),pending=fleetFreights.filter(x=>x.status!=='paid').reduce((a,x)=>a+(Number(x.cost)||0),0);
- if($('fleetFreightTotal'))$('fleetFreightTotal').textContent=money(total);
- if($('fleetFreightPending'))$('fleetFreightPending').textContent=money(pending);
+ const paidItems=fleetFreights.filter(x=>x.status==='paid'),pendingItems=fleetFreights.filter(x=>x.status!=='paid');
+ const sum=items=>items.reduce((a,x)=>a+(Number(x.cost)||0),0);
+ const total=sum(fleetFreights),paid=sum(paidItems),pending=sum(pendingItems),count=fleetFreights.length;
+ const set=(id,value)=>{const el=$(id);if(el)el.textContent=value};
+ set('fleetFreightTotal',money(total));set('fleetFreightPending',money(pending));set('fleetFreightPaid',money(paid));
+ set('fleetFreightCount',count);set('fleetFreightPendingCount',pendingItems.length+' fretes');set('fleetFreightPaidCount',paidItems.length+' fretes');
+ set('fleetFreightStatusCount',count);set('fleetFreightHistoryCount',count+' registros');
+ const paidPct=count?Math.round(paidItems.length/count*100):0,pendingPct=count?100-paidPct:0;
+ set('fleetFreightPaidShare',paidPct+'%');set('fleetFreightPendingShare',pendingPct+'%');
+ const ring=$('fleetFreightStatusRing');if(ring)ring.style.background='conic-gradient(#247a43 0 '+paidPct+'%,#e9b34e '+paidPct+'% 100%)';
+ const trend=$('fleetFreightTrend');
+ if(trend){
+  const now=new Date(),months=[];
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({year:d.getFullYear(),month:d.getMonth(),label:d.toLocaleDateString('pt-BR',{month:'short'}).replace('.',''),value:0})}
+  fleetFreights.forEach(x=>{if(!x.date)return;const d=new Date(x.date+'T12:00:00'),m=months.find(v=>v.year===d.getFullYear()&&v.month===d.getMonth());if(m)m.value+=Number(x.cost)||0});
+  const max=Math.max(...months.map(m=>m.value),1);
+  trend.innerHTML=months.map(m=>'<div class="fleet-trend-month"><b>'+(m.value?money(m.value):'—')+'</b><div class="fleet-trend-bar-wrap"><div class="fleet-trend-bar" style="height:'+Math.max(m.value?5:0,m.value/max*100)+'%"></div></div><small>'+m.label+'</small></div>').join('');
+ }
  const el=$('fleetFreightsTable');if(!el)return;
- el.innerHTML=fleetFreights.length?fleetFreights.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(x=>'<tr><td>'+fmtDate(x.date)+'</td><td>'+esc(fleetPartnerName(x.partner_id))+'</td><td>'+esc(state.collections.find(c=>c.id===x.collection_id)?.waste||'—')+'</td><td><b>'+money(x.cost)+'</b></td><td><span class="status '+(x.status==='paid'?'ok':'pending')+'">'+(x.status==='paid'?'Pago':'Pendente')+'</span></td><td><button class="smallbtn" onclick="editFleetFreight(\''+esc(x.id)+'\')">Editar</button><button class="smallbtn" onclick="toggleFleetFreightPayment(\''+esc(x.id)+'\')">'+(x.status==='paid'?'Reabrir':'Marcar pago')+'</button></td></tr>').join(''):'<tr><td colspan="6" class="empty">Nenhum custo de frete registrado.</td></tr>';
+ el.innerHTML=count?fleetFreights.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,8).map(x=>'<tr><td>'+fmtDate(x.date)+'</td><td>'+esc(fleetPartnerName(x.partner_id))+'</td><td>'+esc(state.collections.find(c=>c.id===x.collection_id)?.waste||'—')+'</td><td><b>'+money(x.cost)+'</b></td><td><span class="status '+(x.status==='paid'?'ok':'pending')+'">'+(x.status==='paid'?'Pago':'Pendente')+'</span></td><td><button class="smallbtn" onclick="editFleetFreight(\\''+esc(x.id)+'\\')">Editar</button><button class="smallbtn" onclick="toggleFleetFreightPayment(\\''+esc(x.id)+'\\')">'+(x.status==='paid'?'Reabrir':'Marcar pago')+'</button></td></tr>').join(''):'<tr><td colspan="6" class="empty">Nenhum custo de frete registrado.</td></tr>';
 }
 function editFleetFreight(id){const x=fleetFreights.find(y=>y.id===id);if(!x)return;$('fleetFreightId').value=x.id;$('fleetFreightPartner').value=x.partner_id;$('fleetFreightCollection').value=x.collection_id||'';$('fleetFreightDate').value=x.date||'';$('fleetFreightCost').value=x.cost;$('fleetFreightReference').value=x.reference||'';$('fleetFreightStatus').value=x.status||'pending';$('fleetFreightNotes').value=x.notes||'';$('fleetFreightForm').scrollIntoView({behavior:'smooth',block:'start'})}
 async function toggleFleetFreightPayment(id){const next=fleetFreights.map(x=>x.id===id?{...x,status:x.status==='paid'?'pending':'paid',updated_at:new Date().toISOString()}:x);try{await saveModuleRecords('fleet_freights',next);fleetFreights=next;renderFleetFreights()}catch(e){alert('Não foi possível atualizar o pagamento do frete: '+(e.message||e))}}
