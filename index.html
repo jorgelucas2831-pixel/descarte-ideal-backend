@@ -411,6 +411,15 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
  <button type="button" class="subtab" data-payment-tab="hr">Cadastro de funcionários</button>
 </div>
 <div id="generalPaymentsPanel">
+<div class="card section">
+ <div class="section-head"><div><h2>Visão gerencial por competência</h2><p class="muted">Compare receitas, despesas e compromissos do mês selecionado.</p></div><input id="financeCompetence" type="month" class="search" aria-label="Competência financeira"></div>
+ <div class="grid">
+  <div class="card metric"><div class="label">Receitas previstas</div><div class="value" id="financeMonthRevenue">R$ 0,00</div><div class="delta">Faturas e contas a receber</div></div>
+  <div class="card metric"><div class="label">Despesas previstas</div><div class="value" id="financeMonthExpenses">R$ 0,00</div><div class="delta">Contas a pagar e folha</div></div>
+  <div class="card metric"><div class="label">Recebido no mês</div><div class="value" id="financeMonthReceived">R$ 0,00</div><div class="delta">Valores efetivamente recebidos</div></div>
+  <div class="card metric"><div class="label">Saldo projetado</div><div class="value" id="financeMonthProjection">R$ 0,00</div><div class="delta">Receitas previstas menos despesas previstas</div></div>
+ </div>
+</div>
 <div class="grid">
 <div class="card metric"><div class="label">Total a pagar</div><div class="value" id="payOut">R$ 0,00</div><div class="delta">Saldo pendente de despesas</div></div>
 <div class="card metric"><div class="label">Total a receber</div><div class="value" id="payIn">R$ 0,00</div><div class="delta">Saldo pendente de entradas</div></div>
@@ -911,7 +920,7 @@ $('cashOpeningForm')?.addEventListener('submit',async e=>{e.preventDefault();con
 function money(n){return (Number(n)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
 function resetPaymentForm(){if($('paymentForm')){$('paymentForm').reset();$('paymentId').value='';$('paymentFormTitle').textContent='Novo lançamento'}}
 function openInvoiceInBilling(id){go('faturamento');populateInvoiceLinks();const sel=$('receiptInvoice');if(sel){sel.value=id;selectInvoiceReceipt(id)}}
-function renderPayments(){if(!$('paymentsTable'))return;renderRecurringExpenses();
+function renderPayments(){if(!$('paymentsTable'))return;renderRecurringExpenses();renderFinanceCompetence();
  const invoiceRows=invoices.map(i=>({id:'invoice_'+i.id,sourceInvoiceId:i.id,kind:'receber',person:invoiceClientName(i.id),category:'Faturamento',desc:(i.number||'Fatura')+' — '+(i.description||'Serviço faturado'),amount:Number(i.total)||0,paidAmount:invoicePaid(i),due:i.due||'',status:invoiceStatus(i),method:'',account:'',paidDate:'',notes:i.notes||''}));
  const combined=[...payments,...invoiceRows];const q=($('paymentSearch')?.value||'').toLowerCase();const kf=$('paymentKindFilter')?.value||'todos';const sf=$('paymentStatusFilter')?.value||'todos';
  const rows=combined.filter(p=>{const text=[p.person,p.desc,p.kind,p.status,p.category,p.account,p.notes].join(' ').toLowerCase();const st=p.sourceInvoiceId?invoiceStatus(invoices.find(i=>i.id===p.sourceInvoiceId)||{total:0}):effectivePaymentStatus(p);return text.includes(q)&&(kf==='todos'||p.kind===kf)&&(sf==='todos'||st===sf)}).sort((a,b)=>(a.due||'').localeCompare(b.due||''));
@@ -972,6 +981,22 @@ async function generateRecurringExpenses(){
  const prev=payments.slice();payments=[...created,...payments];
  try{await persistPayments();renderPayments();alert(created.length+' conta(s) gerada(s) para '+month+'. Confira os vencimentos antes de registrar os pagamentos.')}catch(e){payments=prev;renderPayments();alert('Não foi possível gerar as contas: '+e.message)}
 }
+
+function renderFinanceCompetence(){
+ const field=$('financeCompetence');if(!field)return;
+ if(!field.value)field.value=new Date().toISOString().slice(0,7);
+ const month=field.value;
+ const inMonth=v=>String(v||'').slice(0,7)===month;
+ const active=payments.filter(p=>p.status!=='Cancelado');
+ const monthPay=active.filter(p=>inMonth(p.due));
+ const invoicesMonth=invoices.filter(i=>inMonth(i.due||i.date));
+ const revenue=monthPay.filter(p=>p.kind==='receber').reduce((a,p)=>a+(Number(p.amount)||0),0)+invoicesMonth.reduce((a,i)=>a+(Number(i.total)||0),0);
+ const expenses=monthPay.filter(p=>p.kind==='pagar').reduce((a,p)=>a+(Number(p.amount)||0),0);
+ const received=monthPay.filter(p=>p.kind==='receber').reduce((a,p)=>a+paymentPaid(p),0)+invoicesMonth.reduce((a,i)=>a+invoicePaid(i),0);
+ const put=(id,val)=>{const el=$(id);if(el)el.textContent=money(val)};
+ put('financeMonthRevenue',revenue);put('financeMonthExpenses',expenses);put('financeMonthReceived',received);put('financeMonthProjection',revenue-expenses);
+}
+$('financeCompetence')?.addEventListener('change',renderFinanceCompetence);
 function exportPayments(){if(!payments.length){alert('Não há lançamentos para exportar.');return}const headers=['Tipo','Nome','Descrição','Valor','Vencimento','Situação','Forma','Data quitação','Observações'];const rows=payments.map(p=>[p.kind,p.person,p.desc,p.amount,p.due,p.status,p.method,p.paidDate,p.notes]);const csv='\ufeff'+[headers,...rows].map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='descarte_ideal_financeiro.csv';a.click();URL.revokeObjectURL(url)}
 $('paymentForm')?.addEventListener('submit',async e=>{e.preventDefault();const id=$('paymentId').value;const amount=Number($('paymentAmount').value);if(!Number.isFinite(amount)||amount<=0){alert('Informe um valor maior que zero.');return}const item={id:id||('p_'+Date.now()),kind:$('paymentKind').value,person:$('paymentPerson').value.trim(),desc:$('paymentDesc').value.trim(),amount,due:$('paymentDue').value,status:$('paymentStatus').value,method:$('paymentMethod').value,paidDate:$('paymentDate').value,notes:$('paymentNotes').value.trim(),updatedAt:new Date().toISOString()};const previous=payments.slice();if(id)payments=payments.map(p=>p.id===id?item:p);else payments.unshift(item);try{await persistPayments();resetPaymentForm();renderPayments()}catch(err){payments=previous;renderPayments();alert('Não foi possível salvar o lançamento. Os dados anteriores foram preservados. Detalhe: '+(err.message||err))}});$('paymentSearch')?.addEventListener('input',renderPayments);
 
