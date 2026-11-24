@@ -14,8 +14,8 @@ function notify(msg){if(typeof setSyncIndicator==='function')setSyncIndicator(ms
 function inject(){
  const sidebar=document.querySelector('.sidebar');
  if(sidebar&&!$g('growthNavTitle')){
-  const anchor=[...sidebar.querySelectorAll('.nav-title')].find(x=>x.textContent.includes('Gestão comercial'));
-  if(anchor){anchor.insertAdjacentHTML('afterend',`<nav class="nav" id="growthNav"><button data-growth-page="prospeccao">◎ &nbsp; Prospecção</button><button data-growth-page="inteligencia">◴ &nbsp; Origem do faturamento</button></nav><div class="nav-title">Serviços</div><nav class="nav" id="growthServicesNav"><button data-growth-page="propostas">▤ &nbsp; Propostas de serviço</button><button data-growth-page="terceirizados">▱ &nbsp; Serviços terceirizados</button></nav>`);}
+  const operations=[...sidebar.querySelectorAll('.nav-title')].find(x=>x.textContent.includes('Materiais'));
+  if(operations){operations.insertAdjacentHTML('beforebegin',`<div class="nav-title">Operação e serviços</div><nav class="nav" id="growthServicesNav"><button data-growth-page="terceirizados">▱ &nbsp; Serviços terceirizados</button></nav>`);}
  }
  const main=document.querySelector('main.main');
  if(main&&!$g('prospeccao')){
@@ -38,7 +38,7 @@ function inject(){
     <div class="card"><div class="section-head"><h2>Carteira de prospecção</h2><input class="search" id="gProspectSearch" placeholder="Buscar empresa..."></div><div class="table-wrap"><table class="table"><thead><tr><th>Empresa</th><th>Origem</th><th>Status</th><th>Próxima ação</th><th>Ações</th></tr></thead><tbody id="gProspectsTable"></tbody></table></div></div>
    </div>
   </section>
-  <section id="propostas" class="page growth-page">
+  <section id="propostasGrowthLegacy" class="page growth-page" hidden>
    <div class="section-head"><div><div class="eyebrow">NEGOCIAÇÃO E VENDAS</div><h2>Propostas comerciais</h2><p class="muted">Elabore, envie e acompanhe propostas de materiais, serviços e transporte.</p></div><button class="btn secondary" onclick="growthPrintProposal()">Imprimir / PDF</button></div>
    <div class="grid"><div class="card metric"><div class="label">Propostas abertas</div><div class="value" id="gProposalOpen">0</div></div><div class="card metric"><div class="label">Valor em negociação</div><div class="value" id="gProposalPipeline">R$ 0,00</div></div><div class="card metric"><div class="label">Aprovadas</div><div class="value" id="gProposalApproved">0</div></div><div class="card metric"><div class="label">Taxa de aprovação</div><div class="value" id="gProposalRate">0%</div></div></div>
    <div class="two section">
@@ -182,7 +182,7 @@ if(baseLoad){loadFromSupabase=async function(){await baseLoad();await loadGrowth
 const baseGo=typeof go==='function'?go:null;
 if(baseGo){go=function(page){
  baseGo(page);
- const growthTitles={prospeccao:'Prospecção comercial',propostas:'Propostas comerciais',terceirizados:'Serviços terceirizados',inteligencia:'Inteligência comercial'};
+ const growthTitles={prospeccao:'Prospecção comercial',terceirizados:'Serviços terceirizados',inteligencia:'Origem do faturamento'};
  document.querySelectorAll('#growthNav [data-growth-page]').forEach(button=>button.classList.toggle('active',button.dataset.growthPage===page));
  if(growthTitles[page]){
   const title=$g('pageTitle');if(title)title.textContent=growthTitles[page];
