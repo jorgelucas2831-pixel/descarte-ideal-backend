@@ -14,7 +14,7 @@ function notify(msg){if(typeof setSyncIndicator==='function')setSyncIndicator(ms
 function inject(){
  const sidebar=document.querySelector('.sidebar');
  if(sidebar&&!$g('growthNavTitle')){
-  const anchor=[...sidebar.querySelectorAll('.nav-title')].find(x=>x.textContent.includes('Comercial e clientes'));
+  const anchor=[...sidebar.querySelectorAll('.nav-title')].find(x=>x.textContent.includes('Gestão comercial'));
   if(anchor){anchor.insertAdjacentHTML('afterend',`<nav class="nav" id="growthNav"><button data-growth-page="prospeccao">◎ &nbsp; Prospecção</button><button data-growth-page="propostas">▤ &nbsp; Propostas de serviço</button><button data-growth-page="terceirizados">▱ &nbsp; Serviços terceirizados</button><button data-growth-page="inteligencia">◴ &nbsp; Origem do faturamento</button></nav>`);}
  }
  const main=document.querySelector('main.main');
