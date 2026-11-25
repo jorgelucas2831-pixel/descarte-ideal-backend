@@ -2260,7 +2260,7 @@ async function loadDepositData(){
 }
 function depositTab(tab){
  depositActiveTab=tab;
- const panels={operations:'depositOperationsPanel',stock:'depositStockPanel',materials:'depositMaterialsPanel',parties:'depositPartiesPanel',movements:'depositMovementsPanel'};
+ const panels={operations:'depositOperationsPanel',cash:'depositCashPanel',stock:'depositStockPanel',materials:'depositMaterialsPanel',parties:'depositPartiesPanel',movements:'depositMovementsPanel'};
  Object.entries(panels).forEach(([key,id])=>{const el=$(id);if(el)el.hidden=key!==tab});
  document.querySelectorAll('[data-deposit-tab]').forEach(b=>b.classList.toggle('active',b.dataset.depositTab===tab));
  // Recarrega os seletores ao abrir cada aba para evitar lista vazia após troca de tela.
