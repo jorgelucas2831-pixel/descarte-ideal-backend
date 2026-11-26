@@ -187,43 +187,6 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
 .fleet-freight-dashboard{display:grid;gap:13px;min-width:0}.fleet-freight-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fleet-freight-kpi{display:flex;align-items:center;gap:10px;min-width:0;padding:13px 12px;background:#fff;border:1px solid #e0e9dc;border-radius:13px;box-shadow:0 3px 12px #355c300b}.fleet-kpi-icon{width:34px;height:34px;flex:0 0 34px;display:grid;place-items:center;border-radius:10px;background:#e8f4e6;color:#247a43;font-size:20px;font-weight:800}.pending-kpi .fleet-kpi-icon{background:#fff2dc;color:#a66b13}.paid-kpi .fleet-kpi-icon{background:#e3f4e8;color:#218347}.count-kpi .fleet-kpi-icon{background:#eaf2fc;color:#3974ad}.fleet-freight-kpi small,.fleet-freight-kpi em{display:block;color:#718071;font-size:10px;font-style:normal}.fleet-freight-kpi strong{display:block;color:#214b2e;font-size:clamp(15px,1.5vw,20px);line-height:1.25;margin:4px 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.fleet-freight-insights{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fleet-insight-card{padding:14px;min-width:0}.fleet-insight-heading{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.fleet-insight-heading h3,.fleet-freight-recent h3{margin:0;font-size:14px}.fleet-insight-heading p,.fleet-freight-recent p{margin:4px 0 0;color:var(--muted);font-size:10px}.fleet-insight-heading>span{color:#43824d;font-size:19px}.fleet-trend{height:150px;display:flex;align-items:flex-end;gap:7px;padding:15px 2px 0;border-bottom:1px solid var(--line)}.fleet-trend-month{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px}.fleet-trend-bar-wrap{height:105px;width:100%;display:flex;align-items:flex-end;justify-content:center}.fleet-trend-bar{width:min(27px,75%);min-height:3px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#69b96d,#247a43)}.fleet-trend-month small{font-size:9px;color:var(--muted)}.fleet-trend-month b{font-size:9px;color:#47634b;white-space:nowrap}.fleet-status-summary{display:flex;align-items:center;justify-content:center;gap:15px;min-height:150px}.fleet-status-ring{width:112px;height:112px;flex:0 0 112px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#247a43 0deg 0deg,#e9b34e 0deg 360deg);position:relative}.fleet-status-ring:before{content:"";position:absolute;inset:13px;background:#fff;border-radius:50%}.fleet-status-ring>div{position:relative;display:grid;text-align:center;gap:1px}.fleet-status-ring strong{font-size:22px;color:#214b2e}.fleet-status-ring small{font-size:10px;color:var(--muted)}.fleet-status-legend{display:grid;gap:13px;min-width:90px}.fleet-status-legend>div{display:grid;grid-template-columns:9px 1fr auto;align-items:center;gap:6px;font-size:10px;color:#586c5c}.fleet-status-legend i{width:9px;height:9px;border-radius:50%}.paid-dot{background:#247a43}.pending-dot{background:#e9b34e}.fleet-status-legend b{color:#294b32}.fleet-freight-recent{padding:14px;min-width:0}.fleet-freight-recent .section-head{align-items:center}.fleet-history-count{font-size:10px;color:#47724d;background:#edf5e9;padding:5px 8px;border-radius:20px;white-space:nowrap}.fleet-freight-recent .table{min-width:560px}.fleet-freight-recent .table th,.fleet-freight-recent .table td{padding:10px 8px}.fleet-freight-recent .table td{font-size:11px}
 @media(max-width:1150px){.fleet-freight-insights{grid-template-columns:1fr}.fleet-freight-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:650px){.fleet-freight-kpis{grid-template-columns:1fr 1fr;gap:7px}.fleet-freight-kpi{padding:10px 8px;gap:7px}.fleet-kpi-icon{width:29px;height:29px;flex-basis:29px;font-size:17px}.fleet-freight-kpi strong{font-size:15px}.fleet-status-summary{gap:10px}.fleet-status-ring{width:95px;height:95px;flex-basis:95px}.fleet-status-ring:before{inset:11px}.fleet-freight-recent .section-head{align-items:flex-start}}
-
-/* Caixa do depósito — painel de conciliação diária */
-.cash-dashboard{display:grid;gap:16px}
-.cash-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 22px;background:linear-gradient(115deg,#e8f4e7,#f8fbf5);border:1px solid #dce9d8;border-radius:16px}
-.cash-heading h2{margin:5px 0 5px;color:#1d4c2d;font-size:23px;letter-spacing:-.45px}
-.cash-heading p,.cash-closing-head p{margin:0;color:#718273;font-size:12px;line-height:1.5}
-.cash-eyebrow{font-size:10px;letter-spacing:1px;font-weight:850;color:#43824d}
-.cash-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.cash-kpi{background:#fff;border:1px solid #e0e9dc;border-radius:14px;padding:16px;min-width:0;box-shadow:0 4px 14px #244b3010}
-.cash-kpi-top{display:flex;justify-content:space-between;align-items:center;gap:8px;color:#647568;font-size:11px;font-weight:700}
-.cash-kpi-top i{font-style:normal;width:28px;height:28px;display:grid;place-items:center;border-radius:9px;background:#e9f5e9;color:#267442;font-size:16px}
-.cash-kpi>strong{display:block;margin:10px 0 5px;color:#1e4b2d;font-size:clamp(18px,2vw,25px);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.cash-kpi small{font-size:10px;color:#839084}
-.cash-kpi-out .cash-kpi-top i{background:#fff0ed;color:#c0524b}
-.cash-kpi-balance{background:#f2f8ef;border-color:#d7e8d1}
-.cash-kpi-diff .cash-kpi-top i{background:#fff4df;color:#a36b16}
-.cash-entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.cash-panel{background:#fff;border:1px solid #e0e9dc;border-radius:15px;padding:18px;min-width:0;box-shadow:0 4px 14px #244b3009}
-.cash-panel-heading{display:flex;align-items:center;gap:11px;margin-bottom:15px}
-.cash-panel-heading h3,.cash-closing-head h3,.cash-panel>.section-head h3{margin:0;color:#244b30;font-size:15px}
-.cash-panel-heading p{margin:4px 0 0;color:#7b887d;font-size:11px}
-.cash-panel-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:#e8f5e9;color:#218047;font-size:21px;font-weight:700}
-.cash-expense-icon{background:#fff0ed;color:#c0524b}
-.cash-closing-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px}
-.cash-date-field{min-width:180px}
-.cash-date-field input{max-width:190px}
-.cash-reconcile{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0;padding:15px;background:#f5f8f3;border:1px solid #e4ece0;border-radius:12px}
-.cash-reconcile>div{display:grid;gap:7px;padding:2px 12px;border-right:1px solid #dfe8dc}
-.cash-reconcile>div:last-child{border:0}
-.cash-reconcile span{font-size:11px;color:#708071}
-.cash-reconcile strong{font-size:19px;color:#234b2e;font-variant-numeric:tabular-nums}
-.cash-status{margin-top:14px;padding:12px 14px;border-radius:10px;background:#eef6ec;border:1px solid #dcebd7;color:#426448;font-size:12px;line-height:1.5}
-.cash-dashboard .table{min-width:620px}
-@media(max-width:900px){.cash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:650px){.cash-heading{align-items:flex-start;flex-direction:column;padding:17px}.cash-heading h2{font-size:20px}.cash-heading .btn{width:100%}.cash-entry-grid{grid-template-columns:1fr}.cash-panel{padding:14px}.cash-closing-head{align-items:flex-start;flex-direction:column}.cash-date-field,.cash-date-field input{width:100%;max-width:none}.cash-reconcile{gap:5px;padding:11px}.cash-reconcile>div{padding:2px 6px}.cash-reconcile span{font-size:10px}.cash-reconcile strong{font-size:15px}.cash-kpi{padding:12px}.cash-kpi>strong{font-size:17px}}
-@media print{body *{visibility:hidden!important}#depositCashPanel,#depositCashPanel *{visibility:visible!important}#depositCashPanel{position:absolute!important;left:0!important;top:0!important;width:100%!important}#depositCashPanel .cash-entry-grid,#depositCashPanel .cash-heading .btn,#depositCashPanel #depositCashClosingForm,#depositCashPanel #depositCashReopen{display:none!important}.cash-panel,.cash-kpi{box-shadow:none!important;break-inside:avoid}}
-
 </style><meta name="application-version" content="14.1.0-central-comercial"><meta name="description" content="Descarte Ideal ERP V13 com integração de faturamento, recebimentos e central financeira."></head>
 <body>
 <div id="connectionGate"><div class="gate-card">
@@ -847,74 +810,64 @@ body{background:linear-gradient(135deg,#f4f8ef 0%,#edf5e8 52%,#f8faf4 100%);colo
   </div>
  </div>
  <div id="depositCashPanel" hidden>
-  <div class="cash-dashboard">
-   <div class="cash-heading">
-    <div><span class="cash-eyebrow">CONTROLE FINANCEIRO DO DEPÓSITO</span><h2>Caixa e fechamento diário</h2><p>Controle as entregas, registre cada compra e confira o saldo devolvido ao final do dia.</p></div>
-    <button class="btn secondary" type="button" id="depositCashPrint" onclick="window.print()">Imprimir relatório</button>
-   </div>
-   <div class="cash-kpis">
-    <article class="cash-kpi cash-kpi-in"><div class="cash-kpi-top"><span>Dinheiro entregue hoje</span><i>↙</i></div><strong id="depositCashGiven">R$ 0,00</strong><small>Adiantamentos registrados</small></article>
-    <article class="cash-kpi cash-kpi-out"><div class="cash-kpi-top"><span>Despesas de hoje</span><i>↗</i></div><strong id="depositCashSpent">R$ 0,00</strong><small>Compras e gastos lançados</small></article>
-    <article class="cash-kpi cash-kpi-balance"><div class="cash-kpi-top"><span>Saldo esperado hoje</span><i>＝</i></div><strong id="depositCashBalance">R$ 0,00</strong><small>Valor que deve ser devolvido</small></article>
-    <article class="cash-kpi cash-kpi-diff"><div class="cash-kpi-top"><span>Diferença do fechamento</span><i>!</i></div><strong id="depositCashDifference">—</strong><small>Devolvido menos saldo esperado</small></article>
-   </div>
-   <div class="cash-entry-grid">
-    <section class="cash-panel">
-     <div class="cash-panel-heading"><div class="cash-panel-icon">＋</div><div><h3>Entregar dinheiro</h3><p>Registre o valor repassado ao funcionário</p></div></div>
-     <form id="depositCashAdvanceForm">
-      <div class="formgrid">
-       <div class="field"><label for="depositCashAdvanceDate">Data *</label><input id="depositCashAdvanceDate" type="date" required></div>
-       <div class="field"><label for="depositCashAdvancePerson">Funcionário / responsável *</label><input id="depositCashAdvancePerson" required maxlength="120" placeholder="Nome de quem recebeu"></div>
-       <div class="field"><label for="depositCashAdvanceAmount">Valor entregue (R$) *</label><input id="depositCashAdvanceAmount" type="number" min="0.01" step="0.01" required></div>
-       <div class="field full"><label for="depositCashAdvancePurpose">Finalidade</label><input id="depositCashAdvancePurpose" maxlength="250" placeholder="Ex.: compra de materiais para o depósito"></div>
-      </div>
-      <div class="form-actions"><button class="btn" type="submit">Registrar entrega</button></div>
-     </form>
-    </section>
-    <section class="cash-panel">
-     <div class="cash-panel-heading"><div class="cash-panel-icon cash-expense-icon">−</div><div><h3>Registrar despesa</h3><p>Informe os dados da compra e do comprovante</p></div></div>
-     <form id="depositCashExpenseForm">
-      <div class="formgrid">
-       <div class="field"><label for="depositCashExpenseDate">Data da compra *</label><input id="depositCashExpenseDate" type="date" required></div>
-       <div class="field"><label for="depositCashExpensePerson">Quem comprou? *</label><input id="depositCashExpensePerson" required maxlength="120" placeholder="Nome do responsável"></div>
-       <div class="field"><label for="depositCashExpenseDescription">Material / descrição *</label><input id="depositCashExpenseDescription" required maxlength="180" placeholder="Ex.: parafusos, ferramentas"></div>
-       <div class="field"><label for="depositCashExpenseStore">Estabelecimento</label><input id="depositCashExpenseStore" maxlength="160" placeholder="Nome da loja"></div>
-       <div class="field"><label for="depositCashExpenseAmount">Valor (R$) *</label><input id="depositCashExpenseAmount" type="number" min="0.01" step="0.01" required></div>
-       <div class="field"><label for="depositCashExpenseReceipt">Nota / comprovante</label><input id="depositCashExpenseReceipt" maxlength="120" placeholder="Número ou referência"></div>
-       <div class="field full"><label for="depositCashExpenseNotes">Observações</label><textarea id="depositCashExpenseNotes" rows="2"></textarea></div>
-      </div>
-      <div class="form-actions"><button class="btn" type="submit">Registrar despesa</button></div>
-     </form>
-    </section>
-   </div>
-   <section class="cash-panel cash-closing-panel">
-    <div class="cash-closing-head">
-     <div><span class="cash-eyebrow">CONFERÊNCIA</span><h3>Fechamento do dia</h3><p>Selecione a data, confira os valores e informe quanto foi efetivamente devolvido.</p></div>
-     <div class="field cash-date-field"><label for="depositCashClosingDate">Data do fechamento</label><input id="depositCashClosingDate" type="date" class="search" aria-label="Data do fechamento"></div>
-    </div>
-    <div class="cash-reconcile">
-     <div><span>Total entregue</span><strong id="depositCashClosingGiven">R$ 0,00</strong></div>
-     <div><span>Total gasto</span><strong id="depositCashClosingSpent">R$ 0,00</strong></div>
-     <div><span>Saldo a devolver</span><strong id="depositCashClosingExpected">R$ 0,00</strong></div>
-    </div>
-    <form id="depositCashClosingForm" class="section">
+  <div class="grid">
+   <div class="card metric"><div class="label">Dinheiro entregue hoje</div><div class="value" id="depositCashGiven">R$ 0,00</div><div class="delta">Adiantamentos registrados</div></div>
+   <div class="card metric"><div class="label">Compras registradas hoje</div><div class="value" id="depositCashSpent">R$ 0,00</div><div class="delta">Despesas avulsas do depósito</div></div>
+   <div class="card metric"><div class="label">Saldo esperado</div><div class="value" id="depositCashBalance">R$ 0,00</div><div class="delta">Valor que deve ser devolvido</div></div>
+  </div>
+  <div class="grid section">
+   <div class="card">
+    <div class="section-head"><h2>Entregar dinheiro</h2></div>
+    <form id="depositCashAdvanceForm">
      <div class="formgrid">
-      <div class="field"><label for="depositCashReturned">Dinheiro devolvido (R$) *</label><input id="depositCashReturned" type="number" min="0" step="0.01" value="0" required></div>
-      <div class="field"><label for="depositCashClosingConfirmer">Conferido por *</label><input id="depositCashClosingConfirmer" required maxlength="120" placeholder="Responsável pela conferência"></div>
-      <div class="field full"><label for="depositCashClosingNotes">Observações / justificativa de diferença</label><textarea id="depositCashClosingNotes" rows="2"></textarea></div>
+      <div class="field"><label for="depositCashAdvanceDate">Data *</label><input id="depositCashAdvanceDate" type="date" required></div>
+      <div class="field"><label for="depositCashAdvancePerson">Funcionário / responsável *</label><input id="depositCashAdvancePerson" required maxlength="120" placeholder="Nome de quem recebeu"></div>
+      <div class="field"><label for="depositCashAdvanceAmount">Valor entregue (R$) *</label><input id="depositCashAdvanceAmount" type="number" min="0.01" step="0.01" required></div>
+      <div class="field full"><label for="depositCashAdvancePurpose">Finalidade</label><input id="depositCashAdvancePurpose" maxlength="250" placeholder="Ex.: compra de materiais para o depósito"></div>
      </div>
-     <div class="form-actions"><button class="btn" type="submit">Conferir e fechar dia</button><button class="btn secondary" type="button" id="depositCashReopen" hidden>Reabrir fechamento</button></div>
+     <div class="form-actions"><button class="btn" type="submit">Registrar entrega</button></div>
     </form>
-    <div id="depositCashClosingStatus" class="cash-status">Selecione a data para consultar o fechamento.</div>
-   </section>
-   <section class="cash-panel">
-    <div class="section-head"><div><h3>Movimentações do caixa</h3><p class="muted" style="font-size:11px;margin:4px 0 0">Entregas e despesas registradas na data selecionada</p></div></div>
-    <div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Tipo</th><th>Responsável</th><th>Descrição</th><th>Valor</th><th>Comprovante</th></tr></thead><tbody id="depositCashMovements"></tbody></table></div>
-   </section>
-   <section class="cash-panel">
-    <div class="section-head"><div><h3>Histórico de fechamentos</h3><p class="muted" style="font-size:11px;margin:4px 0 0">Consulte os fechamentos anteriores e suas diferenças</p></div></div>
-    <div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Entregue</th><th>Gasto</th><th>Devolvido</th><th>Diferença</th><th>Conferido por</th><th>Situação</th></tr></thead><tbody id="depositCashClosings"></tbody></table></div>
-   </section>
+   </div>
+   <div class="card">
+    <div class="section-head"><h2>Registrar despesa</h2></div>
+    <form id="depositCashExpenseForm">
+     <div class="formgrid">
+      <div class="field"><label for="depositCashExpenseDate">Data da compra *</label><input id="depositCashExpenseDate" type="date" required></div>
+      <div class="field"><label for="depositCashExpensePerson">Quem comprou? *</label><input id="depositCashExpensePerson" required maxlength="120" placeholder="Nome do responsável"></div>
+      <div class="field"><label for="depositCashExpenseDescription">Material / descrição *</label><input id="depositCashExpenseDescription" required maxlength="180" placeholder="Ex.: parafusos, ferramentas"></div>
+      <div class="field"><label for="depositCashExpenseStore">Estabelecimento</label><input id="depositCashExpenseStore" maxlength="160" placeholder="Nome da loja"></div>
+      <div class="field"><label for="depositCashExpenseAmount">Valor (R$) *</label><input id="depositCashExpenseAmount" type="number" min="0.01" step="0.01" required></div>
+      <div class="field"><label for="depositCashExpenseReceipt">Nota / comprovante</label><input id="depositCashExpenseReceipt" maxlength="120" placeholder="Número ou referência do comprovante"></div>
+      <div class="field full"><label for="depositCashExpenseNotes">Observações</label><textarea id="depositCashExpenseNotes" rows="2"></textarea></div>
+     </div>
+     <div class="form-actions"><button class="btn" type="submit">Registrar despesa</button></div>
+    </form>
+   </div>
+  </div>
+  <div class="card section">
+   <div class="section-head"><h2>Fechamento do dia</h2><input id="depositCashClosingDate" type="date" class="search" aria-label="Data do fechamento"></div>
+   <div class="grid cols-3">
+    <div><div class="muted">Total entregue</div><strong id="depositCashClosingGiven">R$ 0,00</strong></div>
+    <div><div class="muted">Total gasto</div><strong id="depositCashClosingSpent">R$ 0,00</strong></div>
+    <div><div class="muted">Saldo a devolver</div><strong id="depositCashClosingExpected">R$ 0,00</strong></div>
+   </div>
+   <form id="depositCashClosingForm" class="section">
+    <div class="formgrid">
+     <div class="field"><label for="depositCashReturned">Dinheiro devolvido (R$) *</label><input id="depositCashReturned" type="number" min="0" step="0.01" value="0" required></div>
+     <div class="field"><label for="depositCashClosingConfirmer">Conferido por *</label><input id="depositCashClosingConfirmer" required maxlength="120" placeholder="Responsável pela conferência"></div>
+     <div class="field full"><label for="depositCashClosingNotes">Observações / justificativa de diferença</label><textarea id="depositCashClosingNotes" rows="2"></textarea></div>
+    </div>
+    <div class="form-actions"><button class="btn" type="submit">Conferir e fechar dia</button><button class="btn secondary" type="button" id="depositCashReopen" hidden>Reabrir fechamento</button></div>
+   </form>
+   <div id="depositCashClosingStatus" class="notice">Selecione a data para consultar o fechamento.</div>
+  </div>
+  <div class="card section">
+   <div class="section-head"><h2>Movimentações do caixa</h2></div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Tipo</th><th>Responsável</th><th>Descrição</th><th>Valor</th><th>Comprovante</th></tr></thead><tbody id="depositCashMovements"></tbody></table></div>
+  </div>
+  <div class="card section">
+   <div class="section-head"><h2>Histórico de fechamentos</h2></div>
+   <div class="table-wrap"><table class="table"><thead><tr><th>Data</th><th>Entregue</th><th>Gasto</th><th>Devolvido</th><th>Diferença</th><th>Conferido por</th><th>Situação</th></tr></thead><tbody id="depositCashClosings"></tbody></table></div>
   </div>
  </div>
  <div id="depositStockPanel" hidden>
@@ -1022,21 +975,78 @@ function normalizeUrl(v){return v.trim().replace(/\/$/,'')}
 async function connectProject(){setStatus('Verificando conexão com o Supabase...');const url=normalizeUrl($('supabaseUrl').value);const key=$('supabaseKey').value.trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){setStatus('Confira o Project URL. Ele deve ter o formato https://seu-projeto.supabase.co',true);return}if(!key.startsWith('sb_publishable_')&&!key.startsWith('eyJ')){setStatus('Use a Publishable key (sb_publishable_...) ou a chave anon antiga. Não use sb_secret nem service_role.',true);return}connectedUrl=url;connectedKey=key;if(!createClient())return;try{const {error}=await supabaseClient.auth.getSession();if(error)throw error;saveConfig();$('connectionSettings').open=false;setStatus('Conexão salva. A partir de agora, entre somente com e-mail e senha.');const {data}=await supabaseClient.auth.getSession();if(data.session)await startApp(data.session)}catch(e){setStatus('Não foi possível inicializar a conexão: '+(e.message||e),true)}}
 async function authAction(mode){setStatus(mode==='login'?'Tentando entrar...':'Enviando cadastro...');try{if(!supabaseClient){setStatus('A conexão ainda não está configurada neste navegador. Abra “Configuração técnica” e salve os dados do projeto uma única vez.',true);return}const email=$('authEmail').value.trim();const password=$('authPassword').value;if(!email||password.length<6){setStatus('Informe um e-mail válido e uma senha com pelo menos 6 caracteres.',true);return}setStatus(mode==='login'?'Entrando...':'Criando conta...');const result=mode==='login'?await supabaseClient.auth.signInWithPassword({email,password}):await supabaseClient.auth.signUp({email,password});if(result.error){setStatus('Falha no login: '+result.error.message,true);return}if(mode==='signup'&&!result.data.session){setStatus('Conta criada. Verifique seu e-mail para confirmar o cadastro e depois faça login.');return}if(result.data.session)await startApp(result.data.session);else setStatus('Cadastro enviado. Verifique seu e-mail e depois entre.')}catch(e){setStatus('Erro ao autenticar: '+(e.message||e),true)}}
 async function applyAccountAccess(session){
- currentSession=session;const {data:profile,error}=await supabaseClient.from('profiles').select('id,full_name,role').eq('id',session.user.id).maybeSingle();
- if(error)throw error;currentProfile=profile||{id:session.user.id,full_name:session.user.email||'',role:'operador'};
- const isAdmin=currentProfile.role==='administrador';depositOnlyUser=false;const documentsNav=$('documentsNav');if(documentsNav)documentsNav.hidden=!isAdmin;const reportsNav=$('reportsNav');if(reportsNav)reportsNav.hidden=!isAdmin;
- const adminNav=$('depositUsersNav');if(adminNav)adminNav.hidden=true;const usersNav=$('usersPermissionsNav');if(usersNav)usersNav.hidden=!isAdmin;const orgNav=$('orgStructureNav');if(orgNav)orgNav.hidden=!isAdmin;const hrNav=$('hrNav');if(hrNav)hrNav.hidden=!isAdmin;
+ currentSession=session;
+ const {data:profile,error}=await supabaseClient.from('profiles').select('id,full_name,role').eq('id',session.user.id).maybeSingle();
+ if(error)throw error;
+ currentProfile=profile||{id:session.user.id,full_name:session.user.email||'',role:'operador'};
+ const isAdmin=currentProfile.role==='administrador';
+ depositOnlyUser=false;
+ window.allowedSectorCodes=new Set();
+ window.commercialOnlyUser=false;
+
+ const documentsNav=$('documentsNav');if(documentsNav)documentsNav.hidden=!isAdmin;
+ const reportsNav=$('reportsNav');if(reportsNav)reportsNav.hidden=!isAdmin;
+ const adminNav=$('depositUsersNav');if(adminNav)adminNav.hidden=true;
+ const usersNav=$('usersPermissionsNav');if(usersNav)usersNav.hidden=!isAdmin;
+ const orgNav=$('orgStructureNav');if(orgNav)orgNav.hidden=!isAdmin;
+ const hrNav=$('hrNav');if(hrNav)hrNav.hidden=!isAdmin;
+
  if(!isAdmin){
-  const {data:allowed,error:permissionError}=await supabaseClient.rpc('has_sector_permission',{p_sector_code:'deposito',p_permission:'can_view'});
-  if(permissionError)throw permissionError;
-  if(!allowed)throw new Error('Esta conta não possui acesso ao Depósito. Solicite ao administrador que confira as permissões.');
-  depositOnlyUser=true;
+  const {data:accessRows,error:accessError}=await supabaseClient
+   .from('user_sector_access')
+   .select('can_view,active,company_sectors!inner(code)')
+   .eq('user_id',session.user.id)
+   .eq('active',true)
+   .eq('can_view',true);
+  if(accessError)throw accessError;
+
+  const codes=(accessRows||[]).map(x=>x.company_sectors?.code).filter(Boolean);
+  window.allowedSectorCodes=new Set(codes);
+  if(!codes.length)throw new Error('Esta conta ainda não possui setores com permissão de visualização. Solicite ao administrador a atribuição do setor correto.');
+
+  window.commercialOnlyUser=codes.includes('comercial')&&
+   !codes.some(c=>['administracao','administrativo','deposito','estoque','financeiro','operacional','frota','rh','ambiental'].includes(c));
+
+  const sectorPages={
+   comercial:new Set(['dashboard','clientes','propostas','relatorios']),
+   deposito:new Set(['deposito','residuos','pesagem']),
+   estoque:new Set(['deposito','residuos','pesagem']),
+   financeiro:new Set(['financeiro','faturamento','caixa']),
+   frota:new Set(['frota','coletas']),
+   operacional:new Set(['coletas','pesagem','residuos']),
+   ambiental:new Set(['residuos','coletas']),
+   administrativo:new Set(['dashboard']),
+   administracao:new Set(['dashboard','users-permissions','org-structure','rh','documentos','relatorios']),
+   rh:new Set(['rh'])
+  };
+
+  const visiblePages=new Set(['dashboard']);
+  codes.forEach(code=>(sectorPages[code]||new Set()).forEach(page=>visiblePages.add(page)));
+
+  document.querySelectorAll('.nav button[data-page]').forEach(button=>{
+   button.hidden=!visiblePages.has(button.dataset.page);
+  });
+  document.querySelectorAll('.nav button[data-growth-page]').forEach(button=>{
+   button.hidden=!window.commercialOnlyUser;
+  });
+  document.querySelectorAll('.sidebar .nav-title').forEach(title=>{
+   const nav=title.nextElementSibling;
+   if(nav&&nav.classList.contains('nav')){
+    title.hidden=!Array.from(nav.querySelectorAll('button')).some(button=>!button.hidden);
+   }
+  });
+
+  if(window.commercialOnlyUser){
+   document.querySelectorAll('.page').forEach(page=>page.classList.remove('active'));
+   $('dashboard')?.classList.add('active');
+   if($('pageTitle'))$('pageTitle').textContent='Painel geral';
+  }
+ }else{
+  document.querySelectorAll('.nav button').forEach(button=>button.hidden=false);
+  document.querySelectorAll('.sidebar .nav-title').forEach(title=>title.hidden=false);
  }
- document.querySelectorAll('.nav button[data-page]').forEach(b=>{b.hidden=depositOnlyUser&&b.dataset.page!=='deposito'});
- const navTitles=document.querySelectorAll('.sidebar .nav-title');navTitles.forEach(x=>x.hidden=depositOnlyUser);
- if(depositOnlyUser){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$('deposito').classList.add('active');$('pageTitle').textContent='Depósito'}
 }
-async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await applyAccountAccess(session);if(depositOnlyUser){await loadDepositData();renderDeposit();go('deposito');return}await loadFromSupabase();await syncBillingToFinance();await loadHRData();await loadDepositData();await loadDepositFinanceData();render();renderWeighings();renderPayments();renderDepositFinance();renderInvoices();renderInvoiceReceipts();renderHR();renderDeposit();await loadDepositStaffAccounts()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível carregar os dados ou permissões. Confira as migrações SQL e a configuração da função. Detalhe: '+(e.message||e),true)}}
+async function startApp(session){demoMode=false;$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent=session.user.email||'Usuário conectado';try{await applyAccountAccess(session);if(depositOnlyUser){await loadDepositData();renderDeposit();go('deposito');return}await loadFromSupabase();if(window.commercialOnlyUser){render();return}await syncBillingToFinance();await loadHRData();await loadDepositData();await loadDepositFinanceData();render();renderWeighings();renderPayments();renderDepositFinance();renderInvoices();renderInvoiceReceipts();renderHR();renderDeposit();await loadDepositStaffAccounts()}catch(e){$('connectionGate').hidden=false;$('erpApp').hidden=true;setStatus('Login realizado, mas não foi possível carregar os dados ou permissões. Confira as migrações SQL e a configuração da função. Detalhe: '+(e.message||e),true)}}
 function startDemo(){demoMode=true;try{recurringExpenses=JSON.parse(localStorage.getItem('di_recurring_expenses')||'[]')}catch(e){recurringExpenses=[]}state={clients:[{id:'demo-c1',name:'Cliente Exemplo Ltda.',doc:'00.000.000/0001-00',contact:'(21) 90000-0000',status:'Ativo',address:'São João de Meriti - RJ'}],collections:[{id:'demo-co1',clientId:'demo-c1',date:new Date().toISOString().slice(0,16),waste:'Papel',qty:250,responsible:'Equipe A',status:'Agendada',address:'Centro',notes:''}]};weighings=loadWeighings();payments=loadPayments();$('connectionGate').hidden=true;$('erpApp').hidden=false;$('loggedUser').textContent='Modo demonstração';render();renderWeighings();renderPayments();renderInvoices();renderInvoiceReceipts();renderHR();go('dashboard')}
 function loadPayments(){try{const x=JSON.parse(localStorage.getItem('di_payments')||'[]');return Array.isArray(x)?x:[]}catch(e){return []}}
 async function persistPayments(){if(demoMode){localStorage.setItem('di_payments',JSON.stringify(payments));return}return await saveModuleRecords('payments',payments)}
@@ -2530,7 +2540,7 @@ $('documentForm')?.addEventListener('submit',async e=>{
  }
  async function cashSave(type,items){if(demoMode){localStorage.setItem('di_'+type,JSON.stringify(items));return}if(!supabaseClient||!currentSession?.user?.id)throw new Error('Sessão não autenticada.');await saveModuleRecords(type,items)}
  function cashTotals(date){const a=advances.filter(x=>x.date===date),e=expenses.filter(x=>x.date===date),given=a.reduce((s,x)=>s+Number(x.amount||0),0),spent=e.reduce((s,x)=>s+Number(x.amount||0),0);return {a,e,given,spent,balance:given-spent}}
- function cashRender(){const date=$d('depositCashClosingDate')?.value||today(),t=cashTotals(date),closed=closings.find(x=>x.date===date);if($d('depositCashGiven'))$d('depositCashGiven').textContent=cashMoney(t.given);if($d('depositCashSpent'))$d('depositCashSpent').textContent=cashMoney(t.spent);if($d('depositCashBalance'))$d('depositCashBalance').textContent=cashMoney(t.balance);if($d('depositCashDifference'))$d('depositCashDifference').textContent=closed?cashMoney(Number(closed.returned||0)-t.balance):'Em aberto';['Given','Spent','Expected'].forEach((k,i)=>{const el=$d('depositCashClosing'+k);if(el)el.textContent=cashMoney([t.given,t.spent,t.balance][i])});if($d('depositCashReturned'))$d('depositCashReturned').value=closed?Number(closed.returned||0).toFixed(2):Math.max(0,t.balance).toFixed(2);if($d('depositCashClosingConfirmer'))$d('depositCashClosingConfirmer').value=closed?.confirmer||'';if($d('depositCashClosingNotes'))$d('depositCashClosingNotes').value=closed?.notes||'';if($d('depositCashClosingStatus'))$d('depositCashClosingStatus').textContent=closed?'Fechado por '+closed.confirmer+' em '+new Date(closed.closed_at).toLocaleString('pt-BR')+'. Diferença: '+cashMoney(Number(closed.returned||0)-t.balance):'Dia em aberto. Confira as despesas e o dinheiro devolvido antes de fechar.';if($d('depositCashReopen'))$d('depositCashReopen').hidden=!closed;const m=[...t.a.map(x=>({...x,kind:'Entrega',description:x.purpose||'Adiantamento'})),...t.e.map(x=>({...x,kind:'Despesa',description:x.description}))];if($d('depositCashMovements'))$d('depositCashMovements').innerHTML=m.length?m.map(x=>'<tr><td>'+cashEsc(x.date)+'</td><td>'+x.kind+'</td><td>'+cashEsc(x.person)+'</td><td>'+cashEsc(x.description)+'</td><td>'+cashMoney(x.amount)+'</td><td>'+cashEsc(x.receipt||'—')+'</td></tr>').join(''):'<tr><td colspan="6" class="empty">Nenhuma movimentação nesta data.</td></tr>';if($d('depositCashClosings'))$d('depositCashClosings').innerHTML=closings.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>{const z=cashTotals(x.date);return '<tr><td>'+cashEsc(x.date)+'</td><td>'+cashMoney(z.given)+'</td><td>'+cashMoney(z.spent)+'</td><td>'+cashMoney(x.returned)+'</td><td>'+cashMoney(Number(x.returned||0)-z.balance)+'</td><td>'+cashEsc(x.confirmer)+'</td><td>Fechado</td></tr>'}).join('')||'<tr><td colspan="7" class="empty">Nenhum fechamento realizado.</td></tr>'}
+ function cashRender(){const date=$d('depositCashClosingDate')?.value||today(),t=cashTotals(date),td=cashTotals(today()),closed=closings.find(x=>x.date===date);if($d('depositCashGiven'))$d('depositCashGiven').textContent=cashMoney(td.given);if($d('depositCashSpent'))$d('depositCashSpent').textContent=cashMoney(td.spent);if($d('depositCashBalance'))$d('depositCashBalance').textContent=cashMoney(td.balance);['Given','Spent','Expected'].forEach((k,i)=>{const el=$d('depositCashClosing'+k);if(el)el.textContent=cashMoney([t.given,t.spent,t.balance][i])});if($d('depositCashReturned'))$d('depositCashReturned').value=closed?Number(closed.returned||0).toFixed(2):Math.max(0,t.balance).toFixed(2);if($d('depositCashClosingConfirmer'))$d('depositCashClosingConfirmer').value=closed?.confirmer||'';if($d('depositCashClosingNotes'))$d('depositCashClosingNotes').value=closed?.notes||'';if($d('depositCashClosingStatus'))$d('depositCashClosingStatus').textContent=closed?'Fechado por '+closed.confirmer+' em '+new Date(closed.closed_at).toLocaleString('pt-BR')+'. Diferença: '+cashMoney(Number(closed.returned||0)-t.balance):'Dia em aberto. Confira as despesas e o dinheiro devolvido antes de fechar.';if($d('depositCashReopen'))$d('depositCashReopen').hidden=!closed;const m=[...t.a.map(x=>({...x,kind:'Entrega',description:x.purpose||'Adiantamento'})),...t.e.map(x=>({...x,kind:'Despesa',description:x.description}))];if($d('depositCashMovements'))$d('depositCashMovements').innerHTML=m.length?m.map(x=>'<tr><td>'+cashEsc(x.date)+'</td><td>'+x.kind+'</td><td>'+cashEsc(x.person)+'</td><td>'+cashEsc(x.description)+'</td><td>'+cashMoney(x.amount)+'</td><td>'+cashEsc(x.receipt||'—')+'</td></tr>').join(''):'<tr><td colspan="6" class="empty">Nenhuma movimentação nesta data.</td></tr>';if($d('depositCashClosings'))$d('depositCashClosings').innerHTML=closings.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(x=>{const z=cashTotals(x.date);return '<tr><td>'+cashEsc(x.date)+'</td><td>'+cashMoney(z.given)+'</td><td>'+cashMoney(z.spent)+'</td><td>'+cashMoney(x.returned)+'</td><td>'+cashMoney(Number(x.returned||0)-z.balance)+'</td><td>'+cashEsc(x.confirmer)+'</td><td>Fechado</td></tr>'}).join('')||'<tr><td colspan="7" class="empty">Nenhum fechamento realizado.</td></tr>'}
  function defaults(){['depositCashAdvanceDate','depositCashExpenseDate','depositCashClosingDate'].forEach(id=>{if($d(id)&&!$d(id).value)$d(id).value=today()})}
  $d('depositCashAdvanceForm')?.addEventListener('submit',async e=>{e.preventDefault();const x={id:cashId(),date:$d('depositCashAdvanceDate').value,person:$d('depositCashAdvancePerson').value.trim(),amount:Number($d('depositCashAdvanceAmount').value),purpose:$d('depositCashAdvancePurpose').value.trim(),created_at:new Date().toISOString()};if(x.amount<=0)return alert('Informe um valor válido.');if(closings.some(c=>c.date===x.date))return alert('Este dia já está fechado. Reabra o fechamento antes de lançar nova movimentação.');try{advances.push(x);await cashSave('deposit_cash_advances',advances);e.target.reset();defaults();cashRender();alert('Entrega registrada.')}catch(err){advances=advances.filter(a=>a.id!==x.id);alert('Falha ao registrar: '+err.message)}});
  $d('depositCashExpenseForm')?.addEventListener('submit',async e=>{e.preventDefault();const x={id:cashId(),date:$d('depositCashExpenseDate').value,person:$d('depositCashExpensePerson').value.trim(),description:$d('depositCashExpenseDescription').value.trim(),store:$d('depositCashExpenseStore').value.trim(),amount:Number($d('depositCashExpenseAmount').value),receipt:$d('depositCashExpenseReceipt').value.trim(),notes:$d('depositCashExpenseNotes').value.trim(),created_at:new Date().toISOString()};if(x.amount<=0)return alert('Informe um valor válido.');if(closings.some(c=>c.date===x.date))return alert('Este dia já está fechado. Reabra o fechamento antes de lançar nova movimentação.');try{expenses.push(x);await cashSave('deposit_cash_expenses',expenses);e.target.reset();defaults();cashRender();alert('Despesa registrada.')}catch(err){expenses=expenses.filter(a=>a.id!==x.id);alert('Falha ao registrar: '+err.message)}});
